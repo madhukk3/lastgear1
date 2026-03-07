@@ -120,7 +120,7 @@ const ProductDetail = () => {
         {/* Product Info */}
         <div className="sticky top-32 self-start">
           <h1 className="text-4xl font-bold mb-4" data-testid="product-name">{product.name}</h1>
-          <p className="text-3xl font-medium mb-6" data-testid="product-price">${product.price.toFixed(2)}</p>
+          <p className="text-3xl font-medium mb-6" data-testid="product-price">₹{product.price.toFixed(0)}</p>
           <p className="text-gray-600 mb-8" data-testid="product-description">{product.description}</p>
 
           {/* Color Selection */}

@@ -115,7 +115,7 @@ const Home = () => {
                   </div>
                   <p className="text-xs text-gray-500 mb-1">{product.colors.length} COLOR{product.colors.length > 1 ? 'S' : ''}</p>
                   <h3 className="font-bold text-sm mb-1">{product.name}</h3>
-                  <p className="font-medium">${product.price.toFixed(2)}</p>
+                  <p className="font-medium">₹{product.price.toFixed(0)}</p>
                 </Link>
               ))}
             </div>

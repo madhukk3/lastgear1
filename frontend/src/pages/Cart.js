@@ -70,7 +70,7 @@ const Cart = () => {
                   <p className="text-sm text-gray-600 mb-1">Size: {item.size}</p>
                   <p className="text-sm text-gray-600 mb-2">Color: {item.color}</p>
                   <p className="text-sm text-gray-600 mb-4">Quantity: {item.quantity}</p>
-                  <p className="text-lg font-bold">${(item.product?.price * item.quantity).toFixed(2)}</p>
+                  <p className="text-lg font-bold">₹{(item.product?.price * item.quantity).toFixed(0)}</p>
                 </div>
                 <button
                   onClick={() => handleRemoveItem(item)}
@@ -90,17 +90,17 @@ const Cart = () => {
               <div className="space-y-4 mb-6">
                 <div className="flex justify-between">
                   <span>Subtotal</span>
-                  <span className="font-bold">${cartTotal.toFixed(2)}</span>
+                  <span className="font-bold">₹{cartTotal.toFixed(0)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span>Shipping</span>
-                  <span className="font-bold">{cartTotal >= 50 ? 'FREE' : '$5.00'}</span>
+                  <span className="font-bold">{cartTotal >= 1500 ? 'FREE' : '₹99'}</span>
                 </div>
                 <div className="border-t border-gray-300 pt-4">
                   <div className="flex justify-between text-xl">
                     <span className="font-bold">Total</span>
                     <span className="font-bold">
-                      ${(cartTotal + (cartTotal >= 50 ? 0 : 5)).toFixed(2)}
+                      ₹{(cartTotal + (cartTotal >= 1500 ? 0 : 99)).toFixed(0)}
                     </span>
                   </div>
                 </div>

@@ -25,9 +25,14 @@ const Header = () => {
     <header className="header-sticky bg-black text-white" data-testid="main-header">
       <div className="max-w-7xl mx-auto px-4">
         <div className="flex items-center justify-between h-20">
-          {/* Logo */}
-          <Link to="/" className="text-2xl font-bold tracking-wider" data-testid="logo-link">
-            LAST GEAR
+          {/* Logo with Image */}
+          <Link to="/" className="flex items-center gap-3" data-testid="logo-link">
+            <img 
+              src="https://customer-assets.emergentagent.com/job_last-gear-preview/artifacts/rax2cokm_LAST_GEAR_1-removebg-preview.png" 
+              alt="LAST GEAR Logo" 
+              className="h-12 w-auto"
+            />
+            <span className="text-2xl font-bold tracking-wider">LAST GEAR</span>
           </Link>
 
           {/* Desktop Navigation */}

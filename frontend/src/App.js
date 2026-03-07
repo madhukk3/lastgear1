@@ -11,7 +11,7 @@ import ProductDetail from './pages/ProductDetail';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Cart from './pages/Cart';
-import Checkout from './pages/Checkout';
+import Checkout from './pages/CheckoutNew';
 import OrderSuccess from './pages/OrderSuccess';
 import Wishlist from './pages/Wishlist';
 import Account from './pages/Account';
