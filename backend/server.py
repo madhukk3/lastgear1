@@ -2,6 +2,7 @@ from fastapi import FastAPI, APIRouter, HTTPException, Depends, Request, Header
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
+from starlette.middleware.trustedhost import TrustedHostMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
 import os
 import logging
@@ -16,6 +17,15 @@ import razorpay
 import hmac
 import hashlib
 from emergentintegrations.llm.chat import LlmChat, UserMessage
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
+from security import (
+    verify_jwt_token, get_current_user, validate_password_strength,
+    track_login_attempt, check_account_locked, log_security_event,
+    sanitize_input, limiter
+)
+from admin_routes import admin_router
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -40,6 +50,30 @@ security = HTTPBearer()
 
 app = FastAPI()
 api_router = APIRouter(prefix="/api")
+
+# Add rate limiting
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
+# Security headers middleware
+@app.middleware("http")
+async def add_security_headers(request: Request, call_next):
+    response = await call_next(request)
+    # Prevent clickjacking
+    response.headers["X-Frame-Options"] = "DENY"
+    # Prevent MIME sniffing
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    # Enable XSS protection
+    response.headers["X-XSS-Protection"] = "1; mode=block"
+    # Content Security Policy
+    response.headers["Content-Security-Policy"] = "default-src 'self' https:; script-src 'self' 'unsafe-inline' https://checkout.razorpay.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' https: data:; connect-src 'self' https:;"
+    # Strict Transport Security
+    response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+    # Referrer Policy
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    # Permissions Policy
+    response.headers["Permissions-Policy"] = "geolocation=(), microphone=(), camera=()"
+    return response
 
 # --- AUTH MODELS ---
 class UserRegister(BaseModel):
@@ -675,14 +709,21 @@ async def get_recommendations(current_user: Dict = Depends(get_current_user)):
     return recommended
 
 app.include_router(api_router)
+app.include_router(admin_router)
 
+# CORS with stricter configuration
+allowed_origins = os.environ.get('CORS_ORIGINS', '*').split(',')
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
-    allow_origins=os.environ.get('CORS_ORIGINS', '*').split(','),
-    allow_methods=["*"],
+    allow_origins=allowed_origins if '*' not in allowed_origins else ["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE"],
     allow_headers=["*"],
+    max_age=3600,
 )
+
+# Add Trusted Host middleware for production
+# app.add_middleware(TrustedHostMiddleware, allowed_hosts=["lastgear.in", "www.lastgear.in", "*.emergentagent.com"])
 
 logging.basicConfig(
     level=logging.INFO,
