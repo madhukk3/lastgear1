@@ -444,132 +444,165 @@ async def get_order(order_id: str, current_user: Dict = Depends(get_current_user
     return order
 
 # --- PAYMENT ENDPOINTS ---
-@api_router.post("/checkout/session")
-async def create_checkout_session(checkout_req: CheckoutRequest, current_user: Dict = Depends(get_current_user)):
+@api_router.post("/razorpay/create-order")
+async def create_razorpay_order(order_req: RazorpayOrderRequest, current_user: Dict = Depends(get_current_user)):
     # Get order details
-    order = await db.orders.find_one({"id": checkout_req.order_id, "user_id": current_user['id']}, {"_id": 0})
+    order = await db.orders.find_one({"id": order_req.order_id, "user_id": current_user['id']}, {"_id": 0})
     if not order:
         raise HTTPException(status_code=404, detail="Order not found")
     
     if order['payment_status'] == 'paid':
         raise HTTPException(status_code=400, detail="Order already paid")
     
-    # Initialize Stripe
-    webhook_url = f"{checkout_req.origin_url}/api/webhook/stripe"
-    stripe_checkout = StripeCheckout(api_key=stripe_api_key, webhook_url=webhook_url)
+    # Convert to paise (Razorpay uses smallest currency unit)
+    amount_in_paise = int(order['total_amount'] * 100)
     
-    # Create checkout session
-    success_url = f"{checkout_req.origin_url}/order-success?session_id={{CHECKOUT_SESSION_ID}}"
-    cancel_url = f"{checkout_req.origin_url}/checkout"
-    
-    checkout_request = CheckoutSessionRequest(
-        amount=order['total_amount'],
-        currency="usd",
-        success_url=success_url,
-        cancel_url=cancel_url,
-        metadata={"order_id": order['id'], "user_id": current_user['id']}
-    )
-    
-    session: CheckoutSessionResponse = await stripe_checkout.create_checkout_session(checkout_request)
-    
-    # Create payment transaction
-    payment_transaction = PaymentTransaction(
-        user_id=current_user['id'],
-        order_id=order['id'],
-        session_id=session.session_id,
-        amount=order['total_amount'],
-        currency="usd",
-        payment_status="pending",
-        metadata={"order_id": order['id']}
-    )
-    await db.payment_transactions.insert_one(payment_transaction.model_dump())
-    
-    # Update order with session_id
-    await db.orders.update_one(
-        {"id": order['id']},
-        {"$set": {"session_id": session.session_id}}
-    )
-    
-    return {"url": session.url, "session_id": session.session_id}
-
-@api_router.get("/checkout/status/{session_id}")
-async def get_checkout_status(session_id: str, current_user: Dict = Depends(get_current_user)):
-    # Check if already processed
-    existing_transaction = await db.payment_transactions.find_one({"session_id": session_id}, {"_id": 0})
-    
-    if not existing_transaction:
-        raise HTTPException(status_code=404, detail="Transaction not found")
-    
-    # If already paid, return immediately
-    if existing_transaction['payment_status'] == 'paid':
-        return {
-            "status": "complete",
-            "payment_status": "paid",
-            "order_id": existing_transaction['order_id']
-        }
-    
-    # Initialize Stripe and check status
-    webhook_url = f"{os.environ.get('REACT_APP_BACKEND_URL', 'http://localhost:8001')}/api/webhook/stripe"
-    stripe_checkout = StripeCheckout(api_key=stripe_api_key, webhook_url=webhook_url)
-    
+    # Create Razorpay order
     try:
-        checkout_status: CheckoutStatusResponse = await stripe_checkout.get_checkout_status(session_id)
+        razorpay_order = razorpay_client.order.create({
+            "amount": amount_in_paise,
+            "currency": "INR",
+            "receipt": order['id'][:40],  # Max 40 chars
+            "notes": {
+                "order_id": order['id'],
+                "user_id": current_user['id']
+            }
+        })
+        
+        # Create payment transaction
+        payment_transaction = PaymentTransaction(
+            user_id=current_user['id'],
+            order_id=order['id'],
+            razorpay_order_id=razorpay_order['id'],
+            amount=order['total_amount'],
+            currency="INR",
+            payment_status="pending",
+            metadata={"order_id": order['id']}
+        )
+        await db.payment_transactions.insert_one(payment_transaction.model_dump())
+        
+        # Update order with razorpay_order_id
+        await db.orders.update_one(
+            {"id": order['id']},
+            {"$set": {"razorpay_order_id": razorpay_order['id']}}
+        )
+        
+        return {
+            "razorpay_order_id": razorpay_order['id'],
+            "amount": amount_in_paise,
+            "currency": "INR",
+            "key_id": razorpay_key_id
+        }
+    except Exception as e:
+        logging.error(f"Razorpay order creation failed: {e}")
+        raise HTTPException(status_code=500, detail="Failed to create payment order")
+
+@api_router.post("/razorpay/verify-payment")
+async def verify_razorpay_payment(verification: RazorpayPaymentVerification, current_user: Dict = Depends(get_current_user)):
+    try:
+        # Verify signature
+        generated_signature = hmac.new(
+            razorpay_key_secret.encode('utf-8'),
+            f"{verification.razorpay_order_id}|{verification.razorpay_payment_id}".encode('utf-8'),
+            hashlib.sha256
+        ).hexdigest()
+        
+        if generated_signature != verification.razorpay_signature:
+            raise HTTPException(status_code=400, detail="Invalid payment signature")
         
         # Update transaction
+        transaction = await db.payment_transactions.find_one(
+            {"razorpay_order_id": verification.razorpay_order_id},
+            {"_id": 0}
+        )
+        
+        if not transaction:
+            raise HTTPException(status_code=404, detail="Transaction not found")
+        
+        # Check if already processed
+        if transaction['payment_status'] == 'paid':
+            return {
+                "status": "success",
+                "message": "Payment already processed",
+                "order_id": transaction['order_id']
+            }
+        
+        # Update payment transaction
         await db.payment_transactions.update_one(
-            {"session_id": session_id},
+            {"razorpay_order_id": verification.razorpay_order_id},
             {"$set": {
-                "payment_status": checkout_status.payment_status,
+                "razorpay_payment_id": verification.razorpay_payment_id,
+                "razorpay_signature": verification.razorpay_signature,
+                "payment_status": "paid",
                 "updated_at": datetime.now(timezone.utc).isoformat()
             }}
         )
         
-        # Update order if paid
-        if checkout_status.payment_status == 'paid' and existing_transaction['payment_status'] != 'paid':
-            await db.orders.update_one(
-                {"id": existing_transaction['order_id']},
-                {"$set": {"payment_status": "paid"}}
-            )
-            
-            # Clear cart
-            await db.carts.update_one(
-                {"user_id": current_user['id']},
-                {"$set": {"items": []}}
-            )
+        # Update order
+        await db.orders.update_one(
+            {"id": transaction['order_id']},
+            {"$set": {"payment_status": "paid"}}
+        )
+        
+        # Clear cart
+        await db.carts.update_one(
+            {"user_id": current_user['id']},
+            {"$set": {"items": []}}
+        )
         
         return {
-            "status": checkout_status.status,
-            "payment_status": checkout_status.payment_status,
-            "order_id": existing_transaction['order_id']
+            "status": "success",
+            "message": "Payment verified successfully",
+            "order_id": transaction['order_id']
         }
+    except HTTPException:
+        raise
     except Exception as e:
-        logging.error(f"Error checking payment status: {e}")
-        raise HTTPException(status_code=500, detail="Error checking payment status")
+        logging.error(f"Payment verification failed: {e}")
+        raise HTTPException(status_code=500, detail="Payment verification failed")
 
-@api_router.post("/webhook/stripe")
-async def stripe_webhook(request: Request):
-    body = await request.body()
-    signature = request.headers.get("Stripe-Signature")
-    
-    webhook_url = str(request.base_url) + "api/webhook/stripe"
-    stripe_checkout = StripeCheckout(api_key=stripe_api_key, webhook_url=webhook_url)
-    
+@api_router.post("/razorpay/webhook")
+async def razorpay_webhook(request: Request):
     try:
-        webhook_response = await stripe_checkout.handle_webhook(body, signature)
+        body = await request.body()
+        signature = request.headers.get('X-Razorpay-Signature', '')
         
-        # Update transaction and order based on webhook
-        if webhook_response.payment_status == 'paid':
+        # Verify webhook signature
+        webhook_secret = os.environ.get('RAZORPAY_WEBHOOK_SECRET', razorpay_key_secret)
+        expected_signature = hmac.new(
+            webhook_secret.encode('utf-8'),
+            body,
+            hashlib.sha256
+        ).hexdigest()
+        
+        if signature != expected_signature:
+            raise HTTPException(status_code=400, detail="Invalid webhook signature")
+        
+        import json
+        payload = json.loads(body.decode('utf-8'))
+        event = payload.get('event')
+        
+        if event == 'payment.captured':
+            payment = payload['payload']['payment']['entity']
+            razorpay_order_id = payment['order_id']
+            
+            # Update transaction
+            await db.payment_transactions.update_one(
+                {"razorpay_order_id": razorpay_order_id},
+                {"$set": {
+                    "razorpay_payment_id": payment['id'],
+                    "payment_status": "paid",
+                    "updated_at": datetime.now(timezone.utc).isoformat()
+                }}
+            )
+            
+            # Get transaction to find order_id
             transaction = await db.payment_transactions.find_one(
-                {"session_id": webhook_response.session_id}, 
+                {"razorpay_order_id": razorpay_order_id},
                 {"_id": 0}
             )
             
-            if transaction and transaction['payment_status'] != 'paid':
-                await db.payment_transactions.update_one(
-                    {"session_id": webhook_response.session_id},
-                    {"$set": {"payment_status": "paid"}}
-                )
-                
+            if transaction:
                 await db.orders.update_one(
                     {"id": transaction['order_id']},
                     {"$set": {"payment_status": "paid"}}
@@ -577,9 +610,8 @@ async def stripe_webhook(request: Request):
         
         return {"status": "success"}
     except Exception as e:
-        logging.error(f"Webhook error: {e}")
+        logging.error(f"Webhook processing failed: {e}")
         raise HTTPException(status_code=400, detail="Webhook processing failed")
-
 # --- AI RECOMMENDATIONS ENDPOINT ---
 @api_router.get("/recommendations")
 async def get_recommendations(current_user: Dict = Depends(get_current_user)):
