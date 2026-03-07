@@ -1,0 +1,227 @@
+import React, { useEffect, useState } from 'react';
+import { useSearchParams, Link } from 'react-router-dom';
+import axios from 'axios';
+import { ChevronDown } from 'lucide-react';
+
+const Products = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [filters, setFilters] = useState({
+    category: searchParams.get('category') || '',
+    search: searchParams.get('search') || '',
+    color: searchParams.get('color') || '',
+    size: searchParams.get('size') || '',
+    min_price: searchParams.get('min_price') || '',
+    max_price: searchParams.get('max_price') || '',
+  });
+
+  const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+  const API = `${BACKEND_URL}/api`;
+
+  const categories = ['All', 'T-Shirts', 'Hoodies'];
+  const sizes = ['S', 'M', 'L', 'XL', 'XXL'];
+  const colors = ['Black', 'White', 'Gray', 'Navy', 'Charcoal', 'Olive', 'Burgundy', 'Cream', 'Sand'];
+  const priceRanges = [
+    { label: 'All', min: '', max: '' },
+    { label: 'Under $30', min: '', max: '30' },
+    { label: '$30 - $50', min: '30', max: '50' },
+    { label: '$50 - $80', min: '50', max: '80' },
+    { label: 'Over $80', min: '80', max: '' },
+  ];
+
+  useEffect(() => {
+    fetchProducts();
+  }, [searchParams]);
+
+  const fetchProducts = async () => {
+    try {
+      setLoading(true);
+      const params = new URLSearchParams();
+      if (filters.category) params.append('category', filters.category);
+      if (filters.search) params.append('search', filters.search);
+      if (filters.color) params.append('color', filters.color);
+      if (filters.size) params.append('size', filters.size);
+      if (filters.min_price) params.append('min_price', filters.min_price);
+      if (filters.max_price) params.append('max_price', filters.max_price);
+
+      const response = await axios.get(`${API}/products?${params}`);
+      setProducts(response.data);
+    } catch (error) {
+      console.error('Failed to fetch products:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const updateFilter = (key, value) => {
+    const newFilters = { ...filters, [key]: value };
+    setFilters(newFilters);
+    
+    const params = new URLSearchParams();
+    Object.entries(newFilters).forEach(([k, v]) => {
+      if (v) params.append(k, v);
+    });
+    setSearchParams(params);
+  };
+
+  const clearFilters = () => {
+    setFilters({
+      category: '',
+      search: '',
+      color: '',
+      size: '',
+      min_price: '',
+      max_price: '',
+    });
+    setSearchParams({});
+  };
+
+  return (
+    <div data-testid="products-page">
+      {/* Title Bar */}
+      <div className="bg-white border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-4 py-8">
+          <h1 className="text-4xl font-bold" data-testid="products-title">
+            {filters.category ? filters.category.toUpperCase() : 'ALL PRODUCTS'}
+          </h1>
+          <p className="text-gray-600 mt-2">{products.length} PRODUCTS</p>
+        </div>
+      </div>
+
+      {/* Filter Bar */}
+      <div className="sticky top-20 bg-white border-b border-gray-200 z-40" data-testid="filter-bar">
+        <div className="max-w-7xl mx-auto px-4 py-4">
+          <div className="flex flex-wrap gap-4">
+            {/* Category Filter */}
+            <div className="relative">
+              <select
+                value={filters.category}
+                onChange={(e) => updateFilter('category', e.target.value)}
+                className="appearance-none border border-gray-300 px-4 py-2 pr-10 focus:outline-none focus:ring-2 focus:ring-black cursor-pointer"
+                data-testid="filter-category"
+              >
+                <option value="">CATEGORY</option>
+                {categories.map((cat) => (
+                  <option key={cat} value={cat === 'All' ? '' : cat.toLowerCase()}>
+                    {cat}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none" size={16} />
+            </div>
+
+            {/* Size Filter */}
+            <div className="relative">
+              <select
+                value={filters.size}
+                onChange={(e) => updateFilter('size', e.target.value)}
+                className="appearance-none border border-gray-300 px-4 py-2 pr-10 focus:outline-none focus:ring-2 focus:ring-black cursor-pointer"
+                data-testid="filter-size"
+              >
+                <option value="">SIZE</option>
+                {sizes.map((size) => (
+                  <option key={size} value={size}>
+                    {size}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none" size={16} />
+            </div>
+
+            {/* Color Filter */}
+            <div className="relative">
+              <select
+                value={filters.color}
+                onChange={(e) => updateFilter('color', e.target.value)}
+                className="appearance-none border border-gray-300 px-4 py-2 pr-10 focus:outline-none focus:ring-2 focus:ring-black cursor-pointer"
+                data-testid="filter-color"
+              >
+                <option value="">COLOR</option>
+                {colors.map((color) => (
+                  <option key={color} value={color}>
+                    {color}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none" size={16} />
+            </div>
+
+            {/* Price Filter */}
+            <div className="relative">
+              <select
+                value={`${filters.min_price}-${filters.max_price}`}
+                onChange={(e) => {
+                  const [min, max] = e.target.value.split('-');
+                  updateFilter('min_price', min);
+                  updateFilter('max_price', max);
+                }}
+                className="appearance-none border border-gray-300 px-4 py-2 pr-10 focus:outline-none focus:ring-2 focus:ring-black cursor-pointer"
+                data-testid="filter-price"
+              >
+                {priceRanges.map((range) => (
+                  <option key={range.label} value={`${range.min}-${range.max}`}>
+                    {range.label}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none" size={16} />
+            </div>
+
+            {/* Clear Filters */}
+            {(filters.category || filters.size || filters.color || filters.min_price || filters.max_price) && (
+              <button
+                onClick={clearFilters}
+                className="border border-black px-4 py-2 font-medium hover:bg-black hover:text-white transition-colors"
+                data-testid="clear-filters"
+              >
+                CLEAR FILTERS
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Products Grid */}
+      <div className="max-w-7xl mx-auto px-4 py-12">
+        {loading ? (
+          <div className="text-center py-20">Loading products...</div>
+        ) : products.length === 0 ? (
+          <div className="text-center py-20">
+            <p className="text-xl text-gray-600">No products found</p>
+            <button
+              onClick={clearFilters}
+              className="mt-4 bg-black text-white px-8 py-3 font-bold hover:bg-gray-800"
+            >
+              CLEAR FILTERS
+            </button>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-12" data-testid="products-grid">
+            {products.map((product) => (
+              <Link
+                key={product.id}
+                to={`/products/${product.id}`}
+                className="product-card group"
+                data-testid={`product-card-${product.id}`}
+              >
+                <div className="aspect-[4/5] bg-white mb-4 overflow-hidden">
+                  <img
+                    src={product.images[0]}
+                    alt={product.name}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <p className="text-xs text-gray-500 mb-1">{product.colors.length} COLOR{product.colors.length > 1 ? 'S' : ''}</p>
+                <h3 className="font-bold text-sm mb-1">{product.name}</h3>
+                <p className="font-medium">${product.price.toFixed(2)}</p>
+              </Link>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default Products;
