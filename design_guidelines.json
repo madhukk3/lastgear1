@@ -1,0 +1,164 @@
+{
+  "design_system": {
+    "brand_name": "LAST GEAR",
+    "aesthetic": "High-Performance Streetwear (Puma-Inspired)",
+    "emotional_archetype": "The Performance Pro",
+    "theme": {
+      "mode": "light",
+      "header_style": "Deep Black (#000000) with White Text",
+      "body_style": "Clean White (#FFFFFF) Background",
+      "accent_strategy": "Monochrome with Signal Red (#FF3B30) for CTAs/Sale"
+    },
+    "typography": {
+      "headings": {
+        "font_family": "Oswald, sans-serif",
+        "weight": "700",
+        "style": "uppercase, tight-tracking",
+        "usage": "Hero titles, Section headers, Product names"
+      },
+      "body": {
+        "font_family": "Inter, sans-serif",
+        "weight": "400",
+        "usage": "Descriptions, Prices, UI elements"
+      },
+      "imports": [
+        "@import url('https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;700&family=Inter:wght@400;500;600&display=swap');"
+      ]
+    },
+    "colors": {
+      "primary": "#000000",
+      "secondary": "#FFFFFF",
+      "accent": "#FF3B30",
+      "muted": "#F3F4F6",
+      "border": "#E5E7EB",
+      "text": {
+        "primary": "#000000",
+        "secondary": "#4B5563",
+        "inverse": "#FFFFFF"
+      }
+    },
+    "layout": {
+      "grid_system": "grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-8",
+      "spacing": "Generous (p-8, p-12)",
+      "container": "max-w-7xl mx-auto px-4 md:px-8",
+      "border_radius": "rounded-none (Sharp edges for 'Technical' feel) or rounded-sm"
+    },
+    "components": {
+      "header": {
+        "bg": "bg-black",
+        "text": "text-white",
+        "height": "h-20",
+        "elements": [
+          "Logo (Left, Bold, Uppercase)",
+          "Nav (Center-Left, Hidden on Mobile)",
+          "Icons (Right: Search, Heart, Cart, User)"
+        ]
+      },
+      "product_card": {
+        "style": "minimalist",
+        "image_aspect": "aspect-[4/5]",
+        "elements": [
+          "Image (Dominant)",
+          "Label (e.g., '1 COLOR' - Text XS, Muted)",
+          "Title (Bold, Oswald, Uppercase)",
+          "Price (Inter, Regular)",
+          "Hover: Quick Add / Alternate View"
+        ]
+      },
+      "buttons": {
+        "primary": "bg-black text-white hover:bg-gray-800 rounded-none uppercase font-bold tracking-wider px-8 py-4",
+        "secondary": "border border-black text-black hover:bg-black hover:text-white rounded-none uppercase font-bold tracking-wider px-8 py-4"
+      },
+      "filters": {
+        "style": "Horizontal Bar",
+        "position": "Sticky below header",
+        "elements": "Dropdowns (Category, Size, Color, Price)"
+      }
+    }
+  },
+  "visual_assets": {
+    "images": {
+      "hero": [
+        {
+          "url": "https://images.unsplash.com/photo-1762052508120-2607918d663f?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1NzV8MHwxfHNlYXJjaHwxfHx1cmJhbiUyMHN0cmVldHdlYXIlMjBtYWxlJTIwbW9kZWwlMjBob29kaWUlMjBmYXNoaW9uJTIwbW9vZHl8ZW58MHx8fHwxNzcyODU0OTk3fDA&ixlib=rb-4.1.0&q=85",
+          "alt": "Hero - Urban Male Model in Hoodie",
+          "category": "hero"
+        },
+        {
+          "url": "https://images.unsplash.com/photo-1646633632616-b225ffb6ceb7?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1NzV8MHwxfHNlYXJjaHwyfHx1cmJhbiUyMHN0cmVldHdlYXIlMjBtYWxlJTIwbW9kZWwlMjBob29kaWUlMjBmYXNoaW9uJTIwbW9vZHl8ZW58MHx8fHwxNzcyODU0OTk3fDA&ixlib=rb-4.1.0&q=85",
+          "alt": "Hero Alternate - Streetwear Masked",
+          "category": "hero_alt"
+        }
+      ],
+      "products": [
+        {
+          "url": "https://images.unsplash.com/photo-1590759483822-b2fee5aa6bd3?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2NzR8MHwxfHNlYXJjaHwzfHxibGFjayUyMGhvb2RpZSUyMGZsYXQlMjBsYXklMjBtaW5pbWFsaXN0JTIwYmFja2dyb3VuZHxlbnwwfHx8fDE3NzI4NTQ5OTl8MA&ixlib=rb-4.1.0&q=85",
+          "alt": "Black Zip Hoodie",
+          "category": "hoodies"
+        },
+        {
+          "url": "https://images.unsplash.com/photo-1581655353564-df123a1eb820?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2Njl8MHwxfHNlYXJjaHwxfHx3aGl0ZSUyMHNwb3J0cyUyMHQtc2hpcnQlMjBoYW5nZXIlMjBtaW5pbWFsaXN0fGVufDB8fHx8MTc3Mjg1NTAwMHww&ixlib=rb-4.1.0&q=85",
+          "alt": "White Crew Neck T-Shirt",
+          "category": "t-shirts"
+        },
+        {
+          "url": "https://images.unsplash.com/photo-1608380272894-b3617f04b463?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1NzR8MHwxfHNlYXJjaHwzfHxydW5uaW5nJTIwc2hvZXMlMjBzbmVha2VycyUyMHdoaXRlJTIwYmFja2dyb3VuZHxlbnwwfHx8fDE3NzI4NTUwMDl8MA&ixlib=rb-4.1.0&q=85",
+          "alt": "White Nike Air Force 1",
+          "category": "footwear"
+        },
+        {
+          "url": "https://images.unsplash.com/photo-1731132198530-e4b2dc51d511?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1NzR8MHwxfHNlYXJjaHwxfHxydW5uaW5nJTIwc2hvZXMlMjBzbmVha2VycyUyMHdoaXRlJTIwYmFja2dyb3VuZHxlbnwwfHx8fDE3NzI4NTUwMDl8MA&ixlib=rb-4.1.0&q=85",
+          "alt": "Red and White Sneakers",
+          "category": "footwear"
+        },
+        {
+          "url": "https://images.unsplash.com/photo-1596273501583-5bdb2c7220d9?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDQ2MzR8MHwxfHNlYXJjaHwxfHxibGFjayUyMHNwb3J0cyUyMGR1ZmZlbCUyMGJhZyUyMHdoaXRlJTIwYmFja2dyb3VuZHxlbnwwfHx8fDE3NzI4NTUwMTB8MA&ixlib=rb-4.1.0&q=85",
+          "alt": "Black Sports Backpack",
+          "category": "accessories"
+        }
+      ]
+    },
+    "icons": {
+      "library": "lucide-react",
+      "style": "Stroke width 1.5px (Fine/Elegant)"
+    }
+  },
+  "implementation_rules": {
+    "universal": [
+      "Use 'data-testid' for all interactive elements.",
+      "Do NOT use gradients. Stick to solid Black and White.",
+      "Ensure text contrast meets WCAG AA.",
+      "Use 'Oswald' font for all Headings (h1-h6).",
+      "Use 'Inter' font for all body text.",
+      "Buttons must be rectangular (sharp corners) to match the 'Technical' aesthetic.",
+      "Header must be sticky.",
+      "Product Grid: Use 'grid-cols-2 md:grid-cols-4' with 'gap-x-4 gap-y-12'."
+    ],
+    "pages": {
+      "home": {
+        "structure": [
+          "Hero (Full width, Text Overlay 'LAST GEAR')",
+          "Featured Categories (Bento Grid)",
+          "New Arrivals (Carousel)",
+          "Newsletter (Minimalist Black Section)"
+        ]
+      },
+      "product_listing": {
+        "structure": [
+          "Header (Black)",
+          "Title Bar (White, 'MEN's CLOTHING', Left Aligned)",
+          "Filter Bar (Sticky, Dropdowns)",
+          "Product Grid (Infinite Scroll or Pagination)"
+        ]
+      },
+      "product_detail": {
+        "structure": [
+          "Split Layout: Left (Images Stacked), Right (Sticky Info)",
+          "Size Selector: Boxed Buttons (No Dropdown)",
+          "Add to Cart: Full Width Black Button"
+        ]
+      }
+    }
+  },
+  "instructions_to_main_agent": "You are building 'LAST GEAR', a premium streetwear e-commerce site. Your design bible is the 'Puma Store'. \n\n1.  **Strictly follow the Black Header / White Body rule.**\n2.  **Typography is Key:** Import 'Oswald' and 'Inter' immediately in your CSS. Use 'Oswald' for every single heading to get that bold, athletic look.\n3.  **Product Cards:** Replicate the Puma card exactly: Image -> '1 Color' (small gray text) -> Name (Bold Oswald) -> Price (Regular Inter). No borders around cards, just whitespace.\n4.  **Filters:** Build a robust filter bar. Don't just list links. Use dropdowns or a sidebar for 'Price', 'Size', 'Color'.\n5.  **Images:** Use the provided Unsplash URLs. Do not use placeholders.\n6.  **Testing:** Add `data-testid` to everything (e.g., `product-card-0`, `add-to-cart-btn`)."
+}
