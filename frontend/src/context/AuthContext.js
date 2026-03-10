@@ -60,6 +60,41 @@ export const AuthProvider = ({ children }) => {
     return response.data;
   };
 
+  const sendOTP = async (phone) => {
+    const response = await axios.post(`${API}/auth/send-otp`, { phone });
+    return response.data;
+  };
+
+  const registerWithOTP = async (email, password, name, phone, otp) => {
+    const response = await axios.post(`${API}/auth/register-otp`, { email, password, name, phone, otp });
+    const { token, user } = response.data;
+    localStorage.setItem('token', token);
+    setToken(token);
+    setUser(user);
+    axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+    return response.data;
+  };
+
+  const loginWithOTP = async (phone, otp) => {
+    const response = await axios.post(`${API}/auth/login-otp`, { phone, otp });
+    const { token, user } = response.data;
+    localStorage.setItem('token', token);
+    setToken(token);
+    setUser(user);
+    axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+    return response.data;
+  };
+
+  const loginWithGoogle = async (credential) => {
+    const response = await axios.post(`${API}/auth/google`, { credential });
+    const { token, user } = response.data;
+    localStorage.setItem('token', token);
+    setToken(token);
+    setUser(user);
+    axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+    return response.data;
+  };
+
   const logout = () => {
     localStorage.removeItem('token');
     setToken(null);
@@ -68,7 +103,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, login, register, logout, loading }}>
+    <AuthContext.Provider value={{ user, token, login, register, sendOTP, registerWithOTP, loginWithOTP, loginWithGoogle, logout, loading }}>
       {children}
     </AuthContext.Provider>
   );

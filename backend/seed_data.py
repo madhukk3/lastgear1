@@ -132,7 +132,7 @@ async def seed_database():
             "email": admin_email,
             "password": hashed_pw,
             "name": "Admin",
-            "phone": "+91-9999999999",
+            "phone": "+91-6360893940",
             "is_admin": True,
             "created_at": datetime.now(timezone.utc).isoformat()
         }

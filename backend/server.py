@@ -1,4 +1,5 @@
 from fastapi import FastAPI, APIRouter, HTTPException, Depends, Request, Header
+from fastapi.staticfiles import StaticFiles
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
@@ -12,16 +13,18 @@ from typing import List, Optional, Dict, Any
 import uuid
 from datetime import datetime, timezone, timedelta
 import jwt
+from google.oauth2 import id_token
+from google.auth.transport import requests as google_requests
 import bcrypt
 import razorpay
 import hmac
 import hashlib
-from emergentintegrations.llm.chat import LlmChat, UserMessage
+# from emergentintegrations.llm.chat import LlmChat, UserMessage
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 from security import (
-    verify_jwt_token, get_current_user, validate_password_strength,
+    verify_jwt_token, get_current_user, verify_admin, validate_password_strength,
     track_login_attempt, check_account_locked, log_security_event,
     sanitize_input, limiter
 )
@@ -44,6 +47,9 @@ JWT_EXPIRATION_DAYS = 30
 razorpay_key_id = os.environ.get('RAZORPAY_KEY_ID')
 razorpay_key_secret = os.environ.get('RAZORPAY_KEY_SECRET')
 razorpay_client = razorpay.Client(auth=(razorpay_key_id, razorpay_key_secret))
+
+# Google Auth Configuration
+GOOGLE_CLIENT_ID = os.environ.get('GOOGLE_CLIENT_ID', 'YOUR_GOOGLE_CLIENT_ID')
 
 # Security
 security = HTTPBearer()
@@ -92,10 +98,28 @@ class UserResponse(BaseModel):
     name: str
     phone: Optional[str] = None
     created_at: str
+    has_used_first_purchase_discount: bool = False
 
 class AuthResponse(BaseModel):
     token: str
     user: UserResponse
+
+class SendOTPRequest(BaseModel):
+    phone: str
+
+class VerifyOTPRegisterRequest(BaseModel):
+    email: EmailStr
+    password: str
+    name: str
+    phone: str
+    otp: str
+
+class VerifyOTPLoginRequest(BaseModel):
+    phone: str
+    otp: str
+
+class VerifyGoogleRequest(BaseModel):
+    credential: str
 
 # --- PRODUCT MODELS ---
 class Product(BaseModel):
@@ -107,8 +131,13 @@ class Product(BaseModel):
     sizes: List[str] = ["S", "M", "L", "XL", "XXL"]
     colors: List[str]
     images: List[str]
+    size_stock: Dict[str, int] = {}
     stock: int = 100
     featured: bool = False
+    badge: Optional[str] = None
+    impact_series_id: Optional[str] = None
+    is_free_shipping: bool = False
+    discount_percentage: int = 0
     created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
 
 class ProductCreate(BaseModel):
@@ -119,8 +148,13 @@ class ProductCreate(BaseModel):
     sizes: List[str] = ["S", "M", "L", "XL", "XXL"]
     colors: List[str]
     images: List[str]
+    size_stock: Dict[str, int] = {}
     stock: int = 100
     featured: bool = False
+    badge: Optional[str] = None
+    impact_series_id: Optional[str] = None
+    is_free_shipping: bool = False
+    discount_percentage: int = 0
 
 # --- CART MODELS ---
 class CartItem(BaseModel):
@@ -169,18 +203,49 @@ class Order(BaseModel):
     payment_status: str = "pending"  # pending, paid, failed
     order_status: str = "processing"  # processing, shipped, delivered, cancelled
     session_id: Optional[str] = None
+    discount_applied: int = 0
+    coupon_code: Optional[str] = None
     created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
 
 class OrderCreate(BaseModel):
     items: List[OrderItem]
     total_amount: float
     shipping_address: ShippingAddress
+    discount_applied: int = 0
+    coupon_code: Optional[str] = None
 
 # --- WISHLIST MODELS ---
 class Wishlist(BaseModel):
     user_id: str
     product_ids: List[str] = []
     updated_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+
+# --- SETTINGS MODELS ---
+class SiteSettings(BaseModel):
+    id: str = "global"
+    announcements: List[str] = ["🚚 2-DAY DELIVERY IN CHIKKAMAGALURU, BENGALURU, HASSAN, MYSORE "]
+    announcement_active: bool = True
+    global_discount_percentage: int = 0
+    shipping_charge: int = 99
+    free_shipping_threshold: int = 1500
+    updated_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+
+# --- COUPON MODELS ---
+class Coupon(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    code: str
+    discount_percentage: int
+    is_active: bool = True
+    created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+
+class CouponCreate(BaseModel):
+    code: str
+    discount_percentage: int
+    is_active: bool = True
+
+# --- IMPACT SERIES MODELS ---
+from admin_routes import ImpactSeries, ImpactSeriesCreate
+
 
 # --- PAYMENT MODELS ---
 class PaymentTransaction(BaseModel):
@@ -253,7 +318,8 @@ async def register(user_data: UserRegister):
         "password": hashed_pw,
         "name": user_data.name,
         "phone": user_data.phone,
-        "created_at": datetime.now(timezone.utc).isoformat()
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "has_used_first_purchase_discount": False
     }
     
     await db.users.insert_one(user_doc)
@@ -269,7 +335,8 @@ async def register(user_data: UserRegister):
         email=user_data.email,
         name=user_data.name,
         phone=user_data.phone,
-        created_at=user_doc["created_at"]
+        created_at=user_doc["created_at"],
+        has_used_first_purchase_discount=False
     )
     
     return AuthResponse(token=token, user=user_response)
@@ -287,7 +354,8 @@ async def login(credentials: UserLogin):
         email=user['email'],
         name=user['name'],
         phone=user.get('phone'),
-        created_at=user['created_at']
+        created_at=user['created_at'],
+        has_used_first_purchase_discount=user.get('has_used_first_purchase_discount', False)
     )
     
     return AuthResponse(token=token, user=user_response)
@@ -295,6 +363,169 @@ async def login(credentials: UserLogin):
 @api_router.get("/auth/me", response_model=UserResponse)
 async def get_me(current_user: Dict = Depends(get_current_user)):
     return UserResponse(**current_user)
+
+# --- OTP ENDPOINTS ---
+import random
+
+@api_router.post("/auth/google", response_model=AuthResponse)
+async def google_auth(request: VerifyGoogleRequest):
+    try:
+        idinfo = id_token.verify_oauth2_token(request.credential, google_requests.Request(), GOOGLE_CLIENT_ID)
+        email = idinfo['email']
+        name = idinfo.get('name', '')
+        
+        user = await db.users.find_one({"email": email}, {"_id": 0})
+        
+        if not user:
+            user_id = str(uuid.uuid4())
+            user_doc = {
+                "id": user_id,
+                "email": email,
+                "password": hash_password(str(uuid.uuid4())), # dummy password for google users
+                "name": name,
+                "phone": None,
+                "created_at": datetime.now(timezone.utc).isoformat(),
+                "has_used_first_purchase_discount": False
+            }
+            await db.users.insert_one(user_doc)
+            await db.carts.insert_one({"user_id": user_id, "items": []})
+            await db.wishlists.insert_one({"user_id": user_id, "product_ids": []})
+            user = user_doc
+            
+        token = create_jwt_token(user['id'], user['email'])
+        
+        user_response = UserResponse(
+            id=user['id'],
+            email=user['email'],
+            name=user.get('name', ''),
+            phone=user.get('phone'),
+            created_at=user['created_at'],
+            has_used_first_purchase_discount=user.get('has_used_first_purchase_discount', False)
+        )
+        
+        return AuthResponse(token=token, user=user_response)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid Google token")
+
+@api_router.post("/auth/send-otp")
+async def send_otp(request: SendOTPRequest):
+    phone = request.phone
+    
+    # Generate a random 6-digit OTP
+    otp = str(random.randint(100000, 999999))
+    
+    # Store OTP in the database with a 5-minute expiration
+    expires_at = datetime.now(timezone.utc) + timedelta(minutes=5)
+    
+    await db.otps.update_one(
+        {"phone": phone},
+        {"$set": {"otp": otp, "expires_at": expires_at.isoformat()}},
+        upsert=True
+    )
+    
+    # In a real application, you would send this OTP via SMS here.
+    # For now, we print it to the console for testing.
+    print(f"\n{'='*40}\nOTP FOR PHONE {phone}: {otp}\n{'='*40}\n")
+    
+    return {"message": "OTP sent successfully"}
+
+@api_router.post("/auth/register-otp", response_model=AuthResponse)
+async def register_otp(user_data: VerifyOTPRegisterRequest):
+    # Verify OTP
+    otp_record = await db.otps.find_one({"phone": user_data.phone, "otp": user_data.otp})
+    if not otp_record:
+        raise HTTPException(status_code=400, detail="Invalid OTP")
+    
+    if datetime.fromisoformat(otp_record['expires_at']) < datetime.now(timezone.utc):
+        raise HTTPException(status_code=400, detail="OTP has expired")
+
+    # Check for existing email
+    existing_user_email = await db.users.find_one({"email": user_data.email}, {"_id": 0})
+    if existing_user_email:
+        raise HTTPException(status_code=400, detail="Email already registered")
+        
+    # Check for existing phone
+    existing_user_phone = await db.users.find_one({"phone": user_data.phone}, {"_id": 0})
+    if existing_user_phone:
+        raise HTTPException(status_code=400, detail="Phone number already registered")
+    
+    user_id = str(uuid.uuid4())
+    hashed_pw = hash_password(user_data.password)
+    
+    user_doc = {
+        "id": user_id,
+        "email": user_data.email,
+        "password": hashed_pw,
+        "name": user_data.name,
+        "phone": user_data.phone,
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "has_used_first_purchase_discount": False
+    }
+    
+    await db.users.insert_one(user_doc)
+    
+    # Create empty cart and wishlist
+    await db.carts.insert_one({"user_id": user_id, "items": []})
+    await db.wishlists.insert_one({"user_id": user_id, "product_ids": []})
+    
+    # Delete the used OTP
+    await db.otps.delete_one({"phone": user_data.phone})
+    
+    token = create_jwt_token(user_id, user_data.email)
+    
+    user_response = UserResponse(
+        id=user_id,
+        email=user_data.email,
+        name=user_data.name,
+        phone=user_data.phone,
+        created_at=user_doc["created_at"],
+        has_used_first_purchase_discount=False
+    )
+    
+    return AuthResponse(token=token, user=user_response)
+
+@api_router.post("/auth/login-otp", response_model=AuthResponse)
+async def login_otp(request: VerifyOTPLoginRequest):
+    # Verify OTP
+    otp_record = await db.otps.find_one({"phone": request.phone, "otp": request.otp})
+    if not otp_record:
+        raise HTTPException(status_code=400, detail="Invalid OTP")
+    
+    if datetime.fromisoformat(otp_record['expires_at']) < datetime.now(timezone.utc):
+        raise HTTPException(status_code=400, detail="OTP has expired")
+        
+    user = await db.users.find_one({"phone": request.phone}, {"_id": 0})
+    if not user:
+        raise HTTPException(status_code=404, detail="User with this phone number not found")
+    
+    # Delete the used OTP
+    await db.otps.delete_one({"phone": request.phone})
+    
+    token = create_jwt_token(user['id'], user['email'])
+    
+    user_response = UserResponse(
+        id=user['id'],
+        email=user['email'],
+        name=user['name'],
+        phone=user.get('phone'),
+        created_at=user['created_at'],
+        has_used_first_purchase_discount=user.get('has_used_first_purchase_discount', False)
+    )
+    return AuthResponse(token=token, user=user_response)
+
+# --- PUBLIC ROUTES FOR IMPACT SERIES ---
+
+@api_router.get("/impact-series/active")
+async def get_active_impact_series():
+    """Get the currently active Impact Series for the homepage."""
+    active_series = await db.impact_series.find_one({"is_active": True})
+    if not active_series:
+        # Return a fallback or 404. 404 is better so frontend knows not to render it.
+        raise HTTPException(status_code=404, detail="No active Impact Series found")
+        
+    active_series['_id'] = str(active_series['_id'])
+    return active_series
+
 
 # --- PRODUCT ENDPOINTS ---
 @api_router.get("/products")
@@ -305,11 +536,14 @@ async def get_products(
     color: Optional[str] = None,
     size: Optional[str] = None,
     search: Optional[str] = None,
-    featured: Optional[bool] = None
+    featured: Optional[bool] = None,
+    impact_series_id: Optional[str] = None
 ):
     query = {}
     if category:
         query["category"] = category
+    if impact_series_id:
+        query["impact_series_id"] = impact_series_id
     if min_price is not None or max_price is not None:
         query["price"] = {}
         if min_price is not None:
@@ -343,6 +577,18 @@ async def create_product(product_data: ProductCreate):
     product = Product(**product_data.model_dump())
     await db.products.insert_one(product.model_dump())
     return product
+
+# --- PUBLIC HERO BANNERS ---
+@api_router.get("/hero-banners")
+async def get_active_hero_banners():
+    """Fetch active hero banners for the homepage carousel."""
+    cursor = db.hero_banners.find({"is_active": True}).sort("order", 1)
+    banners = await cursor.to_list(length=20)
+    
+    for banner in banners:
+        banner.pop('_id', None)
+        
+    return banners
 
 # --- CART ENDPOINTS ---
 @api_router.get("/cart")
@@ -454,6 +700,16 @@ async def remove_from_wishlist(product_id: str, current_user: Dict = Depends(get
         {"$pull": {"product_ids": product_id}}
     )
     return {"message": "Removed from wishlist"}
+
+# --- COUPON ENDPOINTS ---
+@api_router.get("/coupons/{code}")
+async def validate_coupon(code: str):
+    """Validate a coupon code and return its discount percentage"""
+    coupon = await db.coupons.find_one({"code": code.upper(), "is_active": True}, {"_id": 0})
+    if not coupon:
+        raise HTTPException(status_code=404, detail="Invalid or expired coupon code")
+    
+    return {"discount_percentage": coupon["discount_percentage"]}
 
 # --- ORDER ENDPOINTS ---
 @api_router.post("/orders", response_model=Order)
@@ -584,6 +840,12 @@ async def verify_razorpay_payment(verification: RazorpayPaymentVerification, cur
             {"$set": {"items": []}}
         )
         
+        # Expire first purchase discount
+        await db.users.update_one(
+            {"id": current_user['id']},
+            {"$set": {"has_used_first_purchase_discount": True}}
+        )
+        
         return {
             "status": "success",
             "message": "Payment verified successfully",
@@ -641,11 +903,29 @@ async def razorpay_webhook(request: Request):
                     {"id": transaction['order_id']},
                     {"$set": {"payment_status": "paid"}}
                 )
+                
+                # Expire first purchase discount
+                await db.users.update_one(
+                    {"id": transaction['user_id']},
+                    {"$set": {"has_used_first_purchase_discount": True}}
+                )
         
         return {"status": "success"}
     except Exception as e:
         logging.error(f"Webhook processing failed: {e}")
         raise HTTPException(status_code=400, detail="Webhook processing failed")
+
+# --- SETTINGS ENDPOINTS ---
+@api_router.get("/settings/announcement")
+async def get_announcement_settings():
+    settings = await db.settings.find_one({"id": "global"}, {"_id": 0})
+    if not settings:
+        return {
+            "announcement_text": "🚚 2-DAY DELIVERY IN MUMBAI, PUNE, HYDERABAD, CHENNAI, CHANDIGARH & LUCKNOW!",
+            "announcement_active": True,
+            "global_discount_percentage": 0
+        }
+    return settings
 # --- AI RECOMMENDATIONS ENDPOINT ---
 @api_router.get("/recommendations")
 async def get_recommendations(current_user: Dict = Depends(get_current_user)):
@@ -673,33 +953,7 @@ async def get_recommendations(current_user: Dict = Depends(get_current_user)):
             if product:
                 purchased_categories.add(product['category'])
     
-    # Use AI to generate personalized recommendations
-    try:
-        llm_api_key = os.environ.get('EMERGENT_LLM_KEY')
-        chat = LlmChat(
-            api_key=llm_api_key,
-            session_id=f"recommendations_{current_user['id']}",
-            system_message="You are a helpful shopping assistant. Given user purchase history, recommend product IDs."
-        ).with_model("openai", "gpt-5.2")
-        
-        product_list = "\n".join([f"{p['id']}: {p['name']} ({p['category']}) - ${p['price']}" for p in products])
-        user_message = UserMessage(
-            text=f"User has purchased from categories: {', '.join(purchased_categories)}. Here are available products:\n{product_list}\n\nRecommend 4 product IDs (comma-separated, just IDs)."
-        )
-        
-        response = await chat.send_message(user_message)
-        recommended_ids = [pid.strip() for pid in response.split(',')[:4]]
-        
-        recommendations = []
-        for pid in recommended_ids:
-            product = await db.products.find_one({"id": pid}, {"_id": 0})
-            if product:
-                recommendations.append(product)
-        
-        if recommendations:
-            return recommendations
-    except Exception as e:
-        logging.error(f"AI recommendation error: {e}")
+
     
     # Fallback: return products from purchased categories
     recommended = [p for p in products if p['category'] in purchased_categories][:4]
@@ -721,6 +975,11 @@ app.add_middleware(
     allow_headers=["*"],
     max_age=3600,
 )
+
+# Mount uploads directory for static file serving
+uploads_dir = Path(__file__).parent / "uploads"
+uploads_dir.mkdir(exist_ok=True)
+app.mount("/uploads", StaticFiles(directory=uploads_dir), name="uploads")
 
 # Add Trusted Host middleware for production
 # app.add_middleware(TrustedHostMiddleware, allowed_hosts=["lastgear.in", "www.lastgear.in", "*.emergentagent.com"])

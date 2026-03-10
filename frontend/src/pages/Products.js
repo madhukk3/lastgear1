@@ -2,9 +2,14 @@ import React, { useEffect, useState } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import axios from 'axios';
 import { ChevronDown } from 'lucide-react';
+import { useCart } from '../context/CartContext';
+import { useSettings } from '../context/SettingsContext';
+import { toast } from 'sonner';
 
 const Products = () => {
   const [searchParams, setSearchParams] = useSearchParams();
+  const { addToCart } = useCart();
+  const { globalDiscount } = useSettings() || { globalDiscount: 0 };
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState({
@@ -14,7 +19,9 @@ const Products = () => {
     size: searchParams.get('size') || '',
     min_price: searchParams.get('min_price') || '',
     max_price: searchParams.get('max_price') || '',
+    impact_series_id: searchParams.get('impact_series_id') || '',
   });
+  const impactSeriesTitle = searchParams.get('impact_series_title') || '';
 
   const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
   const API = `${BACKEND_URL}/api`;
@@ -44,6 +51,7 @@ const Products = () => {
       if (filters.size) params.append('size', filters.size);
       if (filters.min_price) params.append('min_price', filters.min_price);
       if (filters.max_price) params.append('max_price', filters.max_price);
+      if (filters.impact_series_id) params.append('impact_series_id', filters.impact_series_id);
 
       const response = await axios.get(`${API}/products?${params}`);
       setProducts(response.data);
@@ -57,12 +65,27 @@ const Products = () => {
   const updateFilter = (key, value) => {
     const newFilters = { ...filters, [key]: value };
     setFilters(newFilters);
-    
+
     const params = new URLSearchParams();
     Object.entries(newFilters).forEach(([k, v]) => {
       if (v) params.append(k, v);
     });
     setSearchParams(params);
+  };
+
+  const handleQuickAdd = async (e, product, size) => {
+    e.preventDefault();
+    e.stopPropagation();
+    try {
+      await addToCart(product.id, 1, size, product.colors[0] || 'Default');
+      toast.success('Added to cart!');
+    } catch (error) {
+      if (error.response && error.response.status === 401) {
+        toast.error('Please login to add to cart');
+      } else {
+        toast.error('Failed to add to cart');
+      }
+    }
   };
 
   const clearFilters = () => {
@@ -73,6 +96,7 @@ const Products = () => {
       size: '',
       min_price: '',
       max_price: '',
+      impact_series_id: '',
     });
     setSearchParams({});
   };
@@ -82,8 +106,8 @@ const Products = () => {
       {/* Title Bar */}
       <div className="bg-white border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 py-8">
-          <h1 className="text-4xl font-bold" data-testid="products-title">
-            {filters.category ? filters.category.toUpperCase() : 'ALL PRODUCTS'}
+          <h1 className="text-4xl font-bold uppercase" data-testid="products-title">
+            {impactSeriesTitle ? impactSeriesTitle : filters.category ? filters.category : 'ALL PRODUCTS'}
           </h1>
           <p className="text-gray-600 mt-2">{products.length} PRODUCTS</p>
         </div>
@@ -205,16 +229,43 @@ const Products = () => {
                 className="product-card group"
                 data-testid={`product-card-${product.id}`}
               >
-                <div className="aspect-[4/5] bg-white mb-4 overflow-hidden">
+                <div className="relative aspect-[4/5] bg-gray-100 mb-4 overflow-hidden">
+                  {product.badge && (
+                    <div className="absolute top-3 left-3 bg-red-600 text-white text-[10px] font-bold px-2 py-1 uppercase z-10 tracking-wider">
+                      {product.badge}
+                    </div>
+                  )}
                   <img
                     src={product.images[0]}
                     alt={product.name}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                   />
+                  {/* Quick Add Overlay */}
+                  <div className="absolute bottom-0 left-0 right-0 bg-white/95 p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-300">
+                    <p className="text-xs font-bold text-center mb-2 uppercase">Quick Add to Cart</p>
+                    <div className="flex justify-center gap-2 flex-wrap">
+                      {product.sizes.map(size => (
+                        <button
+                          key={size}
+                          onClick={(e) => handleQuickAdd(e, product, size)}
+                          className="border border-black min-w-[32px] h-8 px-1 text-xs font-bold hover:bg-black hover:text-white transition-colors"
+                        >
+                          {size}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                 </div>
                 <p className="text-xs text-gray-500 mb-1">{product.colors.length} COLOR{product.colors.length > 1 ? 'S' : ''}</p>
                 <h3 className="font-bold text-sm mb-1">{product.name}</h3>
-                <p className="font-medium">₹{product.price.toFixed(0)}</p>
+                {((globalDiscount || 0) + (product.discount_percentage || 0)) > 0 ? (
+                  <div className="flex gap-2 items-center">
+                    <p className="font-medium text-gray-500 line-through text-xs">₹{product.price.toFixed(0)}</p>
+                    <p className="font-medium text-red-600">₹{(product.price * (1 - ((globalDiscount || 0) + (product.discount_percentage || 0)) / 100)).toFixed(0)}</p>
+                  </div>
+                ) : (
+                  <p className="font-medium">₹{product.price.toFixed(0)}</p>
+                )}
               </Link>
             ))}
           </div>

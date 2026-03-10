@@ -19,7 +19,12 @@ body {
   color: #000000;
 }
 
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   font-family: 'Oswald', sans-serif;
   font-weight: 700;
   text-transform: uppercase;
@@ -46,6 +51,7 @@ code {
   * {
     @apply border-border;
   }
+
   body {
     @apply bg-background text-foreground;
   }
@@ -57,6 +63,23 @@ code {
 
 .btn-secondary {
   @apply border border-black text-black hover:bg-black hover:text-white rounded-none uppercase font-bold tracking-wider px-8 py-4 transition-colors;
+}
+
+.font-nav {
+  font-family: 'Barlow', 'DIN Alternate', sans-serif;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.font-poppins {
+  font-family: 'Poppins', sans-serif;
+}
+
+.font-puma {
+  font-family: 'Anton', 'Impact', 'Arial Black', sans-serif;
+  font-weight: 400;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
 }
 
 .product-card:hover img {

@@ -1,4 +1,5 @@
-from fastapi import APIRouter, HTTPException, Depends, Query
+from fastapi import APIRouter, HTTPException, Depends, Query, UploadFile, File
+
 from pydantic import BaseModel, Field
 from typing import List, Optional, Dict
 from datetime import datetime, timezone, timedelta
@@ -12,6 +13,11 @@ from pathlib import Path
 # Load environment variables
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
+import shutil
+
+# Ensure uploads directory exists
+UPLOADS_DIR = ROOT_DIR / "uploads"
+UPLOADS_DIR.mkdir(exist_ok=True)
 
 # MongoDB connection
 mongo_url = os.environ['MONGO_URL']
@@ -29,8 +35,13 @@ class ProductAdmin(BaseModel):
     sizes: List[str]
     colors: List[str]
     images: List[str]
+    size_stock: Dict[str, int] = {}
     stock: int
     featured: bool = False
+    badge: Optional[str] = None
+    impact_series_id: Optional[str] = None
+    is_free_shipping: bool = False
+    discount_percentage: int = 0
 
 class ProductUpdate(BaseModel):
     name: Optional[str] = None
@@ -40,13 +51,70 @@ class ProductUpdate(BaseModel):
     sizes: Optional[List[str]] = None
     colors: Optional[List[str]] = None
     images: Optional[List[str]] = None
+    size_stock: Optional[Dict[str, int]] = None
     stock: Optional[int] = None
     featured: Optional[bool] = None
+    badge: Optional[str] = None
+    impact_series_id: Optional[str] = None
+    is_free_shipping: Optional[bool] = None
+    discount_percentage: Optional[int] = None
 
 class OrderStatusUpdate(BaseModel):
     order_status: str  # processing, shipped, delivered, cancelled
     tracking_number: Optional[str] = None
 
+class AnnouncementUpdate(BaseModel):
+    announcements: List[str]
+    announcement_active: bool
+    global_discount_percentage: int = 0
+    shipping_charge: int = 99
+    free_shipping_threshold: int = 1500
+
+# --- IMPACT SERIES MODELS ---
+class ImpactSeries(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    edition: str
+    title: str
+    subtitle: str
+    description: str
+    image: str
+    link: str
+    is_active: bool = False
+    created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+
+class ImpactSeriesCreate(BaseModel):
+    edition: str
+    title: str
+    subtitle: str
+    description: str
+    image: str
+    link: str
+    is_active: bool = False
+
+# --- IMAGE UPLOAD ROUTE ---
+@admin_router.post("/upload")
+async def upload_image(
+    file: UploadFile = File(...),
+    admin_user: Dict = Depends(verify_admin)
+):
+    """Upload an image file and return its public URL."""
+    try:
+        # Generate a unique filename using UUID
+        extension = file.filename.split('.')[-1] if '.' in file.filename else ''
+        unique_filename = f"{uuid.uuid4()}.{extension}"
+        file_path = UPLOADS_DIR / unique_filename
+
+        # Save the file
+        with open(file_path, "wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
+
+        # Return the public URL path
+        return {"url": f"/uploads/{unique_filename}"}
+    except Exception as e:
+        print(f"Upload error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to upload image")
+
+    
 # --- DASHBOARD STATS ---
 @admin_router.get("/dashboard/stats")
 async def get_dashboard_stats(admin_user: Dict = Depends(verify_admin)):
@@ -143,9 +211,14 @@ async def admin_create_product(product_data: ProductAdmin, admin_user: Dict = De
     product_data.description = sanitize_input(product_data.description)
     
     product_id = str(uuid.uuid4())
+    
+    # Compute total stock from size_stock
+    total_stock = sum(product_data.size_stock.values()) if product_data.size_stock else product_data.stock
+    
     product = {
         "id": product_id,
         **product_data.model_dump(),
+        "stock": total_stock,
         "created_at": datetime.now(timezone.utc).isoformat()
     }
     
@@ -167,6 +240,10 @@ async def admin_update_product(
     
     # Build update dict
     update_data = {k: v for k, v in product_data.model_dump(exclude_unset=True).items() if v is not None}
+    
+    # Compute total stock if size_stock is updated
+    if 'size_stock' in update_data:
+        update_data['stock'] = sum(update_data['size_stock'].values())
     
     # Sanitize string inputs
     if 'name' in update_data:
@@ -313,18 +390,41 @@ async def get_low_stock_products(threshold: int = 10, admin_user: Dict = Depends
 async def update_product_stock(
     product_id: str,
     stock: int,
+    size: Optional[str] = None,
     admin_user: Dict = Depends(verify_admin)
 ):
-    """Update product stock"""
-    result = await db.products.update_one(
-        {"id": product_id},
-        {"$set": {"stock": stock, "updated_at": datetime.now(timezone.utc).isoformat()}}
-    )
+    """Update product stock globally or for a specific size"""
+    if size:
+        # First get the product to calculate the new total stock
+        product = await db.products.find_one({"id": product_id})
+        if not product:
+            raise HTTPException(status_code=404, detail="Product not found")
+            
+        # Update the size_stock dict and recalculate total
+        size_stock = product.get("size_stock", {})
+        size_stock[size] = stock
+        total_stock = sum(size_stock.values())
+        
+        result = await db.products.update_one(
+            {"id": product_id},
+            {"$set": {
+                f"size_stock.{size}": stock, 
+                "stock": total_stock, 
+                "updated_at": datetime.now(timezone.utc).isoformat()
+            }}
+        )
+        await log_admin_action(admin_user, "update_stock_size", product_id, {"size": size, "new_stock": stock, "total_stock": total_stock})
+    else:
+        # Backward compatible global stock update
+        result = await db.products.update_one(
+            {"id": product_id},
+            {"$set": {"stock": stock, "updated_at": datetime.now(timezone.utc).isoformat()}}
+        )
+        await log_admin_action(admin_user, "update_stock", product_id, {"new_stock": stock})
     
     if result.matched_count == 0:
         raise HTTPException(status_code=404, detail="Product not found")
-    
-    await log_admin_action(admin_user, "update_stock", product_id, {"new_stock": stock})
+        
     return {"message": "Stock updated"}
 
 # --- AUDIT LOGS ---
@@ -347,3 +447,240 @@ async def get_security_logs(
     """Get security event logs"""
     logs = await db.security_logs.find({}, {"_id": 0}).sort("timestamp", -1).skip(skip).limit(limit).to_list(limit)
     return logs
+
+# --- SETTINGS MANAGEMENT ---
+@admin_router.put("/settings/announcement")
+async def admin_update_announcement(
+    setup_data: AnnouncementUpdate,
+    admin_user: Dict = Depends(verify_admin)
+):
+    """Update global announcement banner"""
+    update_data = setup_data.model_dump()
+    update_data["updated_at"] = datetime.now(timezone.utc).isoformat()
+    
+    await db.settings.update_one(
+        {"id": "global"},
+        {"$set": update_data},
+        upsert=True
+    )
+    
+    await log_admin_action(admin_user, "update_announcement", "global", update_data)
+    return {"message": "Announcement updated"}
+
+# --- ADMIN ROUTES FOR IMPACT SERIES ---
+
+@admin_router.get("/impact-series")
+async def admin_get_impact_series(admin_user: Dict = Depends(verify_admin)):
+    """Get all Impact Series editions for admin panel."""
+    series = []
+    async for s in db.impact_series.find():
+        s['_id'] = str(s['_id'])
+        series.append(s)
+    return series
+
+@admin_router.post("/impact-series")
+async def admin_create_impact_series(series: ImpactSeriesCreate, admin_user: Dict = Depends(verify_admin)):
+    """Create a new Impact Series edition."""
+    new_series = ImpactSeries(**series.model_dump())
+    
+    # If this one is meant to be active, deactivate all others first
+    if new_series.is_active:
+        await db.impact_series.update_many({}, {"$set": {"is_active": False}})
+        
+    await db.impact_series.insert_one(new_series.model_dump())
+    return new_series.model_dump()
+
+@admin_router.put("/impact-series/{series_id}")
+async def admin_update_impact_series(series_id: str, series_update: ImpactSeriesCreate, admin_user: Dict = Depends(verify_admin)):
+    """Update an existing Impact Series edition."""
+    # Check if exists
+    existing = await db.impact_series.find_one({"id": series_id})
+    if not existing:
+        raise HTTPException(status_code=404, detail="Impact Series not found")
+        
+    # If setting to active, deactivate all others first
+    if series_update.is_active:
+        await db.impact_series.update_many({}, {"$set": {"is_active": False}})
+        
+    update_data = series_update.model_dump()
+    result = await db.impact_series.update_one(
+        {"id": series_id},
+        {"$set": update_data}
+    )
+    
+    if result.modified_count == 0:
+        # Might not have changed any fields, return the updated object anyway by merging
+        updated = {**existing, **update_data}
+        updated.pop('_id', None)
+        return updated
+        
+    updated = await db.impact_series.find_one({"id": series_id})
+    updated.pop('_id', None)
+    return updated
+
+@admin_router.delete("/impact-series/{series_id}")
+async def admin_delete_impact_series(series_id: str, admin_user: Dict = Depends(verify_admin)):
+    """Delete an Impact Series edition."""
+    result = await db.impact_series.delete_one({"id": series_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Impact Series not found")
+    return {"message": "Impact series deleted successfully"}
+
+@admin_router.post("/impact-series/{series_id}/activate")
+async def admin_activate_impact_series(series_id: str, admin_user: Dict = Depends(verify_admin)):
+    """Activate a specific Impact Series (and deactivate all others)."""
+    # Verify it exists
+    existing = await db.impact_series.find_one({"id": series_id})
+    if not existing:
+        raise HTTPException(status_code=404, detail="Impact Series not found")
+        
+    # Deactivate all
+    await db.impact_series.update_many({}, {"$set": {"is_active": False}})
+    # Activate target
+    await db.impact_series.update_one({"id": series_id}, {"$set": {"is_active": True}})
+    
+    return {"message": f"Impact series {series_id} activated successfully"}
+
+# --- HERO BANNER MODELS & ROUTES ---
+
+class HeroBanner(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    title: str
+    subtitle: str
+    image: str
+    link: str
+    button_text: str = "SHOP NOW"
+    is_active: bool = True
+    order: int = 0
+    created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+
+class HeroBannerCreate(BaseModel):
+    title: str
+    subtitle: str
+    image: str
+    link: str
+    button_text: str = "SHOP NOW"
+    is_active: bool = True
+    order: int = 0
+
+@admin_router.post("/hero-banners")
+async def admin_create_hero_banner(banner: HeroBannerCreate, admin_user: Dict = Depends(verify_admin)):
+    """Create a new Hero Banner."""
+    new_banner = HeroBanner(**banner.model_dump())
+    banner_dict = new_banner.model_dump()
+    
+    await db.hero_banners.insert_one(banner_dict)
+    
+    banner_dict.pop('_id', None)
+    return banner_dict
+
+@admin_router.get("/hero-banners")
+async def admin_get_hero_banners(admin_user: Dict = Depends(verify_admin)):
+    """Get all Hero Banners."""
+    cursor = db.hero_banners.find({}).sort("order", 1)
+    banners = await cursor.to_list(length=100)
+    
+    for banner in banners:
+        banner.pop('_id', None)
+        
+    return banners
+
+@admin_router.put("/hero-banners/{banner_id}")
+async def admin_update_hero_banner(banner_id: str, banner_update: HeroBannerCreate, admin_user: Dict = Depends(verify_admin)):
+    """Update an existing Hero Banner."""
+    existing = await db.hero_banners.find_one({"id": banner_id})
+    if not existing:
+        raise HTTPException(status_code=404, detail="Hero Banner not found")
+        
+    update_data = banner_update.model_dump()
+    result = await db.hero_banners.update_one(
+        {"id": banner_id},
+        {"$set": update_data}
+    )
+    
+    updated = await db.hero_banners.find_one({"id": banner_id})
+    updated.pop('_id', None)
+    return updated
+
+@admin_router.delete("/hero-banners/{banner_id}")
+async def admin_delete_hero_banner(banner_id: str, admin_user: Dict = Depends(verify_admin)):
+    """Delete a Hero Banner."""
+    result = await db.hero_banners.delete_one({"id": banner_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Hero Banner not found")
+    return {"message": "Hero Banner deleted successfully"}
+
+@admin_router.post("/hero-banners/{banner_id}/toggle-active")
+async def admin_toggle_banner_active(banner_id: str, admin_user: Dict = Depends(verify_admin)):
+    """Toggle the active status of a specific Hero Banner."""
+    existing = await db.hero_banners.find_one({"id": banner_id})
+    if not existing:
+        raise HTTPException(status_code=404, detail="Hero Banner not found")
+        
+    new_status = not existing.get('is_active', False)
+    await db.hero_banners.update_one({"id": banner_id}, {"$set": {"is_active": new_status}})
+    
+    return {"message": f"Hero Banner active status set to {new_status}"}
+
+# --- COUPON MANAGEMENT ---
+@admin_router.get("/coupons")
+async def admin_get_all_coupons(admin_user: Dict = Depends(verify_admin)):
+    """Get all coupons"""
+    coupons = await db.coupons.find({}, {"_id": 0}).sort("created_at", -1).to_list(100)
+    return coupons
+
+@admin_router.post("/coupons")
+async def admin_create_coupon(coupon_data: dict, admin_user: Dict = Depends(verify_admin)):
+    """Create new coupon"""
+    from server import Coupon
+    
+    # Check if code already exists
+    existing = await db.coupons.find_one({"code": coupon_data['code'].upper()})
+    if existing:
+        raise HTTPException(status_code=400, detail="Coupon code already exists")
+        
+    coupon_id = str(uuid.uuid4())
+    coupon = Coupon(
+        id=coupon_id,
+        code=coupon_data['code'].upper(),
+        discount_percentage=coupon_data['discount_percentage'],
+        is_active=coupon_data.get('is_active', True)
+    )
+    
+    await db.coupons.insert_one(coupon.model_dump())
+    return {"message": "Coupon created", "coupon_id": coupon_id}
+
+@admin_router.put("/coupons/{coupon_id}")
+async def admin_update_coupon(coupon_id: str, coupon_data: dict, admin_user: Dict = Depends(verify_admin)):
+    """Update existing coupon"""
+    existing_coupon = await db.coupons.find_one({"id": coupon_id})
+    if not existing_coupon:
+        raise HTTPException(status_code=404, detail="Coupon not found")
+        
+    # Check code uniqueness if changing code
+    if 'code' in coupon_data and coupon_data['code'].upper() != existing_coupon['code']:
+        code_check = await db.coupons.find_one({"code": coupon_data['code'].upper()})
+        if code_check:
+            raise HTTPException(status_code=400, detail="Coupon code already exists")
+            
+    update_data = {}
+    if 'code' in coupon_data:
+        update_data['code'] = coupon_data['code'].upper()
+    if 'discount_percentage' in coupon_data:
+        update_data['discount_percentage'] = coupon_data['discount_percentage']
+    if 'is_active' in coupon_data:
+        update_data['is_active'] = coupon_data['is_active']
+        
+    if update_data:
+        await db.coupons.update_one({"id": coupon_id}, {"$set": update_data})
+        
+    return {"message": "Coupon updated"}
+
+@admin_router.delete("/coupons/{coupon_id}")
+async def admin_delete_coupon(coupon_id: str, admin_user: Dict = Depends(verify_admin)):
+    """Delete coupon"""
+    result = await db.coupons.delete_one({"id": coupon_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Coupon not found")
+        
+    return {"message": "Coupon deleted"}

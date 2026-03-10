@@ -2,10 +2,12 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'sonner';
+import { GoogleLogin } from '@react-oauth/google';
 
 const Register = () => {
   const navigate = useNavigate();
-  const { register } = useAuth();
+  const { register, loginWithGoogle } = useAuth();
+
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -36,6 +38,20 @@ const Register = () => {
     }
   };
 
+  const handleGoogleSuccess = async (credentialResponse) => {
+    try {
+      setLoading(true);
+      await loginWithGoogle(credentialResponse.credential);
+      toast.success('Google Login successful!');
+      navigate('/');
+    } catch (error) {
+      console.error('Google login failed:', error);
+      toast.error(error.response?.data?.detail || 'Google login failed');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
@@ -43,9 +59,14 @@ const Register = () => {
   return (
     <div className="min-h-screen flex items-center justify-center px-4 py-12" data-testid="register-page">
       <div className="max-w-md w-full">
-        <div className="text-center mb-8">
+        <div className="text-center mb-8 flex flex-col items-center">
+          <img src="/logo-black.png" alt="LAST GEAR Logo" className="h-20 w-auto object-contain mb-6" />
           <h1 className="text-4xl font-bold mb-2">REGISTER</h1>
-          <p className="text-gray-600">Create your LAST GEAR account</p>
+          <p className="text-gray-600 mb-6">Create your LAST GEAR account</p>
+          <div className="bg-purple-50 border border-purple-200 text-purple-800 px-4 py-3 rounded-md text-sm w-full max-w-sm shadow-sm flex items-center justify-center gap-2">
+            <span>✨</span>
+            <span>Sign up today and automatically get <strong>5% OFF</strong> your first purchase!</span>
+          </div>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6" data-testid="register-form">
@@ -139,6 +160,31 @@ const Register = () => {
             {loading ? 'CREATING ACCOUNT...' : 'CREATE ACCOUNT'}
           </button>
         </form>
+
+        <div className="mt-6">
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-gray-300"></div>
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className="px-2 bg-white text-gray-500">OR CONTINUE WITH</span>
+            </div>
+          </div>
+
+          <div className="mt-6 flex justify-center">
+            <GoogleLogin
+              onSuccess={handleGoogleSuccess}
+              onError={() => {
+                toast.error('Google Sign In was unsuccessful. Try again.');
+              }}
+              useOneTap
+              theme="outline"
+              size="large"
+              shape="rectangular"
+              text="signup_with"
+            />
+          </div>
+        </div>
 
         <div className="mt-6 text-center">
           <p className="text-gray-600">

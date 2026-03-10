@@ -8,7 +8,10 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Brand */}
           <div>
-            <h3 className="text-2xl font-bold mb-4">LAST GEAR</h3>
+            <div className="flex items-center gap-2 mb-4">
+              <img src="/logo-white.png" alt="LAST GEAR Logo" className="h-[56px] md:h-[64px] w-auto object-contain opacity-90" />
+              <h3 className="text-2xl font-puma">LAST GEAR</h3>
+            </div>
             <p className="text-gray-400 text-sm">Premium streetwear for the modern lifestyle.</p>
           </div>
 

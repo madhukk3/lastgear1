@@ -17,7 +17,7 @@ const AdminLogin = () => {
     try {
       setLoading(true);
       await login(formData.email, formData.password);
-      
+
       // Check if admin
       if (formData.email === 'admin@lastgear.in') {
         toast.success('Admin login successful!');
@@ -41,7 +41,8 @@ const AdminLogin = () => {
     <div className="min-h-screen flex items-center justify-center bg-gray-900" data-testid="admin-login-page">
       <div className="max-w-md w-full mx-4">
         <div className="bg-white rounded-lg shadow-xl p-8">
-          <div className="text-center mb-8">
+          <div className="text-center mb-8 flex flex-col items-center">
+            <img src="/logo-black.png" alt="LAST GEAR Logo" className="h-20 w-auto object-contain mb-6" />
             <h1 className="text-3xl font-bold mb-2">LAST GEAR</h1>
             <p className="text-gray-600">Admin Panel Login</p>
           </div>

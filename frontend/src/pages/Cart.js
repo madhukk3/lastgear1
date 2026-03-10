@@ -3,11 +3,13 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Trash2, ShoppingBag } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
+import { useSettings } from '../context/SettingsContext';
 import { toast } from 'sonner';
 
 const Cart = () => {
-  const { cart, cartTotal, removeFromCart, loading } = useCart();
+  const { cart, cartTotal, removeFromCart, loading: cartLoading } = useCart();
   const { user } = useAuth();
+  const { globalDiscount, shippingCharge, freeShippingThreshold } = useSettings() || { globalDiscount: 0, shippingCharge: 99, freeShippingThreshold: 1500 };
   const navigate = useNavigate();
 
   const handleRemoveItem = async (item) => {
@@ -28,9 +30,29 @@ const Cart = () => {
     navigate('/checkout');
   };
 
-  if (loading) {
+  if (cartLoading) {
     return <div className="max-w-7xl mx-auto px-4 py-20 text-center">Loading...</div>;
   }
+
+  const isFirstPurchaseEligible = user?.has_used_first_purchase_discount === false;
+  let baseDiscountPercent = globalDiscount || 0;
+  if (isFirstPurchaseEligible) {
+    baseDiscountPercent += 5;
+  }
+
+  let discountAmount = 0;
+  if (cart.items) {
+    cart.items.forEach(item => {
+      let itemDiscountPercent = baseDiscountPercent + (item.product?.discount_percentage || 0);
+      if (itemDiscountPercent > 100) itemDiscountPercent = 100;
+      const itemSubtotal = item.product.price * item.quantity;
+      discountAmount += itemSubtotal * (itemDiscountPercent / 100);
+    });
+  }
+  const subtotalAfterDiscount = cartTotal - discountAmount;
+  const hasFreeShippingItem = cart.items && cart.items.some(item => item.product?.is_free_shipping);
+  const shippingCost = hasFreeShippingItem || subtotalAfterDiscount >= freeShippingThreshold ? 0 : shippingCharge;
+  const totalAmount = subtotalAfterDiscount + shippingCost;
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-12" data-testid="cart-page">
@@ -92,15 +114,30 @@ const Cart = () => {
                   <span>Subtotal</span>
                   <span className="font-bold">₹{cartTotal.toFixed(0)}</span>
                 </div>
+                {discountAmount > 0 && (
+                  <div className="flex justify-between text-green-600">
+                    <span>Discount Included {(isFirstPurchaseEligible || discountAmount > (cartTotal * ((globalDiscount || 0) / 100))) ? '(incl. Promos)' : ''}</span>
+                    <span className="font-bold">-₹{discountAmount.toFixed(0)}</span>
+                  </div>
+                )}
                 <div className="flex justify-between">
                   <span>Shipping</span>
-                  <span className="font-bold">{cartTotal >= 1500 ? 'FREE' : '₹99'}</span>
+                  <span className="font-bold">{shippingCost === 0 ? 'FREE' : `₹${shippingCost}`}</span>
                 </div>
+                {shippingCost > 0 && subtotalAfterDiscount < freeShippingThreshold && (
+                  <p className="text-xs text-green-600">Add ₹{(freeShippingThreshold - subtotalAfterDiscount).toFixed(0)} more for FREE shipping!</p>
+                )}
+                {shippingCost === 0 && !hasFreeShippingItem && subtotalAfterDiscount >= freeShippingThreshold && (
+                  <p className="text-xs text-green-600">Free shipping applied (over ₹{freeShippingThreshold})</p>
+                )}
+                {shippingCost === 0 && hasFreeShippingItem && (
+                  <p className="text-xs text-green-600">Free shipping item in cart!</p>
+                )}
                 <div className="border-t border-gray-300 pt-4">
                   <div className="flex justify-between text-xl">
                     <span className="font-bold">Total</span>
                     <span className="font-bold">
-                      ₹{(cartTotal + (cartTotal >= 1500 ? 0 : 99)).toFixed(0)}
+                      ₹{totalAmount.toFixed(0)}
                     </span>
                   </div>
                 </div>

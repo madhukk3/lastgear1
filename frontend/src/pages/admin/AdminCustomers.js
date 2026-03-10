@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import AdminLayout from '../../components/AdminLayout';
 import { toast } from 'sonner';
 
 const AdminCustomers = () => {
@@ -27,40 +26,38 @@ const AdminCustomers = () => {
   };
 
   return (
-    <AdminLayout>
-      <div data-testid="admin-customers">
-        <h1 className="text-3xl font-bold mb-8">Customers</h1>
+    <div data-testid="admin-customers">
+      <h1 className="text-3xl font-bold mb-8">Customers</h1>
 
-        <div className="bg-white rounded-lg shadow overflow-hidden">
-          <table className="w-full">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Phone</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Orders</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Total Spent</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Joined</th>
+      <div className="bg-white rounded-lg shadow overflow-hidden overflow-x-auto">
+        <table className="w-full min-w-[800px]">
+          <thead className="bg-gray-50">
+            <tr>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Phone</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Orders</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Total Spent</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Joined</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-200">
+            {customers.map((customer) => (
+              <tr key={customer.id}>
+                <td className="px-6 py-4">{customer.name}</td>
+                <td className="px-6 py-4">{customer.email}</td>
+                <td className="px-6 py-4">{customer.phone || 'N/A'}</td>
+                <td className="px-6 py-4 font-medium">{customer.order_count}</td>
+                <td className="px-6 py-4 font-medium">₹{customer.total_spent?.toFixed(0) || 0}</td>
+                <td className="px-6 py-4 text-sm text-gray-500">
+                  {new Date(customer.created_at).toLocaleDateString()}
+                </td>
               </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200">
-              {customers.map((customer) => (
-                <tr key={customer.id}>
-                  <td className="px-6 py-4">{customer.name}</td>
-                  <td className="px-6 py-4">{customer.email}</td>
-                  <td className="px-6 py-4">{customer.phone || 'N/A'}</td>
-                  <td className="px-6 py-4 font-medium">{customer.order_count}</td>
-                  <td className="px-6 py-4 font-medium">₹{customer.total_spent?.toFixed(0) || 0}</td>
-                  <td className="px-6 py-4 text-sm text-gray-500">
-                    {new Date(customer.created_at).toLocaleDateString()}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+            ))}
+          </tbody>
+        </table>
       </div>
-    </AdminLayout>
+    </div>
   );
 };
 
