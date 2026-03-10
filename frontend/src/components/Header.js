@@ -17,10 +17,9 @@ const Header = () => {
   const [showDropdown, setShowDropdown] = useState(false);
   const searchRef = useRef(null);
 
-  const [announcement, setAnnouncement] = useState({
-    text: '',
-    active: false
-  });
+  const [announcements, setAnnouncements] = useState([]);
+  const [currentAnnouncementIndex, setCurrentAnnouncementIndex] = useState(0);
+  const [announcementActive, setAnnouncementActive] = useState(false);
 
   const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
   const API = `${BACKEND_URL}/api`;
@@ -64,16 +63,28 @@ const Header = () => {
     const fetchSettings = async () => {
       try {
         const response = await axios.get(`${API}/settings/announcement`);
-        setAnnouncement({
-          text: response.data.announcement_text,
-          active: response.data.announcement_active
-        });
+        // Use announcements array if available, otherwise fallback to single text if exists
+        const fetchedAnnouncements = response.data.announcements && response.data.announcements.length > 0
+          ? response.data.announcements
+          : response.data.announcement_text ? [response.data.announcement_text] : [];
+
+        setAnnouncements(fetchedAnnouncements);
+        setAnnouncementActive(response.data.announcement_active || false);
       } catch (error) {
         console.error('Failed to fetch announcement settings:', error);
       }
     };
     fetchSettings();
   }, [API]);
+
+  useEffect(() => {
+    if (announcements.length > 1 && announcementActive) {
+      const intervalId = setInterval(() => {
+        setCurrentAnnouncementIndex((prevIndex) => (prevIndex + 1) % announcements.length);
+      }, 4000); // Rotate every 4 seconds
+      return () => clearInterval(intervalId);
+    }
+  }, [announcements, announcementActive]);
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -87,15 +98,15 @@ const Header = () => {
   return (
     <header className="header-sticky w-full z-50" data-testid="main-header">
       {/* Top Announcement Bar */}
-      {announcement.active && announcement.text && (
-        <div className="bg-[#f4f4f4] border-b border-gray-300 text-black w-full relative z-50">
+      {announcementActive && announcements.length > 0 && (
+        <div className="bg-[#f4f4f4] border-b border-gray-300 text-black w-full relative z-50 overflow-hidden">
           <div className="hidden md:flex max-w-7xl mx-auto px-4 py-2 items-center justify-between text-[11px] font-bold tracking-widest uppercase">
             <div className="flex space-x-6">
               <Link to="/returns" className="hover:text-gray-500 transition-colors">Free Returns</Link>
             </div>
 
-            <div className="flex-1 text-center">
-              {announcement.text}
+            <div className="flex-1 text-center truncate px-4 animate-fade-in-up" key={currentAnnouncementIndex}>
+              {announcements[currentAnnouncementIndex]}
             </div>
 
             <div className="flex space-x-6">
@@ -105,8 +116,8 @@ const Header = () => {
           </div>
 
           {/* Mobile Announcement Bar */}
-          <div className="md:hidden py-2 px-4 text-center text-[10px] font-bold uppercase tracking-wider">
-            {announcement.text}
+          <div className="md:hidden py-2 px-4 text-center text-[10px] font-bold uppercase tracking-wider truncate animate-fade-in-up" key={`mobile-${currentAnnouncementIndex}`}>
+            {announcements[currentAnnouncementIndex]}
           </div>
         </div>
       )}
