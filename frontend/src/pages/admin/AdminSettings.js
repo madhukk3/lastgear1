@@ -98,6 +98,8 @@ const AdminSettings = () => {
                         />
                         <p className="mt-1 text-sm text-gray-500">
                             These messages will rotate at the top of every page. Write one message per line.
+                            <br />
+                            <span className="font-semibold">Tip:</span> To add a clickable link, use the format: <code>[Link Text](https://url.com)</code>. For example: "SEND US A HI ON WHATSAPP [CLICK HERE](https://wa.me/12345)"
                         </p>
                     </div>
 

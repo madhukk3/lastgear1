@@ -95,6 +95,40 @@ const Header = () => {
     }
   };
 
+  const renderAnnouncement = (text) => {
+    if (!text) return null;
+
+    // Regex to match [Link Text](URL)
+    const linkRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
+    const parts = [];
+    let lastIndex = 0;
+
+    let match;
+    while ((match = linkRegex.exec(text)) !== null) {
+      if (match.index > lastIndex) {
+        parts.push(text.substring(lastIndex, match.index));
+      }
+      parts.push(
+        <a
+          key={match.index}
+          href={match[2]}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="underline hover:text-gray-500 transition-colors mx-1"
+        >
+          {match[1]}
+        </a>
+      );
+      lastIndex = linkRegex.lastIndex;
+    }
+
+    if (lastIndex < text.length) {
+      parts.push(text.substring(lastIndex));
+    }
+
+    return parts.length > 0 ? parts : text;
+  };
+
   return (
     <header className="header-sticky w-full z-50" data-testid="main-header">
       {/* Top Announcement Bar */}
@@ -106,7 +140,7 @@ const Header = () => {
             </div>
 
             <div className="flex-1 text-center truncate px-4 animate-fade-in-up" key={currentAnnouncementIndex}>
-              {announcements[currentAnnouncementIndex]}
+              {renderAnnouncement(announcements[currentAnnouncementIndex])}
             </div>
 
             <div className="flex space-x-6">
@@ -117,7 +151,7 @@ const Header = () => {
 
           {/* Mobile Announcement Bar */}
           <div className="md:hidden py-2 px-4 text-center text-[10px] font-bold uppercase tracking-wider truncate animate-fade-in-up" key={`mobile-${currentAnnouncementIndex}`}>
-            {announcements[currentAnnouncementIndex]}
+            {renderAnnouncement(announcements[currentAnnouncementIndex])}
           </div>
         </div>
       )}
