@@ -15,6 +15,7 @@ export const useCart = () => {
 export const CartProvider = ({ children }) => {
   const [cart, setCart] = useState({ items: [] });
   const [loading, setLoading] = useState(false);
+  const [addedItem, setAddedItem] = useState(null);
   const { token } = useAuth();
 
   const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
@@ -38,14 +39,26 @@ export const CartProvider = ({ children }) => {
     }
   };
 
-  const addToCart = async (product_id, quantity, size, color) => {
+  const addToCart = async (product_id, quantity, size, color, fullProductData = null) => {
     try {
       await axios.post(`${API}/cart`, { product_id, quantity, size, color });
       await fetchCart();
+      if (fullProductData) {
+        setAddedItem({
+          ...fullProductData,
+          selectedQuantity: quantity,
+          selectedSize: size,
+          selectedColor: color
+        });
+      }
     } catch (error) {
       console.error('Failed to add to cart:', error);
       throw error;
     }
+  };
+
+  const clearAddedItem = () => {
+    setAddedItem(null);
   };
 
   const removeFromCart = async (product_id, size, color) => {
@@ -75,7 +88,7 @@ export const CartProvider = ({ children }) => {
   }, 0) || 0;
 
   return (
-    <CartContext.Provider value={{ cart, cartCount, cartTotal, addToCart, removeFromCart, clearCart, fetchCart, loading }}>
+    <CartContext.Provider value={{ cart, cartCount, cartTotal, addToCart, removeFromCart, clearCart, fetchCart, loading, addedItem, clearAddedItem }}>
       {children}
     </CartContext.Provider>
   );

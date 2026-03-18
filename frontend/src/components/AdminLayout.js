@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Package, ShoppingCart, Users, BarChart3, FileText, LogOut, Settings as SettingsIcon, Image as ImageIcon, Ticket, Menu, X } from 'lucide-react';
+import { LayoutDashboard, Package, ShoppingCart, Users, BarChart3, FileText, LogOut, Settings as SettingsIcon, Image as ImageIcon, Ticket, Menu, X, RefreshCcw } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'sonner';
 
@@ -25,6 +25,7 @@ const AdminLayout = ({ children }) => {
     { path: '/admin/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
     { path: '/admin/products', icon: Package, label: 'Products' },
     { path: '/admin/orders', icon: ShoppingCart, label: 'Orders' },
+    { path: '/admin/exchanges', icon: RefreshCcw, label: 'Exchanges' },
     { path: '/admin/customers', icon: Users, label: 'Customers' },
     { path: '/admin/inventory', icon: BarChart3, label: 'Inventory' },
     { path: '/admin/hero-banners', icon: ImageIcon, label: 'Hero Banners' },

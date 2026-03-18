@@ -1,4 +1,4 @@
-from fastapi import FastAPI, APIRouter, HTTPException, Depends, Request, Header
+from fastapi import FastAPI, APIRouter, HTTPException, Depends, Request, Header, BackgroundTasks, UploadFile, File, Form
 from fastapi.staticfiles import StaticFiles
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from dotenv import load_dotenv
@@ -6,6 +6,7 @@ from starlette.middleware.cors import CORSMiddleware
 from starlette.middleware.trustedhost import TrustedHostMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
 import os
+import shutil
 import logging
 from pathlib import Path
 from pydantic import BaseModel, Field, ConfigDict, EmailStr
@@ -19,6 +20,7 @@ import bcrypt
 import razorpay
 import hmac
 import hashlib
+from notifications import send_order_email, send_exchange_request_email
 # from emergentintegrations.llm.chat import LlmChat, UserMessage
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
@@ -114,6 +116,13 @@ class VerifyOTPRegisterRequest(BaseModel):
     phone: str
     otp: str
 
+class SendEmailOTPRequest(BaseModel):
+    email: EmailStr
+
+class VerifyEmailOTPRequest(BaseModel):
+    email: EmailStr
+    otp: str
+
 class VerifyOTPLoginRequest(BaseModel):
     phone: str
     otp: str
@@ -138,6 +147,8 @@ class Product(BaseModel):
     impact_series_id: Optional[str] = None
     is_free_shipping: bool = False
     discount_percentage: int = 0
+    cod_available: bool = True
+    video: Optional[str] = None
     created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
 
 class ProductCreate(BaseModel):
@@ -155,6 +166,8 @@ class ProductCreate(BaseModel):
     impact_series_id: Optional[str] = None
     is_free_shipping: bool = False
     discount_percentage: int = 0
+    cod_available: bool = True
+    video: Optional[str] = None
 
 # --- CART MODELS ---
 class CartItem(BaseModel):
@@ -175,7 +188,6 @@ class Cart(BaseModel):
     items: List[CartItem] = []
     updated_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
 
-# --- ORDER MODELS ---
 class OrderItem(BaseModel):
     product_id: str
     name: str
@@ -183,6 +195,7 @@ class OrderItem(BaseModel):
     quantity: int
     size: str
     color: str
+    image: Optional[str] = None
 
 class ShippingAddress(BaseModel):
     full_name: str
@@ -195,13 +208,20 @@ class ShippingAddress(BaseModel):
     phone: str
 
 class Order(BaseModel):
-    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    id: str = Field(default_factory=lambda: f"LG-{str(uuid.uuid4())[:8].upper()}")
     user_id: str
     items: List[OrderItem]
     total_amount: float
     shipping_address: ShippingAddress
-    payment_status: str = "pending"  # pending, paid, failed
-    order_status: str = "processing"  # processing, shipped, delivered, cancelled
+    payment_status: str = "pending"  # pending, paid, failed, refund_pending, cancelled, pending_cod
+    order_status: str = "order_locked"  # order_locked, processing, packed, shipped, out_for_delivery, delivered, cancelled
+    order_timeline: List[Dict] = []
+    payment_method: str = "razorpay"
+    cancel_requested: bool = False
+    cancel_request_time: Optional[str] = None
+    cancel_rejected: bool = False
+    delivered_at: Optional[str] = None
+    exchange_requested: bool = False
     session_id: Optional[str] = None
     discount_applied: int = 0
     coupon_code: Optional[str] = None
@@ -211,8 +231,29 @@ class OrderCreate(BaseModel):
     items: List[OrderItem]
     total_amount: float
     shipping_address: ShippingAddress
+    payment_method: str = "razorpay" 
     discount_applied: int = 0
     coupon_code: Optional[str] = None
+
+class CancelRequest(BaseModel):
+    reason: str
+
+# --- EXCHANGE MODELS ---
+class ExchangeSubmit(BaseModel):
+    order_id: str
+    customer_name: str
+    customer_email: str
+    phone_number: str
+    product_name: str
+    size_purchased: str
+    size_requested: str
+    reason: str
+    image_url: Optional[str] = None
+
+class ExchangeRequest(ExchangeSubmit):
+    request_id: str = Field(default_factory=lambda: f"EX-{str(uuid.uuid4())[:8].upper()}")
+    request_time: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    status: str = "pending"  # pending, approved, rejected, completed
 
 # --- WISHLIST MODELS ---
 class Wishlist(BaseModel):
@@ -228,6 +269,9 @@ class SiteSettings(BaseModel):
     global_discount_percentage: int = 0
     shipping_charge: int = 99
     free_shipping_threshold: int = 1500
+    cod_enabled: bool = True
+    cod_max_amount: int = 3000
+    cod_charge: int = 50
     updated_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
 
 # --- COUPON MODELS ---
@@ -308,6 +352,11 @@ async def register(user_data: UserRegister):
     existing_user = await db.users.find_one({"email": user_data.email}, {"_id": 0})
     if existing_user:
         raise HTTPException(status_code=400, detail="Email already registered")
+        
+    # Check if email is verified
+    verified_email = await db.verified_emails.find_one({"email": user_data.email})
+    if not verified_email:
+        raise HTTPException(status_code=401, detail="Email not verified. Please verify your email first.")
     
     user_id = str(uuid.uuid4())
     hashed_pw = hash_password(user_data.password)
@@ -318,6 +367,7 @@ async def register(user_data: UserRegister):
         "password": hashed_pw,
         "name": user_data.name,
         "phone": user_data.phone,
+        "email_verified": True,
         "created_at": datetime.now(timezone.utc).isoformat(),
         "has_used_first_purchase_discount": False
     }
@@ -327,6 +377,9 @@ async def register(user_data: UserRegister):
     # Create empty cart and wishlist
     await db.carts.insert_one({"user_id": user_id, "items": []})
     await db.wishlists.insert_one({"user_id": user_id, "product_ids": []})
+    
+    # Remove from verified_emails collection
+    await db.verified_emails.delete_one({"email": user_data.email})
     
     token = create_jwt_token(user_id, user_data.email)
     
@@ -366,6 +419,39 @@ async def get_me(current_user: Dict = Depends(get_current_user)):
 
 # --- OTP ENDPOINTS ---
 import random
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+
+def send_otp_email(to_email: str, otp: str):
+    email_user = os.environ.get("OTP_EMAIL_USERNAME")
+    email_pass = os.environ.get("OTP_EMAIL_PASSWORD")
+    smtp_server = os.environ.get("SMTP_SERVER", "smtp.gmail.com")
+    smtp_port = int(os.environ.get("SMTP_PORT", 587))
+    
+    if not email_user or not email_pass:
+        logging.warning("OTP_EMAIL_USERNAME or OTP_EMAIL_PASSWORD not set. Logging OTP instead.")
+        print(f"\n{'='*40}\nEMAIL OTP FOR {to_email}: {otp}\n{'='*40}\n")
+        return
+        
+    msg = MIMEMultipart()
+    msg['From'] = email_user
+    msg['To'] = to_email
+    msg['Subject'] = "Verify your LAST GEAR account"
+    
+    body = f"Your verification code is: {otp}\n\nThis code expires in 5 minutes."
+    msg.attach(MIMEText(body, 'plain'))
+    
+    try:
+        server = smtplib.SMTP(smtp_server, smtp_port)
+        server.starttls()
+        server.login(email_user, email_pass)
+        text = msg.as_string()
+        server.sendmail(email_user, to_email, text)
+        server.quit()
+    except Exception as e:
+        logging.error(f"Failed to send email OTP to {to_email}: {e}")
+        raise HTTPException(status_code=500, detail="Failed to send OTP email")
 
 @api_router.post("/auth/google", response_model=AuthResponse)
 async def google_auth(request: VerifyGoogleRequest):
@@ -428,6 +514,57 @@ async def send_otp(request: SendOTPRequest):
     print(f"\n{'='*40}\nOTP FOR PHONE {phone}: {otp}\n{'='*40}\n")
     
     return {"message": "OTP sent successfully"}
+
+@api_router.post("/auth/send-email-otp")
+@limiter.limit("3/minute")
+async def send_email_otp(request: Request, body: SendEmailOTPRequest):
+    email = body.email
+    
+    # Check if email is already registered
+    existing_user = await db.users.find_one({"email": email})
+    if existing_user:
+        raise HTTPException(status_code=400, detail="Email already registered")
+        
+    # Generate 6-digit OTP
+    otp = str(random.randint(100000, 999999))
+    
+    # 5 min expiration
+    expires_at = datetime.now(timezone.utc) + timedelta(minutes=5)
+    
+    await db.email_otps.update_one(
+        {"email": email},
+        {"$set": {"otp": otp, "expires_at": expires_at.isoformat()}},
+        upsert=True
+    )
+    
+    # Send email
+    send_otp_email(email, otp)
+    
+    return {"message": "OTP sent successfully"}
+
+@api_router.post("/auth/verify-email-otp")
+async def verify_email_otp(body: VerifyEmailOTPRequest):
+    email = body.email
+    otp = body.otp
+    
+    otp_record = await db.email_otps.find_one({"email": email, "otp": otp})
+    if not otp_record:
+        raise HTTPException(status_code=400, detail="Invalid OTP")
+        
+    if datetime.fromisoformat(otp_record['expires_at']) < datetime.now(timezone.utc):
+        raise HTTPException(status_code=400, detail="OTP has expired")
+        
+    # Valid OTP. Delete the OTP record.
+    await db.email_otps.delete_one({"email": email})
+    
+    # Add to verified emails to authorize registration
+    await db.verified_emails.update_one(
+        {"email": email},
+        {"$set": {"verified_at": datetime.now(timezone.utc).isoformat()}},
+        upsert=True
+    )
+    
+    return {"message": "Email verified successfully"}
 
 @api_router.post("/auth/register-otp", response_model=AuthResponse)
 async def register_otp(user_data: VerifyOTPRegisterRequest):
@@ -712,13 +849,110 @@ async def validate_coupon(code: str):
     return {"discount_percentage": coupon["discount_percentage"]}
 
 # --- ORDER ENDPOINTS ---
+async def update_product_stock(items: List[Any]):
+    """Validates and reduces stock for each item in the order. Supports both Pydantic models and dicts."""
+    # 1. Validation pass (all-or-nothing check)
+    for item in items:
+        # Handle both Pydantic model (from create_order) and dict (from verify_payment DB pull)
+        product_id = item.product_id if hasattr(item, 'product_id') else item.get('product_id')
+        item_name = item.name if hasattr(item, 'name') else item.get('name')
+        item_size = item.size if hasattr(item, 'size') else item.get('size')
+        item_qty = item.quantity if hasattr(item, 'quantity') else item.get('quantity')
+
+        product = await db.products.find_one({"id": product_id})
+        if not product:
+            raise HTTPException(status_code=404, detail=f"Product '{item_name}' not found")
+        
+        # Check overall stock
+        current_stock = product.get("stock", 0)
+        current_size_stock = product.get("size_stock", {}).get(item_size, 0)
+
+        # Fallback to general stock if size_stock is 0 but general stock is > 0 (to handle un-migrated DBs)
+        available_qty = current_size_stock if current_size_stock > 0 else current_stock
+
+        if available_qty < item_qty:
+            raise HTTPException(status_code=400, detail=f"'{item_name}' (Size: {item_size}) is out of stock. Available: {available_qty}, Requested: {item_qty}")
+
+    # 2. Deduction pass (perform atomic $inc decrement)
+    for item in items:
+        product_id = item.product_id if hasattr(item, 'product_id') else item.get('product_id')
+        item_size = item.size if hasattr(item, 'size') else item.get('size')
+        item_qty = item.quantity if hasattr(item, 'quantity') else item.get('quantity')
+
+        update_query = {"$inc": {"stock": -item_qty}}
+        # If the specific size exists in size_stock dict, decrement it too
+        product = await db.products.find_one({"id": product_id})
+        if item_size in product.get("size_stock", {}):
+            update_query["$inc"][f"size_stock.{item_size}"] = -item_qty
+
+        await db.products.update_one(
+            {"id": product_id},
+            update_query
+        )
+
 @api_router.post("/orders", response_model=Order)
-async def create_order(order_data: OrderCreate, current_user: Dict = Depends(get_current_user)):
+async def create_order(order_data: OrderCreate, background_tasks: BackgroundTasks, current_user: Dict = Depends(get_current_user)):
+    # 1. Fetch site settings to validate COD if selected
+    settings = await db.settings.find_one({"id": "global"}) or {}
+    cod_enabled = settings.get("cod_enabled", True)
+    cod_max_amount = settings.get("cod_max_amount", 3000)
+    cod_charge = settings.get("cod_charge", 50)
+
+    # 2. Check COD conditions if payment method is "cod"
+    if order_data.payment_method == "cod":
+        logging.info("--> COD CHECKOUT TRIGGERED")
+        if not cod_enabled:
+            logging.error("--> COD IS DISABLED GLOBALLY")
+            raise HTTPException(status_code=400, detail="Cash on Delivery is currently disabled globally")
+        
+        # Verify order total limit for COD
+        if order_data.total_amount > cod_max_amount:
+            logging.error(f"--> COD MAX AMOUNT EXCEEDED: {order_data.total_amount}")
+            raise HTTPException(status_code=400, detail=f"Cash on Delivery limit is ₹{cod_max_amount}. Please use online payment.")
+
+        # Check per-product availability for COD
+        for item in order_data.items:
+            product = await db.products.find_one({"id": item.product_id})
+            if product and not product.get("cod_available", True):
+                logging.error(f"--> COD UNAVAILABLE FOR PRODUCT: {item.product_id}")
+                raise HTTPException(status_code=400, detail=f"Cash on Delivery is not available for '{product.get('name')}'")
+        
+        # Deduct stock immediately since COD order goes straight to processing
+        logging.info("--> ATTEMPTING COD STOCK DEDUCTION")
+        try:
+            await update_product_stock(order_data.items)
+            logging.info("--> COD STOCK DEDUCTION SUCCESS")
+        except Exception as e:
+            logging.error(f"--> COD STOCK DEDUCTION FAILED: {str(e)}")
+            raise e
+        
+        # If valid COD, the frontend already added the cod_charge to the total. Set payment status.
+        payment_status = "pending_cod"
+    else:
+        # Standard Razorpay configuration
+        logging.info("--> RAZORPAY CHECKOUT TRIGGERED")
+        payment_status = "pending"
+
+    # 3. Create Order
     order = Order(
         user_id=current_user['id'],
+        payment_status=payment_status,
         **order_data.model_dump()
     )
-    await db.orders.insert_one(order.model_dump())
+    order_dict = order.model_dump()
+    
+    # Inject genesis timeline event
+    order_dict['order_timeline'] = [{
+        "status": "order_locked",
+        "time": datetime.now(timezone.utc).isoformat()
+    }]
+    
+    await db.orders.insert_one(order_dict)
+    
+    # 4. Trigger Email Notification if COD
+    if order_data.payment_method == "cod":
+        background_tasks.add_task(send_order_email, order_dict)
+        
     return order
 
 @api_router.get("/orders")
@@ -732,6 +966,126 @@ async def get_order(order_id: str, current_user: Dict = Depends(get_current_user
     if not order:
         raise HTTPException(status_code=404, detail="Order not found")
     return order
+
+@api_router.post("/orders/{order_id}/request-cancel")
+async def request_order_cancellation(order_id: str, payload: CancelRequest, current_user: Dict = Depends(get_current_user)):
+    order = await db.orders.find_one({"id": order_id, "user_id": current_user['id']}, {"_id": 0})
+    if not order:
+        raise HTTPException(status_code=404, detail="Order not found")
+        
+    if order.get("order_status") not in ["order_locked", "processing", "confirmed"]:
+        raise HTTPException(status_code=400, detail="Order cannot be cancelled at this stage.")
+        
+    if order.get("cancel_rejected") is True:
+        raise HTTPException(status_code=400, detail="Your previous cancellation request for this order was rejected.")
+        
+    update_data = {
+        "cancel_requested": True,
+        "cancel_request_time": datetime.now(timezone.utc).isoformat(),
+        "order_status": "cancel_requested",
+        "cancel_reason": payload.reason
+    }
+    
+    await db.orders.update_one(
+        {"id": order_id, "user_id": current_user['id']},
+        {"$set": update_data}
+    )
+    
+    return {"message": "Cancellation requested successfully", "status": "cancel_requested"}
+
+# --- HELP / EXCHANGE ENDPOINTS ---
+@api_router.post("/help/request-exchange")
+async def request_exchange(
+    order_id: str = Form(...),
+    customer_name: str = Form(...),
+    customer_email: str = Form(...),
+    phone_number: str = Form(...),
+    product_name: str = Form(...),
+    size_purchased: str = Form(...),
+    size_requested: str = Form(...),
+    reason: str = Form(...),
+    image: Optional[UploadFile] = File(None),
+    background_tasks: BackgroundTasks = BackgroundTasks()
+):
+    order = await db.orders.find_one({"id": order_id}, {"_id": 0})
+    if not order:
+        raise HTTPException(status_code=404, detail="Order not found")
+        
+    user = await db.users.find_one({"id": order["user_id"]}, {"_id": 0})
+    if not user or user.get("email", "").lower() != customer_email.lower():
+        raise HTTPException(status_code=403, detail="Email does not match the order's registered account.")
+        
+    if order.get("order_status") != "delivered":
+        raise HTTPException(status_code=400, detail="Exchange is only available for delivered orders.")
+        
+    delivered_at = order.get("delivered_at")
+    if not delivered_at:
+        # Fallback for legacy orders marked delivered before the timestamp feature
+        delivered_at = order.get("updated_at") or order.get("created_at")
+    
+    if not delivered_at:
+        raise HTTPException(status_code=400, detail="Delivery timestamp not found for this order. Please contact support.")
+        
+    try:
+        clean_date = delivered_at.replace("Z", "+00:00")
+        delivery_date = datetime.fromisoformat(clean_date)
+        if delivery_date.tzinfo is None:
+            delivery_date = delivery_date.replace(tzinfo=timezone.utc)
+    except ValueError:
+        # Fallback if isoformat fails
+        delivery_date = datetime.now(timezone.utc) - timedelta(days=1)
+        
+    if datetime.now(timezone.utc) > delivery_date + timedelta(days=8):
+        raise HTTPException(status_code=400, detail="The 7-Day exchange window has closed for this order.")
+        
+    if order.get("exchange_requested"):
+        raise HTTPException(status_code=400, detail="An exchange has already been requested for this order.")
+
+    # Process image upload if exists
+    image_url = None
+    if image and image.filename:
+        try:
+            uploads_dir = Path(__file__).parent / "uploads"
+            uploads_dir.mkdir(exist_ok=True)
+            extension = image.filename.split('.')[-1] if '.' in image.filename else ''
+            unique_filename = f"defect_ex_{uuid.uuid4().hex[:8]}.{extension}"
+            file_path = uploads_dir / unique_filename
+            with open(file_path, "wb") as buffer:
+                shutil.copyfileobj(image.file, buffer)
+            # Use absolute or complete domain url if possible, but standard is /uploads/filename
+            # We will use the full backend URL in notifications, but store relative in DB
+            image_url = f"/uploads/{unique_filename}"
+        except Exception as e:
+            raise HTTPException(status_code=500, detail="Failed to upload image")
+
+    exchange_req = ExchangeRequest(
+        order_id=order_id,
+        customer_name=customer_name,
+        customer_email=customer_email,
+        phone_number=phone_number,
+        product_name=product_name,
+        size_purchased=size_purchased,
+        size_requested=size_requested,
+        reason=reason,
+        image_url=image_url
+    )
+    exchange_dict = exchange_req.model_dump()
+    
+    await db.exchange_requests.insert_one(exchange_dict)
+    
+    await db.orders.update_one(
+        {"id": order_id},
+        {"$set": {"exchange_requested": True}}
+    )
+    
+    # Send absolute URL strictly to email for easy viewing
+    email_exchange_dict = exchange_dict.copy()
+    raw_env_url = os.environ.get("REACT_APP_BACKEND_URL", "http://localhost:8000")
+    if image_url:
+        email_exchange_dict['image_url'] = f"{raw_env_url}{image_url}"
+
+    background_tasks.add_task(send_exchange_request_email, email_exchange_dict)
+    return {"message": "Exchange request submitted successfully", "request_id": exchange_req.request_id}
 
 # --- PAYMENT ENDPOINTS ---
 @api_router.post("/razorpay/create-order")
@@ -788,7 +1142,7 @@ async def create_razorpay_order(order_req: RazorpayOrderRequest, current_user: D
         raise HTTPException(status_code=500, detail="Failed to create payment order")
 
 @api_router.post("/razorpay/verify-payment")
-async def verify_razorpay_payment(verification: RazorpayPaymentVerification, current_user: Dict = Depends(get_current_user)):
+async def verify_razorpay_payment(verification: RazorpayPaymentVerification, background_tasks: BackgroundTasks, current_user: Dict = Depends(get_current_user)):
     try:
         # Verify signature
         generated_signature = hmac.new(
@@ -828,11 +1182,17 @@ async def verify_razorpay_payment(verification: RazorpayPaymentVerification, cur
             }}
         )
         
-        # Update order
+        # Update order status to paid
         await db.orders.update_one(
             {"id": transaction['order_id']},
             {"$set": {"payment_status": "paid"}}
         )
+
+        # Trigger Notifications and Deduct Stock
+        order = await db.orders.find_one({"id": transaction['order_id']}, {"_id": 0})
+        if order:
+            await update_product_stock(order.get('items', []))
+            background_tasks.add_task(send_order_email, order)
         
         # Clear cart
         await db.carts.update_one(
@@ -971,7 +1331,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
     allow_origins=allowed_origins if '*' not in allowed_origins else ["*"],
-    allow_methods=["GET", "POST", "PUT", "DELETE"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "PATCH"],
     allow_headers=["*"],
     max_age=3600,
 )

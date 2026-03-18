@@ -20,6 +20,7 @@ const Header = () => {
   const [announcements, setAnnouncements] = useState([]);
   const [currentAnnouncementIndex, setCurrentAnnouncementIndex] = useState(0);
   const [announcementActive, setAnnouncementActive] = useState(false);
+  const [fadeStatus, setFadeStatus] = useState('opacity-100');
 
   const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
   const API = `${BACKEND_URL}/api`;
@@ -80,7 +81,14 @@ const Header = () => {
   useEffect(() => {
     if (announcements.length > 1 && announcementActive) {
       const intervalId = setInterval(() => {
-        setCurrentAnnouncementIndex((prevIndex) => (prevIndex + 1) % announcements.length);
+        setFadeStatus('opacity-0');
+
+        // Wait for the fade-out to complete before changing text
+        setTimeout(() => {
+          setCurrentAnnouncementIndex((prevIndex) => (prevIndex + 1) % announcements.length);
+          setFadeStatus('opacity-100');
+        }, 500); // 500ms should match the tailwind transition duration
+
       }, 4000); // Rotate every 4 seconds
       return () => clearInterval(intervalId);
     }
@@ -134,23 +142,30 @@ const Header = () => {
       {/* Top Announcement Bar */}
       {announcementActive && announcements.length > 0 && (
         <div className="bg-[#f4f4f4] border-b border-gray-300 text-black w-full relative z-50 overflow-hidden">
-          <div className="hidden md:flex max-w-7xl mx-auto px-4 py-2 items-center justify-between text-[11px] font-bold tracking-widest uppercase">
-            <div className="flex space-x-6">
-              <Link to="/returns" className="hover:text-gray-500 transition-colors">Free Returns</Link>
-            </div>
+          <div className="hidden lg:flex max-w-7xl mx-auto px-4 py-2 items-center justify-between text-[11px] font-bold tracking-widest uppercase">
+            <div className="flex-1"></div>
 
-            <div className="flex-1 text-center truncate px-4 animate-fade-in-up" key={currentAnnouncementIndex}>
+            <div className={`flex-1 text-center truncate px-4 transition-opacity duration-500 ease-in-out ${fadeStatus}`} key={currentAnnouncementIndex}>
               {renderAnnouncement(announcements[currentAnnouncementIndex])}
             </div>
 
-            <div className="flex space-x-6">
-              <Link to="/stores" className="hover:text-gray-500 transition-colors">Store Locator</Link>
-              <Link to="/help" className="hover:text-gray-500 transition-colors">Help</Link>
+            <div className="flex-1 flex justify-end items-center space-x-4 text-[13px] font-medium tracking-normal normal-case text-black">
+              <Link to="/help" className="hover:text-gray-600 transition-colors">Help</Link>
+              <span className="text-gray-400 font-normal">|</span>
+              {user ? (
+                <Link to="/account" className="hover:text-gray-600 transition-colors">Hi, {user.name.split(' ')[0]}</Link>
+              ) : (
+                <>
+                  <Link to="/login" className="hover:text-gray-600 transition-colors">Sign Up</Link>
+                  <span className="text-gray-400 font-normal">|</span>
+                  <Link to="/login" className="hover:text-gray-600 transition-colors">Log In</Link>
+                </>
+              )}
             </div>
           </div>
 
           {/* Mobile Announcement Bar */}
-          <div className="md:hidden py-2 px-4 text-center text-[10px] font-bold uppercase tracking-wider truncate animate-fade-in-up" key={`mobile-${currentAnnouncementIndex}`}>
+          <div className={`lg:hidden py-2 px-4 text-center text-[10px] font-bold uppercase tracking-wider truncate transition-opacity duration-500 ease-in-out ${fadeStatus}`} key={`mobile-${currentAnnouncementIndex}`}>
             {renderAnnouncement(announcements[currentAnnouncementIndex])}
           </div>
         </div>
@@ -166,7 +181,7 @@ const Header = () => {
             </Link>
 
             {/* Desktop Navigation */}
-            <nav className="hidden md:flex items-center space-x-8 font-nav text-[17px] capitalize">
+            <nav className="hidden lg:flex items-center space-x-8 font-nav text-[17px] capitalize">
               <Link to="/" className="hover:text-gray-300 transition-colors" data-testid="nav-home">
                 Home
               </Link>
@@ -186,7 +201,7 @@ const Header = () => {
               {/* Desktop Search Button */}
               <button
                 onClick={() => setSearchOpen(!searchOpen)}
-                className="hidden md:flex items-center space-x-2 border border-gray-700 hover:border-white px-4 py-1.5 transition-colors font-bold text-[13px] tracking-wide"
+                className="hidden lg:flex items-center space-x-2 border border-gray-700 hover:border-white px-4 py-1.5 transition-colors font-bold text-[13px] tracking-wide"
                 data-testid="search-btn-desktop"
               >
                 <Search size={16} strokeWidth={2} />
@@ -196,7 +211,7 @@ const Header = () => {
               {/* Mobile Search Icon */}
               <button
                 onClick={() => setSearchOpen(!searchOpen)}
-                className="md:hidden hover:text-gray-300 transition-colors"
+                className="lg:hidden hover:text-gray-300 transition-colors"
                 data-testid="search-icon-mobile"
               >
                 <Search size={20} strokeWidth={1.5} />
@@ -229,7 +244,7 @@ const Header = () => {
 
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="md:hidden hover:text-gray-300 transition-colors"
+                className="lg:hidden hover:text-gray-300 transition-colors"
                 data-testid="mobile-menu-icon"
               >
                 {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
@@ -294,7 +309,7 @@ const Header = () => {
 
           {/* Mobile Menu */}
           {mobileMenuOpen && (
-            <nav className="md:hidden py-4 border-t border-gray-800 space-y-4 font-nav text-[17px] capitalize" data-testid="mobile-menu">
+            <nav className="lg:hidden py-4 border-t border-gray-800 space-y-4 font-nav text-[17px] capitalize" data-testid="mobile-menu">
               <Link to="/" className="block hover:text-gray-300" onClick={() => setMobileMenuOpen(false)}>
                 Home
               </Link>

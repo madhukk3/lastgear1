@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { ChevronRight, ChevronLeft, TrendingUp, Package, Truck, ArrowRight } from 'lucide-react';
 import { useCart } from '../context/CartContext';
@@ -8,6 +8,7 @@ import { toast } from 'sonner';
 
 
 const Home = () => {
+  const navigate = useNavigate();
   const [heroBanners, setHeroBanners] = useState([]);
   const [featuredProducts, setFeaturedProducts] = useState([]);
   const [impactSeriesData, setImpactSeriesData] = useState(null);
@@ -72,7 +73,8 @@ const Home = () => {
     e.preventDefault();
     e.stopPropagation();
     try {
-      await addToCart(product.id, 1, size, product.colors[0] || 'Default');
+      setAddingToCart({ id: product.id, size });
+      await addToCart(product.id, 1, size, product.colors[0] || 'Default', product);
       toast.success('Added to cart!');
     } catch (error) {
       if (error.response && error.response.status === 401) {
@@ -270,6 +272,7 @@ const Home = () => {
                           <button
                             key={size}
                             onClick={(e) => handleQuickAdd(e, product, size)}
+                            title="Add to Cart"
                             className="border border-black min-w-[32px] h-8 px-1 text-xs font-bold hover:bg-black hover:text-white transition-colors"
                           >
                             {size}

@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'sonner';
 import { GoogleLogin } from '@react-oauth/google';
+import axios from 'axios';
 
 const Register = () => {
   const navigate = useNavigate();
@@ -16,8 +17,13 @@ const Register = () => {
     confirmPassword: '',
   });
   const [loading, setLoading] = useState(false);
+  const [showOtp, setShowOtp] = useState(false);
+  const [otp, setOtp] = useState(['', '', '', '', '', '']);
+  const otpRefs = useRef([]);
 
-  const handleSubmit = async (e) => {
+  const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+
+  const handleSendOtp = async (e) => {
     e.preventDefault();
 
     if (formData.password !== formData.confirmPassword) {
@@ -27,7 +33,60 @@ const Register = () => {
 
     try {
       setLoading(true);
+      await axios.post(`${BACKEND_URL}/api/auth/send-email-otp`, { email: formData.email });
+      toast.success('OTP sent to your email!');
+      setShowOtp(true);
+    } catch (error) {
+      console.error('Failed to send OTP:', error);
+      const errorMessage = error.response?.data?.detail || error.message || 'Failed to send OTP';
+      toast.error(errorMessage);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleOtpChange = (index, value) => {
+    // Only allow numbers
+    if (value && !/^\d+$/.test(value)) return;
+
+    const newOtp = [...otp];
+    // Take the last character typed to override the box
+    newOtp[index] = value.slice(-1);
+    setOtp(newOtp);
+
+    // Auto focus next input
+    if (value && index < 5 && otpRefs.current[index + 1]) {
+      otpRefs.current[index + 1].focus();
+    }
+  };
+
+  const handleOtpKeyDown = (index, e) => {
+    // Auto focus previous input on backspace if current is empty
+    if (e.key === 'Backspace' && !otp[index] && index > 0 && otpRefs.current[index - 1]) {
+      otpRefs.current[index - 1].focus();
+    }
+  };
+
+  const handleVerifyOtp = async (e) => {
+    e.preventDefault();
+    const otpString = otp.join('');
+
+    if (otpString.length !== 6) {
+      toast.error('Please enter a 6-digit OTP');
+      return;
+    }
+
+    try {
+      setLoading(true);
+      // 1. Verify OTP
+      await axios.post(`${BACKEND_URL}/api/auth/verify-email-otp`, {
+        email: formData.email,
+        otp: otpString
+      });
+
+      // 2. Complete Registration
       await register(formData.email, formData.password, formData.name, formData.phone);
+
       toast.success('Registration successful!');
       navigate('/');
     } catch (error) {
@@ -69,7 +128,7 @@ const Register = () => {
           </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6" data-testid="register-form">
+        <form onSubmit={handleSendOtp} className="space-y-6" data-testid="register-form">
           <div>
             <label htmlFor="name" className="block text-sm font-medium mb-2">
               FULL NAME
@@ -157,9 +216,53 @@ const Register = () => {
             className="w-full bg-black text-white py-4 font-bold uppercase tracking-wider hover:bg-gray-800 transition-colors disabled:bg-gray-400"
             data-testid="register-button"
           >
-            {loading ? 'CREATING ACCOUNT...' : 'CREATE ACCOUNT'}
+            {loading ? 'PLEASE WAIT...' : 'SIGN UP'}
           </button>
         </form>
+
+        {showOtp && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 px-4">
+            <div className="bg-white p-8 rounded-lg max-w-sm w-full shadow-2xl">
+              <h2 className="text-2xl font-bold mb-4 text-center">Verify Email</h2>
+              <p className="text-sm text-gray-600 mb-6 text-center">
+                We sent a 6-digit code to <strong>{formData.email}</strong>
+              </p>
+
+              <form onSubmit={handleVerifyOtp} className="space-y-6">
+                <div className="flex justify-center gap-2 sm:gap-4 mb-8 mt-4">
+                  {otp.map((digit, index) => (
+                    <input
+                      key={index}
+                      ref={(el) => (otpRefs.current[index] = el)}
+                      type="text"
+                      className="w-10 h-12 sm:w-12 sm:h-14 text-center text-xl sm:text-2xl font-bold border-2 border-gray-300 rounded focus:border-black focus:outline-none focus:ring-1 focus:ring-black bg-white transition-colors"
+                      value={digit}
+                      onChange={(e) => handleOtpChange(index, e.target.value)}
+                      onKeyDown={(e) => handleOtpKeyDown(index, e)}
+                    />
+                  ))}
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full bg-black text-white py-3 font-bold uppercase tracking-wider hover:bg-gray-800 transition-colors rounded disabled:bg-gray-400"
+                >
+                  {loading ? 'VERIFYING...' : 'VERIFY & REGISTER'}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setShowOtp(false)}
+                  disabled={loading}
+                  className="w-full text-sm font-medium text-gray-500 hover:text-black mt-2"
+                >
+                  Cancel
+                </button>
+              </form>
+            </div>
+          </div>
+        )}
 
         <div className="mt-6">
           <div className="relative">

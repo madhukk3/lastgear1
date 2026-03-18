@@ -27,6 +27,8 @@ const AdminProducts = () => {
     impact_series_id: '',
     is_free_shipping: false,
     discount_percentage: 0,
+    cod_available: true,
+    video: '',
   });
   const [impactSeriesList, setImpactSeriesList] = useState([]);
 
@@ -124,6 +126,8 @@ const AdminProducts = () => {
       impact_series_id: product.impact_series_id || '',
       is_free_shipping: product.is_free_shipping || false,
       discount_percentage: product.discount_percentage || 0,
+      cod_available: product.cod_available !== undefined ? product.cod_available : true,
+      video: product.video || '',
     });
     setShowAddModal(true);
   };
@@ -145,6 +149,8 @@ const AdminProducts = () => {
       impact_series_id: '',
       is_free_shipping: false,
       discount_percentage: 0,
+      cod_available: true,
+      video: '',
     });
   };
 
@@ -364,7 +370,7 @@ const AdminProducts = () => {
                             value={formData.size_stock[size] || 0}
                             onChange={(e) => setFormData({
                               ...formData,
-                              size_stock: { ...formData.size_stock, [size]: parseInt(e.target.value) || 0 }
+                              size_stock: { ...formData.size_stock, [size]: Math.max(0, parseInt(e.target.value) || 0) }
                             })}
                             className="w-full px-2 py-1 text-sm border rounded focus:outline-none focus:ring-1 focus:ring-black"
                           />
@@ -407,11 +413,34 @@ const AdminProducts = () => {
               </div>
 
               <div>
-                <ImageUpload
-                  label="Product Image (Main)"
-                  value={formData.images[0]}
-                  onChange={(url) => setFormData({ ...formData, images: [url] })}
+                <label className="block text-sm font-bold mb-4">Product Images (Up to 5)</label>
+                <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                  {[0, 1, 2, 3, 4].map((index) => (
+                    <ImageUpload
+                      key={index}
+                      label={index === 0 ? "Main Image" : `Image ${index + 1}`}
+                      value={formData.images[index] || ''}
+                      onChange={(url) => {
+                        const newImages = [...formData.images];
+                        newImages[index] = url;
+                        // Clean up empty strings if removed
+                        setFormData({ ...formData, images: newImages.filter(Boolean) });
+                      }}
+                    />
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-2">Product Video URL (Optional)</label>
+                <input
+                  type="url"
+                  value={formData.video}
+                  onChange={(e) => setFormData({ ...formData, video: e.target.value })}
+                  placeholder="e.g. https://youtube.com/watch?v=... or .mp4 link"
+                  className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
                 />
+                <p className="text-xs text-gray-500 mt-1">Paste a direct link to the product video to add a video thumbnail in the gallery.</p>
               </div>
 
               <div>
@@ -449,6 +478,19 @@ const AdminProducts = () => {
                     data-testid="product-free-shipping-input"
                   />
                   <span className="text-sm font-medium">Offer Free Shipping (Ignore ₹1500 limit)</span>
+                </label>
+              </div>
+
+              <div className="mt-2">
+                <label className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={formData.cod_available}
+                    onChange={(e) => setFormData({ ...formData, cod_available: e.target.checked })}
+                    className="rounded"
+                    data-testid="product-cod-available-input"
+                  />
+                  <span className="text-sm font-medium">Enable Cash on Delivery (COD)</span>
                 </label>
               </div>
 

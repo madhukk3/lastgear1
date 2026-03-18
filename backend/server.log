@@ -1,0 +1,1631 @@
+INFO:     Will watch for changes in these directories: ['/Users/madhukk/Documents/LAST-GEAR/backend']
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     Started reloader process [85504] using WatchFiles
+/Users/madhukk/Library/Python/3.9/lib/python/site-packages/google/oauth2/__init__.py:40: FutureWarning: You are using a Python version 3.9 past its end of life. Google will update google-auth with critical bug fixes on a best-effort basis, but not with any other fixes or features. Please upgrade your Python version, and then update google-auth.
+  warnings.warn(eol_message.format("3.9"), FutureWarning)
+/Users/madhukk/Library/Python/3.9/lib/python/site-packages/google/auth/__init__.py:54: FutureWarning: You are using a Python version 3.9 past its end of life. Google will update google-auth with critical bug fixes on a best-effort basis, but not with any other fixes or features. Please upgrade your Python version, and then update google-auth.
+  warnings.warn(eol_message.format("3.9"), FutureWarning)
+/Users/madhukk/Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+INFO:     Started server process [85555]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     127.0.0.1:52466 - "PATCH /api/admin/orders/eb17d0ce-7830-4d6c-bfea-488c9db62d0f/approve-cancel HTTP/1.1" 200 OK
+2026-03-14 17:09:43,425 - notifications - INFO - Order status email sent to madhukk2006s@gmail.com for Order ID: eb17d0ce-7830-4d6c-bfea-488c9db62d0f
+INFO:     127.0.0.1:52832 - "PATCH /api/admin/orders/LG-2BE40291/approve-cancel HTTP/1.1" 400 Bad Request
+INFO:     127.0.0.1:53109 - "PATCH /api/admin/orders/LG-2BE40291/approve-cancel HTTP/1.1" 200 OK
+2026-03-14 17:12:09,673 - notifications - INFO - Order status email sent to ckmgamers@gmail.com for Order ID: LG-2BE40291
+WARNING:  WatchFiles detected changes in 'server.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [85555]
+/Users/madhukk/Library/Python/3.9/lib/python/site-packages/google/oauth2/__init__.py:40: FutureWarning: You are using a Python version 3.9 past its end of life. Google will update google-auth with critical bug fixes on a best-effort basis, but not with any other fixes or features. Please upgrade your Python version, and then update google-auth.
+  warnings.warn(eol_message.format("3.9"), FutureWarning)
+/Users/madhukk/Library/Python/3.9/lib/python/site-packages/google/auth/__init__.py:54: FutureWarning: You are using a Python version 3.9 past its end of life. Google will update google-auth with critical bug fixes on a best-effort basis, but not with any other fixes or features. Please upgrade your Python version, and then update google-auth.
+  warnings.warn(eol_message.format("3.9"), FutureWarning)
+/Users/madhukk/Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+INFO:     Started server process [95486]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     127.0.0.1:53810 - "OPTIONS /api/admin/orders/LG-2BE40291/approve-cancel HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53810 - "PATCH /api/admin/orders/LG-2BE40291/approve-cancel HTTP/1.1" 400 Bad Request
+INFO:     127.0.0.1:53812 - "GET /api/cart HTTP/1.1" 403 Forbidden
+INFO:     127.0.0.1:53849 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53847 - "GET /api/settings/announcement HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53812 - "GET /api/cart HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53849 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53847 - "GET /api/settings/announcement HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53847 - "GET /api/admin/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53847 - "GET /api/admin/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54026 - "GET /api/orders/LG-2BE40291 HTTP/1.1" 403 Forbidden
+INFO:     127.0.0.1:54027 - "GET /api/cart HTTP/1.1" 403 Forbidden
+INFO:     127.0.0.1:53855 - "GET /api/settings/announcement HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54029 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54027 - "GET /api/settings/announcement HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53855 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54026 - "GET /api/orders/LG-2BE40291 HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:54032 - "GET /api/cart HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54029 - "GET /api/settings/announcement HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54032 - "GET /api/settings/announcement HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54033 - "GET /api/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54033 - "GET /api/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54037 - "GET /api/recommendations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54037 - "GET /api/recommendations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54039 - "OPTIONS /api/orders/5f37503c-cbd1-4f7a-8c6f-53a76c67c65c HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54042 - "OPTIONS /api/orders/5f37503c-cbd1-4f7a-8c6f-53a76c67c65c HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54039 - "GET /api/orders/5f37503c-cbd1-4f7a-8c6f-53a76c67c65c HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54039 - "GET /api/orders/5f37503c-cbd1-4f7a-8c6f-53a76c67c65c HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54044 - "OPTIONS /api/orders/5f37503c-cbd1-4f7a-8c6f-53a76c67c65c/request-cancel HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54044 - "POST /api/orders/5f37503c-cbd1-4f7a-8c6f-53a76c67c65c/request-cancel HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54044 - "GET /api/orders/5f37503c-cbd1-4f7a-8c6f-53a76c67c65c HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54048 - "GET /api/cart HTTP/1.1" 403 Forbidden
+INFO:     127.0.0.1:54059 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54057 - "GET /api/settings/announcement HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54061 - "GET /api/cart HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54059 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54048 - "GET /api/settings/announcement HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54048 - "GET /api/admin/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54048 - "GET /api/admin/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54070 - "OPTIONS /api/admin/orders/5f37503c-cbd1-4f7a-8c6f-53a76c67c65c/approve-cancel HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54070 - "PATCH /api/admin/orders/5f37503c-cbd1-4f7a-8c6f-53a76c67c65c/approve-cancel HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54070 - "GET /api/admin/orders HTTP/1.1" 200 OK
+2026-03-14 17:16:41,435 - notifications - INFO - Order status email sent to admin@lastgear.in for Order ID: 5f37503c-cbd1-4f7a-8c6f-53a76c67c65c
+WARNING:  WatchFiles detected changes in 'notifications.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [95486]
+/Users/madhukk/Library/Python/3.9/lib/python/site-packages/google/oauth2/__init__.py:40: FutureWarning: You are using a Python version 3.9 past its end of life. Google will update google-auth with critical bug fixes on a best-effort basis, but not with any other fixes or features. Please upgrade your Python version, and then update google-auth.
+  warnings.warn(eol_message.format("3.9"), FutureWarning)
+/Users/madhukk/Library/Python/3.9/lib/python/site-packages/google/auth/__init__.py:54: FutureWarning: You are using a Python version 3.9 past its end of life. Google will update google-auth with critical bug fixes on a best-effort basis, but not with any other fixes or features. Please upgrade your Python version, and then update google-auth.
+  warnings.warn(eol_message.format("3.9"), FutureWarning)
+/Users/madhukk/Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+INFO:     Started server process [95608]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'admin_routes.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [95608]
+/Users/madhukk/Library/Python/3.9/lib/python/site-packages/google/oauth2/__init__.py:40: FutureWarning: You are using a Python version 3.9 past its end of life. Google will update google-auth with critical bug fixes on a best-effort basis, but not with any other fixes or features. Please upgrade your Python version, and then update google-auth.
+  warnings.warn(eol_message.format("3.9"), FutureWarning)
+/Users/madhukk/Library/Python/3.9/lib/python/site-packages/google/auth/__init__.py:54: FutureWarning: You are using a Python version 3.9 past its end of life. Google will update google-auth with critical bug fixes on a best-effort basis, but not with any other fixes or features. Please upgrade your Python version, and then update google-auth.
+  warnings.warn(eol_message.format("3.9"), FutureWarning)
+/Users/madhukk/Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+INFO:     Started server process [95614]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     127.0.0.1:54252 - "GET /api/orders/5f37503c-cbd1-4f7a-8c6f-53a76c67c65c HTTP/1.1" 403 Forbidden
+INFO:     127.0.0.1:54254 - "GET /api/cart HTTP/1.1" 403 Forbidden
+INFO:     127.0.0.1:54250 - "GET /api/settings/announcement HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54255 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54252 - "GET /api/orders/5f37503c-cbd1-4f7a-8c6f-53a76c67c65c HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54258 - "GET /api/cart HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54250 - "GET /api/settings/announcement HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54254 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54250 - "GET /api/settings/announcement HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54254 - "GET /api/settings/announcement HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54254 - "GET /api/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54254 - "GET /api/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54250 - "GET /api/recommendations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54250 - "GET /api/recommendations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54250 - "OPTIONS /api/orders/59a2c4c6-5bf2-407b-aacf-81e34e195123 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54254 - "OPTIONS /api/orders/59a2c4c6-5bf2-407b-aacf-81e34e195123 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54258 - "GET /api/orders/59a2c4c6-5bf2-407b-aacf-81e34e195123 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54258 - "GET /api/orders/59a2c4c6-5bf2-407b-aacf-81e34e195123 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54260 - "OPTIONS /api/orders/59a2c4c6-5bf2-407b-aacf-81e34e195123/request-cancel HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54260 - "POST /api/orders/59a2c4c6-5bf2-407b-aacf-81e34e195123/request-cancel HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54260 - "GET /api/orders/59a2c4c6-5bf2-407b-aacf-81e34e195123 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54276 - "GET /api/cart HTTP/1.1" 403 Forbidden
+INFO:     127.0.0.1:54285 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54284 - "GET /api/settings/announcement HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54287 - "GET /api/cart HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54285 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54276 - "GET /api/settings/announcement HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54276 - "GET /api/admin/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54276 - "GET /api/admin/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54296 - "OPTIONS /api/admin/orders/59a2c4c6-5bf2-407b-aacf-81e34e195123/approve-cancel HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54296 - "PATCH /api/admin/orders/59a2c4c6-5bf2-407b-aacf-81e34e195123/approve-cancel HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54296 - "GET /api/admin/orders HTTP/1.1" 200 OK
+2026-03-14 17:30:52,124 - notifications - INFO - Cancellation email sent successfully for Order ID: 59a2c4c6-5bf2-407b-aacf-81e34e195123
+WARNING:  WatchFiles detected changes in 'notifications.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [95614]
+Cancellation email sent successfully
+/Users/madhukk/Library/Python/3.9/lib/python/site-packages/google/oauth2/__init__.py:40: FutureWarning: You are using a Python version 3.9 past its end of life. Google will update google-auth with critical bug fixes on a best-effort basis, but not with any other fixes or features. Please upgrade your Python version, and then update google-auth.
+  warnings.warn(eol_message.format("3.9"), FutureWarning)
+/Users/madhukk/Library/Python/3.9/lib/python/site-packages/google/auth/__init__.py:54: FutureWarning: You are using a Python version 3.9 past its end of life. Google will update google-auth with critical bug fixes on a best-effort basis, but not with any other fixes or features. Please upgrade your Python version, and then update google-auth.
+  warnings.warn(eol_message.format("3.9"), FutureWarning)
+/Users/madhukk/Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+INFO:     Started server process [95641]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     127.0.0.1:54373 - "PATCH /api/admin/orders/eb17d0ce-7830-4d6c-bfea-488c9db62d0f/approve-cancel HTTP/1.1" 200 OK
+2026-03-14 17:35:28,447 - notifications - INFO - Cancellation email sent successfully for Order ID: eb17d0ce-7830-4d6c-bfea-488c9db62d0f
+Cancellation email sent successfully
+INFO:     127.0.0.1:54474 - "GET /api/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54474 - "GET /api/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54475 - "GET /api/recommendations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54475 - "GET /api/recommendations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54483 - "GET /api/orders/5f37503c-cbd1-4f7a-8c6f-53a76c67c65c HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54483 - "GET /api/orders/5f37503c-cbd1-4f7a-8c6f-53a76c67c65c HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54486 - "GET /api/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54486 - "GET /api/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54487 - "GET /api/recommendations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54486 - "GET /api/recommendations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54486 - "OPTIONS /api/orders/55d33206-60f2-4a52-853c-75dc8edd1214 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54487 - "OPTIONS /api/orders/55d33206-60f2-4a52-853c-75dc8edd1214 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54486 - "GET /api/orders/55d33206-60f2-4a52-853c-75dc8edd1214 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54486 - "GET /api/orders/55d33206-60f2-4a52-853c-75dc8edd1214 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54489 - "OPTIONS /api/orders/55d33206-60f2-4a52-853c-75dc8edd1214/request-cancel HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54489 - "POST /api/orders/55d33206-60f2-4a52-853c-75dc8edd1214/request-cancel HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54489 - "GET /api/orders/55d33206-60f2-4a52-853c-75dc8edd1214 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54491 - "GET /api/cart HTTP/1.1" 403 Forbidden
+INFO:     127.0.0.1:54501 - "GET /api/settings/announcement HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54503 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54491 - "GET /api/cart HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54505 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54501 - "GET /api/settings/announcement HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54501 - "GET /api/admin/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54501 - "GET /api/admin/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54519 - "OPTIONS /api/admin/orders/55d33206-60f2-4a52-853c-75dc8edd1214/approve-cancel HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54519 - "PATCH /api/admin/orders/55d33206-60f2-4a52-853c-75dc8edd1214/approve-cancel HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54519 - "GET /api/admin/orders HTTP/1.1" 200 OK
+2026-03-14 17:42:02,987 - notifications - INFO - Cancellation email sent successfully for Order ID: 55d33206-60f2-4a52-853c-75dc8edd1214
+Cancellation email sent successfully
+INFO:     127.0.0.1:54534 - "GET /api/orders/55d33206-60f2-4a52-853c-75dc8edd1214 HTTP/1.1" 403 Forbidden
+INFO:     127.0.0.1:54535 - "GET /api/cart HTTP/1.1" 403 Forbidden
+INFO:     127.0.0.1:54521 - "GET /api/settings/announcement HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54537 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54540 - "GET /api/settings/announcement HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54521 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54534 - "GET /api/orders/55d33206-60f2-4a52-853c-75dc8edd1214 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54535 - "GET /api/cart HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54537 - "GET /api/settings/announcement HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54537 - "GET /api/settings/announcement HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54537 - "GET /api/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54537 - "GET /api/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54535 - "GET /api/recommendations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54535 - "GET /api/recommendations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54535 - "GET /api/orders/55d33206-60f2-4a52-853c-75dc8edd1214 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54535 - "GET /api/orders/55d33206-60f2-4a52-853c-75dc8edd1214 HTTP/1.1" 200 OK
+WARNING:  WatchFiles detected changes in 'notifications.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [95641]
+/Users/madhukk/Library/Python/3.9/lib/python/site-packages/google/oauth2/__init__.py:40: FutureWarning: You are using a Python version 3.9 past its end of life. Google will update google-auth with critical bug fixes on a best-effort basis, but not with any other fixes or features. Please upgrade your Python version, and then update google-auth.
+  warnings.warn(eol_message.format("3.9"), FutureWarning)
+/Users/madhukk/Library/Python/3.9/lib/python/site-packages/google/auth/__init__.py:54: FutureWarning: You are using a Python version 3.9 past its end of life. Google will update google-auth with critical bug fixes on a best-effort basis, but not with any other fixes or features. Please upgrade your Python version, and then update google-auth.
+  warnings.warn(eol_message.format("3.9"), FutureWarning)
+/Users/madhukk/Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+INFO:     Started server process [97721]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'notifications.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [97721]
+/Users/madhukk/Library/Python/3.9/lib/python/site-packages/google/oauth2/__init__.py:40: FutureWarning: You are using a Python version 3.9 past its end of life. Google will update google-auth with critical bug fixes on a best-effort basis, but not with any other fixes or features. Please upgrade your Python version, and then update google-auth.
+  warnings.warn(eol_message.format("3.9"), FutureWarning)
+/Users/madhukk/Library/Python/3.9/lib/python/site-packages/google/auth/__init__.py:54: FutureWarning: You are using a Python version 3.9 past its end of life. Google will update google-auth with critical bug fixes on a best-effort basis, but not with any other fixes or features. Please upgrade your Python version, and then update google-auth.
+  warnings.warn(eol_message.format("3.9"), FutureWarning)
+/Users/madhukk/Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+INFO:     Started server process [97730]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     127.0.0.1:54659 - "GET /api/orders/55d33206-60f2-4a52-853c-75dc8edd1214 HTTP/1.1" 403 Forbidden
+INFO:     127.0.0.1:54660 - "GET /api/cart HTTP/1.1" 403 Forbidden
+INFO:     127.0.0.1:54658 - "GET /api/settings/announcement HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54662 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54659 - "GET /api/orders/55d33206-60f2-4a52-853c-75dc8edd1214 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54660 - "GET /api/cart HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54666 - "GET /api/settings/announcement HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54658 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54660 - "GET /api/settings/announcement HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54660 - "GET /api/settings/announcement HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54660 - "GET /api/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54660 - "GET /api/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54658 - "GET /api/recommendations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54658 - "GET /api/recommendations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54658 - "OPTIONS /api/orders/cea991d5-e2be-4b93-8985-6c3475e77f2a HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54660 - "OPTIONS /api/orders/cea991d5-e2be-4b93-8985-6c3475e77f2a HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54666 - "GET /api/orders/cea991d5-e2be-4b93-8985-6c3475e77f2a HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54666 - "GET /api/orders/cea991d5-e2be-4b93-8985-6c3475e77f2a HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54667 - "OPTIONS /api/orders/cea991d5-e2be-4b93-8985-6c3475e77f2a/request-cancel HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54667 - "POST /api/orders/cea991d5-e2be-4b93-8985-6c3475e77f2a/request-cancel HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54667 - "GET /api/orders/cea991d5-e2be-4b93-8985-6c3475e77f2a HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54684 - "GET /api/cart HTTP/1.1" 403 Forbidden
+INFO:     127.0.0.1:54694 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54693 - "GET /api/settings/announcement HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54684 - "GET /api/cart HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54694 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54693 - "GET /api/settings/announcement HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54693 - "GET /api/admin/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54693 - "GET /api/admin/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54696 - "OPTIONS /api/admin/orders/cea991d5-e2be-4b93-8985-6c3475e77f2a/approve-cancel HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54696 - "PATCH /api/admin/orders/cea991d5-e2be-4b93-8985-6c3475e77f2a/approve-cancel HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54696 - "GET /api/admin/orders HTTP/1.1" 200 OK
+2026-03-14 17:50:48,743 - notifications - INFO - Cancellation email sent successfully for Order ID: cea991d5-e2be-4b93-8985-6c3475e77f2a
+Cancellation email sent successfully
+INFO:     127.0.0.1:54721 - "GET /api/orders/cea991d5-e2be-4b93-8985-6c3475e77f2a HTTP/1.1" 403 Forbidden
+INFO:     127.0.0.1:54722 - "GET /api/cart HTTP/1.1" 403 Forbidden
+INFO:     127.0.0.1:54706 - "GET /api/settings/announcement HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54724 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54706 - "GET /api/settings/announcement HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54721 - "GET /api/orders/cea991d5-e2be-4b93-8985-6c3475e77f2a HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54727 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54722 - "GET /api/cart HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54724 - "GET /api/settings/announcement HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54724 - "GET /api/settings/announcement HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54724 - "GET /api/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54724 - "GET /api/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54722 - "GET /api/recommendations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54722 - "GET /api/recommendations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54722 - "GET /api/orders/cea991d5-e2be-4b93-8985-6c3475e77f2a HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54722 - "GET /api/orders/cea991d5-e2be-4b93-8985-6c3475e77f2a HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54746 - "OPTIONS /api/admin/orders/LG-86271EE9/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54746 - "PUT /api/admin/orders/LG-86271EE9/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54746 - "GET /api/admin/orders HTTP/1.1" 200 OK
+2026-03-14 17:52:25,696 - notifications - INFO - Order status email sent to ckmgamers@gmail.com for Order ID: LG-86271EE9
+INFO:     127.0.0.1:54770 - "GET /api/hero-banners HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54772 - "GET /api/products?featured=true HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54773 - "GET /api/impact-series/active HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54770 - "GET /api/products?featured=true HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54777 - "GET /api/impact-series/active HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54775 - "GET /api/hero-banners HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54775 - "OPTIONS /api/products/01f9f63b-bafc-4e14-884d-d9ca3286be77 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54777 - "OPTIONS /api/wishlist HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54770 - "OPTIONS /api/products/01f9f63b-bafc-4e14-884d-d9ca3286be77 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54773 - "OPTIONS /api/wishlist HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54772 - "GET /api/products/01f9f63b-bafc-4e14-884d-d9ca3286be77 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54772 - "OPTIONS /api/products?category=t-shirts HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54773 - "GET /api/products/01f9f63b-bafc-4e14-884d-d9ca3286be77 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54770 - "GET /api/products?category=t-shirts HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54775 - "GET /api/wishlist HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54773 - "GET /api/products?category=t-shirts HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54775 - "GET /api/wishlist HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54779 - "GET /api/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54779 - "GET /api/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54783 - "GET /api/recommendations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54783 - "GET /api/recommendations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54785 - "OPTIONS /api/auth/google HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54785 - "POST /api/auth/google HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54787 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54785 - "GET /api/cart HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54785 - "GET /api/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54787 - "GET /api/recommendations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54785 - "GET /api/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54787 - "GET /api/recommendations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54787 - "GET /api/hero-banners HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54785 - "GET /api/products?featured=true HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54792 - "GET /api/impact-series/active HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54787 - "GET /api/products?featured=true HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54785 - "GET /api/impact-series/active HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54794 - "GET /api/hero-banners HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54794 - "OPTIONS /api/products HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54785 - "OPTIONS /api/products HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54787 - "GET /api/products HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54787 - "GET /api/products HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54787 - "OPTIONS /api/cart HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54785 - "POST /api/cart HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54785 - "GET /api/cart HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54796 - "OPTIONS /api/orders HTTP/1.1" 200 OK
+2026-03-14 17:54:08,060 - root - INFO - --> COD CHECKOUT TRIGGERED
+2026-03-14 17:54:08,061 - root - INFO - --> ATTEMPTING COD STOCK DEDUCTION
+2026-03-14 17:54:08,063 - root - INFO - --> COD STOCK DEDUCTION SUCCESS
+INFO:     127.0.0.1:54796 - "POST /api/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54796 - "OPTIONS /api/orders/LG-3DC9B00C HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54802 - "OPTIONS /api/orders/LG-3DC9B00C HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54796 - "GET /api/orders/LG-3DC9B00C HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54796 - "GET /api/orders/LG-3DC9B00C HTTP/1.1" 200 OK
+2026-03-14 17:54:13,950 - notifications - INFO - Dual order email notifications sent for Order ID: LG-3DC9B00C
+INFO:     127.0.0.1:54810 - "GET /api/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54814 - "GET /api/recommendations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54816 - "GET /api/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54810 - "GET /api/recommendations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54810 - "GET /api/orders/LG-3DC9B00C HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54816 - "GET /api/orders/LG-3DC9B00C HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54827 - "OPTIONS /api/orders/LG-3DC9B00C/request-cancel HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54827 - "POST /api/orders/LG-3DC9B00C/request-cancel HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54827 - "GET /api/orders/LG-3DC9B00C HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54829 - "GET /api/cart HTTP/1.1" 403 Forbidden
+INFO:     127.0.0.1:54839 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54837 - "GET /api/settings/announcement HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54841 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54829 - "GET /api/cart HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54839 - "GET /api/settings/announcement HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54839 - "GET /api/settings/announcement HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54837 - "GET /api/impact-series/active HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54829 - "GET /api/hero-banners HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54841 - "GET /api/products?featured=true HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54839 - "GET /api/settings/announcement HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54837 - "GET /api/impact-series/active HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54844 - "GET /api/hero-banners HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54829 - "GET /api/products?featured=true HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54829 - "GET /api/cart HTTP/1.1" 403 Forbidden
+INFO:     127.0.0.1:54844 - "GET /api/settings/announcement HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54837 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54829 - "GET /api/settings/announcement HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54844 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54839 - "GET /api/cart HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54839 - "POST /api/auth/login HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54844 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54839 - "GET /api/cart HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54839 - "GET /api/admin/dashboard/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54839 - "GET /api/admin/dashboard/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54839 - "GET /api/admin/products HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54844 - "GET /api/admin/impact-series HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54839 - "GET /api/admin/impact-series HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54829 - "GET /api/admin/products HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54829 - "GET /api/admin/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54829 - "GET /api/admin/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54845 - "OPTIONS /api/admin/orders/LG-3DC9B00C/approve-cancel HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54845 - "PATCH /api/admin/orders/LG-3DC9B00C/approve-cancel HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54845 - "GET /api/admin/orders HTTP/1.1" 200 OK
+2026-03-14 17:55:28,138 - notifications - INFO - Cancellation email sent successfully for Order ID: LG-3DC9B00C
+Cancellation email sent successfully
+INFO:     127.0.0.1:54869 - "GET /api/orders/LG-3DC9B00C HTTP/1.1" 403 Forbidden
+INFO:     127.0.0.1:54870 - "GET /api/cart HTTP/1.1" 403 Forbidden
+INFO:     127.0.0.1:54851 - "GET /api/settings/announcement HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54872 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54874 - "GET /api/settings/announcement HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54869 - "GET /api/orders/LG-3DC9B00C HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:54851 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54870 - "GET /api/cart HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54872 - "GET /api/settings/announcement HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54872 - "GET /api/settings/announcement HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54872 - "GET /api/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54872 - "GET /api/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54870 - "GET /api/recommendations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54870 - "GET /api/recommendations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54876 - "GET /api/orders/5f37503c-cbd1-4f7a-8c6f-53a76c67c65c HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54876 - "GET /api/orders/5f37503c-cbd1-4f7a-8c6f-53a76c67c65c HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54882 - "GET /api/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54882 - "GET /api/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54883 - "GET /api/recommendations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54883 - "GET /api/recommendations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54883 - "GET /api/orders/5f37503c-cbd1-4f7a-8c6f-53a76c67c65c HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54883 - "GET /api/orders/5f37503c-cbd1-4f7a-8c6f-53a76c67c65c HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54888 - "GET /api/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54888 - "GET /api/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54889 - "GET /api/recommendations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54889 - "GET /api/recommendations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54889 - "OPTIONS /api/orders/aa9665f4-023f-4515-ba2e-3a2ecceb0a2c HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54888 - "OPTIONS /api/orders/aa9665f4-023f-4515-ba2e-3a2ecceb0a2c HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54889 - "GET /api/orders/aa9665f4-023f-4515-ba2e-3a2ecceb0a2c HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54889 - "GET /api/orders/aa9665f4-023f-4515-ba2e-3a2ecceb0a2c HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54889 - "GET /api/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54889 - "GET /api/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54888 - "GET /api/recommendations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54888 - "GET /api/recommendations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54888 - "GET /api/orders/59a2c4c6-5bf2-407b-aacf-81e34e195123 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54888 - "GET /api/orders/59a2c4c6-5bf2-407b-aacf-81e34e195123 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54888 - "GET /api/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54888 - "GET /api/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54889 - "GET /api/recommendations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54889 - "GET /api/recommendations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54891 - "GET /api/impact-series/active HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54888 - "GET /api/products?featured=true HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54889 - "GET /api/hero-banners HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54891 - "GET /api/impact-series/active HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54888 - "GET /api/hero-banners HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54893 - "GET /api/products?featured=true HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54893 - "GET /api/products HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54893 - "GET /api/products HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54893 - "OPTIONS /api/products/prod_002 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54891 - "OPTIONS /api/products/prod_002 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54889 - "GET /api/products/prod_002 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54891 - "GET /api/products/prod_002 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54889 - "GET /api/products?category=t-shirts HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54888 - "GET /api/wishlist HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54889 - "GET /api/products?category=t-shirts HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54891 - "GET /api/wishlist HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54899 - "GET /uploads/11bbc176-a123-4b8f-9e34-edc7a98b6c2f.jpg HTTP/1.1" 304 Not Modified
+2026-03-14 17:56:32,055 - root - INFO - --> COD CHECKOUT TRIGGERED
+2026-03-14 17:56:32,056 - root - INFO - --> ATTEMPTING COD STOCK DEDUCTION
+2026-03-14 17:56:32,059 - root - INFO - --> COD STOCK DEDUCTION SUCCESS
+INFO:     127.0.0.1:54896 - "POST /api/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54896 - "OPTIONS /api/orders/LG-28D47A55 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54897 - "OPTIONS /api/orders/LG-28D47A55 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54896 - "GET /api/orders/LG-28D47A55 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54896 - "GET /api/orders/LG-28D47A55 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54913 - "GET /api/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54913 - "GET /api/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54917 - "GET /api/recommendations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54917 - "GET /api/recommendations HTTP/1.1" 200 OK
+2026-03-14 17:56:39,745 - notifications - INFO - Dual order email notifications sent for Order ID: LG-28D47A55
+INFO:     127.0.0.1:54917 - "GET /api/orders/LG-28D47A55 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54917 - "GET /api/orders/LG-28D47A55 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54951 - "OPTIONS /api/recommendations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54953 - "OPTIONS /api/recommendations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54950 - "GET /api/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54950 - "GET /api/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54951 - "GET /api/recommendations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54951 - "GET /api/recommendations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54955 - "POST /api/auth/google HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54964 - "OPTIONS /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54964 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54955 - "GET /api/cart HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54955 - "GET /api/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54964 - "GET /api/recommendations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54955 - "GET /api/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54964 - "GET /api/recommendations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54955 - "GET /api/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54964 - "GET /api/recommendations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54964 - "GET /api/orders/LG-3DC9B00C HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54964 - "GET /api/orders/LG-3DC9B00C HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54964 - "GET /api/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54966 - "GET /api/recommendations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54964 - "GET /api/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54966 - "GET /api/recommendations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54966 - "OPTIONS /api/hero-banners HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54964 - "OPTIONS /api/products?featured=true HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54970 - "OPTIONS /api/impact-series/active HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54974 - "OPTIONS /api/hero-banners HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54975 - "OPTIONS /api/products?featured=true HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54976 - "OPTIONS /api/impact-series/active HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54970 - "GET /api/impact-series/active HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54966 - "GET /api/hero-banners HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54964 - "GET /api/products?featured=true HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54976 - "GET /api/impact-series/active HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54970 - "GET /api/hero-banners HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54975 - "GET /api/products?featured=true HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54975 - "GET /api/admin/customers HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54975 - "GET /api/admin/customers HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54975 - "GET /api/admin/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54975 - "GET /api/admin/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54975 - "GET /api/admin/customers HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54975 - "GET /api/admin/customers HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54980 - "GET /api/admin/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54980 - "GET /api/admin/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54987 - "GET /api/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54988 - "GET /api/recommendations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54987 - "GET /api/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54988 - "GET /api/recommendations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54988 - "GET /api/orders/LG-3DC9B00C HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54988 - "GET /api/orders/LG-3DC9B00C HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55041 - "GET /api/hero-banners HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55045 - "GET /api/impact-series/active HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55044 - "GET /api/products?featured=true HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55041 - "GET /api/hero-banners HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55047 - "GET /api/impact-series/active HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55045 - "GET /api/products?featured=true HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55045 - "GET /api/products HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55045 - "GET /api/products HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55045 - "GET /api/products/prod_002 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55047 - "GET /api/wishlist HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55045 - "GET /api/products/prod_002 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55041 - "GET /api/products?category=t-shirts HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55044 - "GET /api/wishlist HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55041 - "GET /api/products?category=t-shirts HTTP/1.1" 200 OK
+2026-03-14 18:03:05,978 - root - INFO - --> RAZORPAY CHECKOUT TRIGGERED
+INFO:     127.0.0.1:55055 - "POST /api/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55055 - "OPTIONS /api/razorpay/create-order HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55055 - "POST /api/razorpay/create-order HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55057 - "OPTIONS /api/razorpay/verify-payment HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55057 - "POST /api/razorpay/verify-payment HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55057 - "OPTIONS /api/orders/LG-68555509 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55251 - "OPTIONS /api/orders/LG-68555509 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55057 - "GET /api/orders/LG-68555509 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55057 - "GET /api/orders/LG-68555509 HTTP/1.1" 200 OK
+2026-03-14 18:03:52,223 - notifications - INFO - Dual order email notifications sent for Order ID: LG-68555509
+INFO:     127.0.0.1:55258 - "GET /api/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55271 - "GET /api/recommendations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55258 - "GET /api/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55271 - "GET /api/recommendations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55273 - "GET /api/orders/LG-68555509 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55273 - "GET /api/orders/LG-68555509 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55275 - "OPTIONS /api/orders/LG-68555509/request-cancel HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55275 - "POST /api/orders/LG-68555509/request-cancel HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55275 - "GET /api/orders/LG-68555509 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55277 - "GET /api/cart HTTP/1.1" 403 Forbidden
+INFO:     127.0.0.1:55295 - "OPTIONS /api/settings/announcement HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55293 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55292 - "GET /api/settings/announcement HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55297 - "GET /api/cart HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55277 - "GET /api/settings/announcement HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55293 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55293 - "GET /api/settings/announcement HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55277 - "GET /api/hero-banners HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55297 - "GET /api/products?featured=true HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55292 - "GET /api/impact-series/active HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55295 - "GET /api/settings/announcement HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55293 - "GET /api/hero-banners HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55297 - "GET /api/impact-series/active HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55292 - "GET /api/products?featured=true HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55302 - "GET /api/cart HTTP/1.1" 403 Forbidden
+INFO:     127.0.0.1:55304 - "GET /api/settings/announcement HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55305 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55302 - "GET /api/cart HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55307 - "GET /api/settings/announcement HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55309 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55313 - "OPTIONS /api/auth/login HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55313 - "POST /api/auth/login HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55315 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55313 - "GET /api/cart HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55313 - "OPTIONS /api/admin/dashboard/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55315 - "OPTIONS /api/admin/dashboard/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55313 - "GET /api/admin/dashboard/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55313 - "GET /api/admin/dashboard/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55313 - "OPTIONS /api/admin/products HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55315 - "OPTIONS /api/admin/impact-series HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55317 - "OPTIONS /api/admin/products HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55319 - "OPTIONS /api/admin/impact-series HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55321 - "GET /api/admin/impact-series HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55313 - "GET /api/admin/products HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55319 - "GET /api/admin/impact-series HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55321 - "GET /api/admin/products HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55321 - "OPTIONS /api/admin/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55319 - "OPTIONS /api/admin/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55313 - "GET /api/admin/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55319 - "GET /api/admin/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55332 - "OPTIONS /api/admin/orders/LG-68555509/approve-cancel HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55332 - "PATCH /api/admin/orders/LG-68555509/approve-cancel HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55332 - "GET /api/admin/orders HTTP/1.1" 200 OK
+2026-03-14 18:05:03,953 - notifications - INFO - Cancellation email sent successfully for Order ID: LG-68555509
+Cancellation email sent successfully
+INFO:     127.0.0.1:55347 - "GET /api/orders/LG-68555509 HTTP/1.1" 403 Forbidden
+INFO:     127.0.0.1:55334 - "GET /api/settings/announcement HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55347 - "GET /api/cart HTTP/1.1" 403 Forbidden
+INFO:     127.0.0.1:55349 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55351 - "GET /api/settings/announcement HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55334 - "GET /api/orders/LG-68555509 HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:55353 - "GET /api/cart HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55347 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55349 - "GET /api/settings/announcement HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55347 - "GET /api/settings/announcement HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55347 - "GET /api/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55347 - "GET /api/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55349 - "GET /api/recommendations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55349 - "GET /api/recommendations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55356 - "POST /api/auth/google HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55359 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55356 - "GET /api/cart HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55356 - "GET /api/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55359 - "GET /api/recommendations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55356 - "GET /api/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55356 - "GET /api/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55359 - "GET /api/recommendations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55359 - "GET /api/recommendations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55359 - "GET /api/orders/LG-68555509 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55359 - "GET /api/orders/LG-68555509 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55361 - "GET /api/hero-banners HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55374 - "GET /api/products?featured=true HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55375 - "GET /api/impact-series/active HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55361 - "GET /api/hero-banners HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55379 - "GET /api/impact-series/active HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55377 - "GET /api/products?featured=true HTTP/1.1" 200 OK
+WARNING:  WatchFiles detected changes in 'server.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [97730]
+/Users/madhukk/Library/Python/3.9/lib/python/site-packages/google/oauth2/__init__.py:40: FutureWarning: You are using a Python version 3.9 past its end of life. Google will update google-auth with critical bug fixes on a best-effort basis, but not with any other fixes or features. Please upgrade your Python version, and then update google-auth.
+  warnings.warn(eol_message.format("3.9"), FutureWarning)
+/Users/madhukk/Library/Python/3.9/lib/python/site-packages/google/auth/__init__.py:54: FutureWarning: You are using a Python version 3.9 past its end of life. Google will update google-auth with critical bug fixes on a best-effort basis, but not with any other fixes or features. Please upgrade your Python version, and then update google-auth.
+  warnings.warn(eol_message.format("3.9"), FutureWarning)
+/Users/madhukk/Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+INFO:     Started server process [99413]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     127.0.0.1:49535 - "OPTIONS /api/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49537 - "OPTIONS /api/recommendations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49538 - "OPTIONS /api/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49539 - "OPTIONS /api/recommendations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49543 - "GET /api/recommendations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49535 - "GET /api/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49535 - "GET /api/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49543 - "GET /api/recommendations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49543 - "OPTIONS /api/hero-banners HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49535 - "OPTIONS /api/products?featured=true HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49539 - "OPTIONS /api/impact-series/active HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49538 - "OPTIONS /api/hero-banners HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49537 - "OPTIONS /api/products?featured=true HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49553 - "OPTIONS /api/impact-series/active HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49543 - "GET /api/hero-banners HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49535 - "GET /api/products?featured=true HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49539 - "GET /api/impact-series/active HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49537 - "GET /api/products?featured=true HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49553 - "GET /api/hero-banners HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49535 - "GET /api/impact-series/active HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49557 - "GET /uploads/76581424-6478-401a-94ca-b61b5b489190.jpg HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:49558 - "GET /uploads/351d981e-eb82-4a67-946b-9a89c826abfe.jpg HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:49562 - "GET /uploads/13bbae18-9234-4971-89cf-a32e1382642d.png HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:49561 - "GET /uploads/0fc72948-9596-4235-9962-65e86b6bd1f2.jpg HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:49535 - "OPTIONS /api/products HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49553 - "OPTIONS /api/products HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49537 - "GET /api/products HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49537 - "GET /api/products HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49537 - "OPTIONS /api/products/prod_001 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49553 - "OPTIONS /api/wishlist HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49535 - "OPTIONS /api/products/prod_001 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49539 - "OPTIONS /api/wishlist HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49543 - "GET /api/products/prod_001 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49537 - "GET /api/wishlist HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49539 - "OPTIONS /api/products?category=t-shirts HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49543 - "GET /api/products/prod_001 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49537 - "GET /api/products?category=t-shirts HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49535 - "GET /api/wishlist HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49543 - "GET /api/products?category=t-shirts HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49581 - "OPTIONS /api/orders HTTP/1.1" 200 OK
+2026-03-14 23:50:45,839 - root - INFO - --> COD CHECKOUT TRIGGERED
+2026-03-14 23:50:45,840 - root - INFO - --> ATTEMPTING COD STOCK DEDUCTION
+2026-03-14 23:50:45,853 - root - INFO - --> COD STOCK DEDUCTION SUCCESS
+INFO:     127.0.0.1:49581 - "POST /api/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49581 - "OPTIONS /api/orders/LG-2A79414C HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49583 - "OPTIONS /api/orders/LG-2A79414C HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49581 - "GET /api/orders/LG-2A79414C HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49581 - "GET /api/orders/LG-2A79414C HTTP/1.1" 200 OK
+2026-03-14 23:50:52,419 - notifications - INFO - Dual order email notifications sent for Order ID: LG-2A79414C
+INFO:     127.0.0.1:49588 - "GET /api/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49601 - "GET /api/recommendations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49588 - "GET /api/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49601 - "GET /api/recommendations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49603 - "GET /api/orders/LG-2A79414C HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49603 - "GET /api/orders/LG-2A79414C HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49611 - "OPTIONS /api/orders/LG-2A79414C/request-cancel HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49611 - "POST /api/orders/LG-2A79414C/request-cancel HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49611 - "GET /api/orders/LG-2A79414C HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49613 - "GET /api/cart HTTP/1.1" 403 Forbidden
+INFO:     127.0.0.1:49625 - "OPTIONS /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49628 - "OPTIONS /api/cart HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49630 - "OPTIONS /api/settings/announcement HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49631 - "OPTIONS /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49624 - "GET /api/settings/announcement HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49625 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49628 - "GET /api/cart HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49624 - "GET /api/settings/announcement HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49613 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49613 - "GET /api/settings/announcement HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49624 - "GET /api/hero-banners HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49628 - "GET /api/products?featured=true HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49625 - "GET /api/impact-series/active HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49631 - "GET /api/settings/announcement HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49613 - "GET /api/hero-banners HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49625 - "GET /api/impact-series/active HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49624 - "GET /api/products?featured=true HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49624 - "GET /api/cart HTTP/1.1" 403 Forbidden
+INFO:     127.0.0.1:49625 - "GET /api/settings/announcement HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49613 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49624 - "GET /api/cart HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49631 - "GET /api/settings/announcement HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49625 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49625 - "OPTIONS /api/auth/login HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49631 - "POST /api/auth/login HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49625 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49631 - "GET /api/cart HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49631 - "OPTIONS /api/admin/dashboard/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49625 - "OPTIONS /api/admin/dashboard/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49624 - "GET /api/admin/dashboard/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49624 - "GET /api/admin/dashboard/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49624 - "OPTIONS /api/admin/products HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49625 - "OPTIONS /api/admin/impact-series HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49631 - "OPTIONS /api/admin/products HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49613 - "OPTIONS /api/admin/impact-series HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49646 - "GET /api/admin/impact-series HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49624 - "GET /api/admin/products HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49613 - "GET /api/admin/impact-series HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49646 - "GET /api/admin/products HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49646 - "OPTIONS /api/admin/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49613 - "OPTIONS /api/admin/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49624 - "GET /api/admin/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49624 - "GET /api/admin/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49656 - "OPTIONS /api/admin/orders/LG-2A79414C/reject-cancel HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49656 - "PATCH /api/admin/orders/LG-2A79414C/reject-cancel HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49656 - "GET /api/admin/orders HTTP/1.1" 200 OK
+2026-03-14 23:52:17,848 - notifications - INFO - Order status email sent to madhukk7ckm@gmail.com for Order ID: LG-2A79414C
+INFO:     127.0.0.1:49658 - "GET /api/hero-banners HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49666 - "GET /api/impact-series/active HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49665 - "GET /api/products?featured=true HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49658 - "GET /api/hero-banners HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49666 - "GET /api/products?featured=true HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49668 - "GET /api/impact-series/active HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49668 - "GET /api/products HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49668 - "GET /api/products HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49668 - "GET /api/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49666 - "GET /api/recommendations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49668 - "GET /api/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49666 - "GET /api/recommendations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49666 - "GET /api/orders/LG-2A79414C HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49666 - "GET /api/orders/LG-2A79414C HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49670 - "OPTIONS /api/admin/orders/LG-2A79414C/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49670 - "PUT /api/admin/orders/LG-2A79414C/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49670 - "GET /api/admin/orders HTTP/1.1" 200 OK
+2026-03-14 23:53:04,645 - notifications - INFO - Order status email sent to madhukk7ckm@gmail.com for Order ID: LG-2A79414C
+INFO:     127.0.0.1:49674 - "GET /api/hero-banners HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49690 - "GET /api/impact-series/active HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49689 - "GET /api/products?featured=true HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49674 - "GET /api/hero-banners HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49690 - "GET /api/impact-series/active HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49692 - "GET /api/products?featured=true HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49692 - "GET /api/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49690 - "GET /api/recommendations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49692 - "GET /api/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49690 - "GET /api/recommendations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49690 - "GET /api/orders/LG-2A79414C HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49690 - "GET /api/orders/LG-2A79414C HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49696 - "PUT /api/admin/orders/LG-2A79414C/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49696 - "GET /api/admin/orders HTTP/1.1" 200 OK
+2026-03-14 23:53:35,058 - notifications - INFO - Order status email sent to madhukk7ckm@gmail.com for Order ID: LG-2A79414C
+INFO:     127.0.0.1:49715 - "GET /api/orders/LG-2A79414C HTTP/1.1" 403 Forbidden
+INFO:     127.0.0.1:49717 - "GET /api/cart HTTP/1.1" 403 Forbidden
+INFO:     127.0.0.1:49713 - "GET /api/settings/announcement HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49718 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49715 - "GET /api/orders/LG-2A79414C HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:49717 - "GET /api/settings/announcement HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49720 - "GET /api/cart HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49722 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49717 - "GET /api/settings/announcement HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49722 - "GET /api/settings/announcement HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49727 - "GET /api/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49727 - "GET /api/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49728 - "GET /api/recommendations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49728 - "GET /api/recommendations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49731 - "OPTIONS /api/auth/google HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49731 - "POST /api/auth/google HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49733 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49731 - "GET /api/cart HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49731 - "GET /api/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49733 - "GET /api/recommendations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49731 - "GET /api/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49733 - "GET /api/recommendations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49733 - "GET /api/orders/LG-2A79414C HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49733 - "GET /api/orders/LG-2A79414C HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49753 - "PUT /api/admin/orders/LG-2A79414C/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49753 - "GET /api/admin/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49766 - "GET /api/orders/LG-2A79414C HTTP/1.1" 403 Forbidden
+INFO:     127.0.0.1:49767 - "GET /api/cart HTTP/1.1" 403 Forbidden
+INFO:     127.0.0.1:49753 - "GET /api/settings/announcement HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49769 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49767 - "GET /api/settings/announcement HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49766 - "GET /api/orders/LG-2A79414C HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49753 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49771 - "GET /api/cart HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49767 - "GET /api/settings/announcement HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49771 - "GET /api/settings/announcement HTTP/1.1" 200 OK
+2026-03-14 23:55:09,851 - notifications - INFO - Order status email sent to madhukk7ckm@gmail.com for Order ID: LG-2A79414C
+INFO:     127.0.0.1:49771 - "GET /api/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49767 - "GET /api/recommendations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49771 - "GET /api/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49767 - "GET /api/recommendations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49767 - "GET /api/orders/LG-2A79414C HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49771 - "GET /api/orders/LG-2A79414C HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49892 - "GET /api/orders/LG-2A79414C HTTP/1.1" 403 Forbidden
+INFO:     127.0.0.1:49893 - "GET /api/cart HTTP/1.1" 403 Forbidden
+INFO:     127.0.0.1:49891 - "GET /api/settings/announcement HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49895 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49891 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49893 - "GET /api/cart HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49898 - "GET /api/settings/announcement HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49892 - "GET /api/orders/LG-2A79414C HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49893 - "GET /api/settings/announcement HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49893 - "GET /api/settings/announcement HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49893 - "GET /api/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49898 - "GET /api/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49892 - "GET /api/recommendations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49892 - "GET /api/recommendations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49892 - "GET /api/hero-banners HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49898 - "GET /api/products?featured=true HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49893 - "GET /api/impact-series/active HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49892 - "GET /api/hero-banners HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49895 - "GET /api/impact-series/active HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49891 - "GET /api/products?featured=true HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49891 - "GET /api/products HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49891 - "GET /api/products HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49891 - "GET /api/products/prod_001 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49895 - "GET /api/wishlist HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49891 - "GET /api/products/prod_001 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49892 - "GET /api/products?category=t-shirts HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49893 - "GET /api/wishlist HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49891 - "GET /api/products?category=t-shirts HTTP/1.1" 200 OK
+2026-03-15 00:01:46,271 - root - INFO - --> COD CHECKOUT TRIGGERED
+2026-03-15 00:01:46,272 - root - INFO - --> ATTEMPTING COD STOCK DEDUCTION
+2026-03-15 00:01:46,274 - root - INFO - --> COD STOCK DEDUCTION SUCCESS
+INFO:     127.0.0.1:49899 - "POST /api/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49899 - "OPTIONS /api/orders/LG-E3AB1542 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49912 - "OPTIONS /api/orders/LG-E3AB1542 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49899 - "GET /api/orders/LG-E3AB1542 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49899 - "GET /api/orders/LG-E3AB1542 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49899 - "GET /api/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49899 - "GET /api/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49912 - "GET /api/recommendations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49912 - "GET /api/recommendations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49912 - "GET /api/orders/LG-E3AB1542 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49899 - "GET /api/orders/LG-E3AB1542 HTTP/1.1" 200 OK
+2026-03-15 00:01:51,155 - notifications - INFO - Dual order email notifications sent for Order ID: LG-E3AB1542
+INFO:     127.0.0.1:49914 - "OPTIONS /api/orders/LG-E3AB1542/request-cancel HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49914 - "POST /api/orders/LG-E3AB1542/request-cancel HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49914 - "GET /api/orders/LG-E3AB1542 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49917 - "GET /api/cart HTTP/1.1" 403 Forbidden
+INFO:     127.0.0.1:49927 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49926 - "GET /api/settings/announcement HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49917 - "GET /api/cart HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49927 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49926 - "GET /api/settings/announcement HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49926 - "GET /api/settings/announcement HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49927 - "GET /api/hero-banners HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49929 - "GET /api/impact-series/active HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49917 - "GET /api/products?featured=true HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49926 - "GET /api/settings/announcement HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49927 - "GET /api/hero-banners HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49931 - "GET /api/impact-series/active HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49933 - "GET /api/products?featured=true HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49933 - "GET /api/cart HTTP/1.1" 403 Forbidden
+INFO:     127.0.0.1:49927 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49931 - "GET /api/settings/announcement HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49926 - "GET /api/cart HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49933 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49917 - "GET /api/settings/announcement HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49917 - "POST /api/auth/login HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49933 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49917 - "GET /api/cart HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49917 - "GET /api/admin/dashboard/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49917 - "GET /api/admin/dashboard/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49933 - "GET /api/admin/impact-series HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49917 - "GET /api/admin/products HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49933 - "GET /api/admin/impact-series HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49917 - "GET /api/admin/products HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49917 - "OPTIONS /api/admin/customers HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49933 - "OPTIONS /api/admin/customers HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49926 - "GET /api/admin/customers HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49926 - "GET /api/admin/customers HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49926 - "GET /api/admin/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49926 - "GET /api/admin/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49940 - "OPTIONS /api/admin/orders/LG-E3AB1542/reject-cancel HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49940 - "PATCH /api/admin/orders/LG-E3AB1542/reject-cancel HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49940 - "GET /api/admin/orders HTTP/1.1" 200 OK
+2026-03-15 00:02:36,868 - notifications - INFO - Order status email sent to madhukk7ckm@gmail.com for Order ID: LG-E3AB1542
+INFO:     127.0.0.1:49942 - "GET /api/orders/LG-E3AB1542 HTTP/1.1" 403 Forbidden
+INFO:     127.0.0.1:49956 - "GET /api/cart HTTP/1.1" 403 Forbidden
+INFO:     127.0.0.1:49940 - "GET /api/settings/announcement HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49958 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49942 - "GET /api/orders/LG-E3AB1542 HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:49956 - "GET /api/settings/announcement HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49940 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49960 - "GET /api/cart HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49942 - "GET /api/settings/announcement HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49942 - "GET /api/settings/announcement HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49942 - "GET /api/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49942 - "GET /api/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49960 - "GET /api/recommendations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49960 - "GET /api/recommendations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49962 - "POST /api/auth/google HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49968 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49962 - "GET /api/cart HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49962 - "GET /api/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49962 - "GET /api/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49968 - "GET /api/recommendations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49968 - "GET /api/recommendations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49968 - "GET /api/orders/LG-E3AB1542 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49968 - "GET /api/orders/LG-E3AB1542 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49976 - "GET /api/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49976 - "GET /api/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49977 - "GET /api/recommendations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49977 - "GET /api/recommendations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49977 - "GET /api/hero-banners HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49976 - "GET /api/products?featured=true HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49981 - "GET /api/impact-series/active HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49977 - "GET /api/hero-banners HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49976 - "GET /api/impact-series/active HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49983 - "GET /api/products?featured=true HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49992 - "GET /api/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49992 - "GET /api/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49993 - "GET /api/recommendations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49993 - "GET /api/recommendations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49996 - "OPTIONS /api/orders/LG-3DC9B00C HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49997 - "OPTIONS /api/orders/LG-3DC9B00C HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49996 - "GET /api/orders/LG-3DC9B00C HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49996 - "GET /api/orders/LG-3DC9B00C HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49999 - "GET /api/impact-series/active HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49996 - "GET /api/hero-banners HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49997 - "GET /api/products?featured=true HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49996 - "GET /api/products?featured=true HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49999 - "GET /api/impact-series/active HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50003 - "GET /api/hero-banners HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50005 - "OPTIONS /api/admin/orders/LG-E3AB1542/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50005 - "PUT /api/admin/orders/LG-E3AB1542/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50005 - "GET /api/admin/orders HTTP/1.1" 200 OK
+2026-03-15 00:04:24,901 - notifications - INFO - Order status email sent to madhukk7ckm@gmail.com for Order ID: LG-E3AB1542
+INFO:     127.0.0.1:50007 - "GET /api/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50007 - "GET /api/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50015 - "GET /api/recommendations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50015 - "GET /api/recommendations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50015 - "GET /api/orders/LG-E3AB1542 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50015 - "GET /api/orders/LG-E3AB1542 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50030 - "GET /api/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50033 - "GET /api/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50031 - "GET /api/recommendations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50033 - "GET /api/recommendations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50043 - "POST /api/auth/google HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50046 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50043 - "GET /api/cart HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50043 - "GET /api/hero-banners HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50046 - "GET /api/products?featured=true HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50050 - "GET /api/impact-series/active HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50052 - "GET /api/hero-banners HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50043 - "GET /api/products?featured=true HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50046 - "GET /api/impact-series/active HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50046 - "GET /api/products?category=t-shirts HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50046 - "GET /api/products?category=t-shirts HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50046 - "GET /api/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50046 - "GET /api/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50054 - "GET /api/recommendations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50054 - "GET /api/recommendations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50060 - "GET /api/impact-series/active HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50058 - "GET /api/hero-banners HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50059 - "GET /api/products?featured=true HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50060 - "GET /api/hero-banners HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50062 - "GET /api/impact-series/active HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50058 - "GET /api/products?featured=true HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50068 - "GET /api/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50068 - "GET /api/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50069 - "GET /api/recommendations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50068 - "GET /api/recommendations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50119 - "GET /api/admin/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50140 - "GET /api/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50140 - "GET /api/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50141 - "GET /api/recommendations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50140 - "GET /api/recommendations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50140 - "GET /api/orders/LG-E3AB1542 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50140 - "GET /api/orders/LG-E3AB1542 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50355 - "GET /api/admin/customers HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50355 - "GET /api/admin/customers HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50355 - "OPTIONS /api/admin/inventory/low-stock HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50357 - "OPTIONS /api/admin/inventory/low-stock HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50355 - "GET /api/admin/inventory/low-stock HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50355 - "GET /api/admin/inventory/low-stock HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50355 - "OPTIONS /api/admin/hero-banners HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50357 - "OPTIONS /api/admin/hero-banners HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50359 - "GET /api/admin/hero-banners HTTP/1.1" 403 Forbidden
+INFO:     127.0.0.1:50359 - "GET /api/admin/hero-banners HTTP/1.1" 403 Forbidden
+INFO:     127.0.0.1:50359 - "GET /api/admin/impact-series HTTP/1.1" 403 Forbidden
+INFO:     127.0.0.1:50359 - "GET /api/admin/impact-series HTTP/1.1" 403 Forbidden
+INFO:     127.0.0.1:50359 - "OPTIONS /api/admin/coupons HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50357 - "OPTIONS /api/admin/coupons HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50355 - "GET /api/admin/coupons HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50355 - "GET /api/admin/coupons HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50355 - "OPTIONS /api/admin/logs/admin-actions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50357 - "OPTIONS /api/admin/logs/security HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50359 - "OPTIONS /api/admin/logs/admin-actions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50361 - "OPTIONS /api/admin/logs/security HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50355 - "GET /api/admin/logs/admin-actions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50363 - "GET /api/admin/logs/security HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50355 - "GET /api/admin/logs/admin-actions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50361 - "GET /api/admin/logs/security HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50361 - "GET /api/settings/announcement HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50361 - "GET /api/settings/announcement HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50365 - "GET /api/admin/dashboard/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50365 - "GET /api/admin/dashboard/stats HTTP/1.1" 200 OK
+WARNING:  WatchFiles detected changes in 'server.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [99413]
+/Users/madhukk/Library/Python/3.9/lib/python/site-packages/google/oauth2/__init__.py:40: FutureWarning: You are using a Python version 3.9 past its end of life. Google will update google-auth with critical bug fixes on a best-effort basis, but not with any other fixes or features. Please upgrade your Python version, and then update google-auth.
+  warnings.warn(eol_message.format("3.9"), FutureWarning)
+/Users/madhukk/Library/Python/3.9/lib/python/site-packages/google/auth/__init__.py:54: FutureWarning: You are using a Python version 3.9 past its end of life. Google will update google-auth with critical bug fixes on a best-effort basis, but not with any other fixes or features. Please upgrade your Python version, and then update google-auth.
+  warnings.warn(eol_message.format("3.9"), FutureWarning)
+/Users/madhukk/Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+INFO:     Started server process [99721]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'server.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [99721]
+/Users/madhukk/Library/Python/3.9/lib/python/site-packages/google/oauth2/__init__.py:40: FutureWarning: You are using a Python version 3.9 past its end of life. Google will update google-auth with critical bug fixes on a best-effort basis, but not with any other fixes or features. Please upgrade your Python version, and then update google-auth.
+  warnings.warn(eol_message.format("3.9"), FutureWarning)
+/Users/madhukk/Library/Python/3.9/lib/python/site-packages/google/auth/__init__.py:54: FutureWarning: You are using a Python version 3.9 past its end of life. Google will update google-auth with critical bug fixes on a best-effort basis, but not with any other fixes or features. Please upgrade your Python version, and then update google-auth.
+  warnings.warn(eol_message.format("3.9"), FutureWarning)
+/Users/madhukk/Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+INFO:     Started server process [99727]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'server.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [99727]
+/Users/madhukk/Library/Python/3.9/lib/python/site-packages/google/oauth2/__init__.py:40: FutureWarning: You are using a Python version 3.9 past its end of life. Google will update google-auth with critical bug fixes on a best-effort basis, but not with any other fixes or features. Please upgrade your Python version, and then update google-auth.
+  warnings.warn(eol_message.format("3.9"), FutureWarning)
+/Users/madhukk/Library/Python/3.9/lib/python/site-packages/google/auth/__init__.py:54: FutureWarning: You are using a Python version 3.9 past its end of life. Google will update google-auth with critical bug fixes on a best-effort basis, but not with any other fixes or features. Please upgrade your Python version, and then update google-auth.
+  warnings.warn(eol_message.format("3.9"), FutureWarning)
+/Users/madhukk/Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+INFO:     Started server process [99744]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'admin_routes.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [99744]
+/Users/madhukk/Library/Python/3.9/lib/python/site-packages/google/oauth2/__init__.py:40: FutureWarning: You are using a Python version 3.9 past its end of life. Google will update google-auth with critical bug fixes on a best-effort basis, but not with any other fixes or features. Please upgrade your Python version, and then update google-auth.
+  warnings.warn(eol_message.format("3.9"), FutureWarning)
+/Users/madhukk/Library/Python/3.9/lib/python/site-packages/google/auth/__init__.py:54: FutureWarning: You are using a Python version 3.9 past its end of life. Google will update google-auth with critical bug fixes on a best-effort basis, but not with any other fixes or features. Please upgrade your Python version, and then update google-auth.
+  warnings.warn(eol_message.format("3.9"), FutureWarning)
+/Users/madhukk/Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+INFO:     Started server process [99751]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     127.0.0.1:50515 - "GET /api/impact-series/active HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50513 - "GET /api/hero-banners HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50514 - "GET /api/products?featured=true HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50522 - "GET /api/impact-series/active HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50515 - "GET /api/hero-banners HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50525 - "GET /api/products?featured=true HTTP/1.1" 200 OK
+WARNING:  WatchFiles detected changes in 'notifications.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [99751]
+/Users/madhukk/Library/Python/3.9/lib/python/site-packages/google/oauth2/__init__.py:40: FutureWarning: You are using a Python version 3.9 past its end of life. Google will update google-auth with critical bug fixes on a best-effort basis, but not with any other fixes or features. Please upgrade your Python version, and then update google-auth.
+  warnings.warn(eol_message.format("3.9"), FutureWarning)
+/Users/madhukk/Library/Python/3.9/lib/python/site-packages/google/auth/__init__.py:54: FutureWarning: You are using a Python version 3.9 past its end of life. Google will update google-auth with critical bug fixes on a best-effort basis, but not with any other fixes or features. Please upgrade your Python version, and then update google-auth.
+  warnings.warn(eol_message.format("3.9"), FutureWarning)
+/Users/madhukk/Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+INFO:     Started server process [99819]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'server.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [99819]
+/Users/madhukk/Library/Python/3.9/lib/python/site-packages/google/oauth2/__init__.py:40: FutureWarning: You are using a Python version 3.9 past its end of life. Google will update google-auth with critical bug fixes on a best-effort basis, but not with any other fixes or features. Please upgrade your Python version, and then update google-auth.
+  warnings.warn(eol_message.format("3.9"), FutureWarning)
+/Users/madhukk/Library/Python/3.9/lib/python/site-packages/google/auth/__init__.py:54: FutureWarning: You are using a Python version 3.9 past its end of life. Google will update google-auth with critical bug fixes on a best-effort basis, but not with any other fixes or features. Please upgrade your Python version, and then update google-auth.
+  warnings.warn(eol_message.format("3.9"), FutureWarning)
+/Users/madhukk/Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+INFO:     Started server process [99826]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'admin_routes.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [99826]
+/Users/madhukk/Library/Python/3.9/lib/python/site-packages/google/oauth2/__init__.py:40: FutureWarning: You are using a Python version 3.9 past its end of life. Google will update google-auth with critical bug fixes on a best-effort basis, but not with any other fixes or features. Please upgrade your Python version, and then update google-auth.
+  warnings.warn(eol_message.format("3.9"), FutureWarning)
+/Users/madhukk/Library/Python/3.9/lib/python/site-packages/google/auth/__init__.py:54: FutureWarning: You are using a Python version 3.9 past its end of life. Google will update google-auth with critical bug fixes on a best-effort basis, but not with any other fixes or features. Please upgrade your Python version, and then update google-auth.
+  warnings.warn(eol_message.format("3.9"), FutureWarning)
+/Users/madhukk/Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+INFO:     Started server process [99832]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     127.0.0.1:50828 - "GET /api/products?featured=true HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50827 - "GET /api/hero-banners HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50829 - "GET /api/impact-series/active HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50828 - "GET /api/products?featured=true HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50827 - "GET /api/impact-series/active HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50836 - "GET /api/hero-banners HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50838 - "GET /api/products?category=t-shirts HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50838 - "GET /api/products?category=t-shirts HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50910 - "GET /api/impact-series/active HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50906 - "GET /api/hero-banners HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50908 - "GET /api/products?featured=true HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50912 - "GET /api/impact-series/active HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50906 - "GET /api/products?featured=true HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50910 - "GET /api/hero-banners HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50910 - "GET /api/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50910 - "GET /api/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50906 - "GET /api/recommendations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50910 - "GET /api/recommendations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50915 - "GET /api/orders/LG-E3AB1542 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50915 - "GET /api/orders/LG-E3AB1542 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50916 - "GET /api/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50916 - "GET /api/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51008 - "GET /api/recommendations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51008 - "GET /api/recommendations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51058 - "GET /api/products?featured=true HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51056 - "GET /api/hero-banners HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51060 - "GET /api/impact-series/active HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51058 - "GET /api/products?featured=true HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51060 - "GET /api/impact-series/active HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51056 - "GET /api/hero-banners HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51408 - "GET /api/admin/impact-series HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51407 - "GET /api/admin/products HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51408 - "GET /api/admin/impact-series HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51407 - "GET /api/admin/products HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51407 - "GET /api/admin/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51407 - "GET /api/admin/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51407 - "GET /api/admin/customers HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51408 - "GET /api/admin/customers HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51408 - "GET /api/admin/inventory/low-stock HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51408 - "GET /api/admin/inventory/low-stock HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51408 - "GET /api/admin/hero-banners HTTP/1.1" 403 Forbidden
+INFO:     127.0.0.1:51408 - "GET /api/admin/hero-banners HTTP/1.1" 403 Forbidden
+INFO:     127.0.0.1:51408 - "GET /api/admin/impact-series HTTP/1.1" 403 Forbidden
+INFO:     127.0.0.1:51408 - "GET /api/admin/impact-series HTTP/1.1" 403 Forbidden
+INFO:     127.0.0.1:51408 - "GET /api/admin/coupons HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51408 - "GET /api/admin/coupons HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51408 - "GET /api/admin/logs/admin-actions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51407 - "GET /api/admin/logs/security HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51418 - "GET /api/admin/logs/admin-actions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51408 - "GET /api/admin/logs/security HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51408 - "GET /api/settings/announcement HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51408 - "GET /api/settings/announcement HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51408 - "GET /api/admin/inventory/low-stock HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51408 - "GET /api/admin/inventory/low-stock HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51408 - "GET /api/admin/dashboard/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51408 - "GET /api/admin/dashboard/stats HTTP/1.1" 200 OK
+WARNING:  WatchFiles detected changes in 'server.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [99832]
+/Users/madhukk/Library/Python/3.9/lib/python/site-packages/google/oauth2/__init__.py:40: FutureWarning: You are using a Python version 3.9 past its end of life. Google will update google-auth with critical bug fixes on a best-effort basis, but not with any other fixes or features. Please upgrade your Python version, and then update google-auth.
+  warnings.warn(eol_message.format("3.9"), FutureWarning)
+/Users/madhukk/Library/Python/3.9/lib/python/site-packages/google/auth/__init__.py:54: FutureWarning: You are using a Python version 3.9 past its end of life. Google will update google-auth with critical bug fixes on a best-effort basis, but not with any other fixes or features. Please upgrade your Python version, and then update google-auth.
+  warnings.warn(eol_message.format("3.9"), FutureWarning)
+/Users/madhukk/Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+INFO:     Started server process [99873]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     127.0.0.1:54198 - "OPTIONS /api/hero-banners HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54200 - "OPTIONS /api/products?featured=true HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54202 - "OPTIONS /api/impact-series/active HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54205 - "OPTIONS /api/hero-banners HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54206 - "OPTIONS /api/products?featured=true HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54208 - "OPTIONS /api/impact-series/active HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54202 - "GET /api/impact-series/active HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54200 - "GET /api/products?featured=true HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54198 - "GET /api/hero-banners HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54202 - "GET /api/impact-series/active HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54208 - "GET /api/products?featured=true HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54206 - "GET /api/hero-banners HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54262 - "OPTIONS /api/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54264 - "OPTIONS /api/recommendations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54266 - "OPTIONS /api/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54268 - "OPTIONS /api/recommendations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54262 - "GET /api/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54268 - "GET /api/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54270 - "GET /api/recommendations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54270 - "GET /api/recommendations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54296 - "OPTIONS /api/orders/LG-E3AB1542 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54298 - "OPTIONS /api/orders/LG-E3AB1542 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54296 - "GET /api/orders/LG-E3AB1542 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54296 - "GET /api/orders/LG-E3AB1542 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54300 - "OPTIONS /api/products HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54332 - "OPTIONS /api/products HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54300 - "GET /api/products HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54300 - "GET /api/products HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54334 - "GET /api/impact-series/active HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54300 - "GET /api/hero-banners HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54332 - "GET /api/products?featured=true HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54334 - "GET /api/impact-series/active HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54332 - "GET /api/products?featured=true HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54300 - "GET /api/hero-banners HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54356 - "OPTIONS /api/admin/products HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54445 - "OPTIONS /api/admin/impact-series HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54447 - "OPTIONS /api/admin/products HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54448 - "OPTIONS /api/admin/impact-series HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54450 - "GET /api/admin/impact-series HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54356 - "GET /api/admin/products HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54450 - "GET /api/admin/impact-series HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54356 - "GET /api/admin/products HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54356 - "OPTIONS /api/admin/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54450 - "OPTIONS /api/admin/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54448 - "GET /api/admin/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54448 - "GET /api/admin/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54465 - "GET /api/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54465 - "GET /api/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54466 - "GET /api/recommendations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54466 - "GET /api/recommendations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54482 - "GET /api/impact-series/active HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54481 - "GET /api/products?featured=true HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54480 - "GET /api/hero-banners HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54482 - "GET /api/impact-series/active HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54481 - "GET /api/hero-banners HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54484 - "GET /api/products?featured=true HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54484 - "GET /api/products HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54484 - "GET /api/products HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54486 - "OPTIONS /api/help/request-exchange HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54486 - "POST /api/help/request-exchange HTTP/1.1" 400 Bad Request
+INFO:     127.0.0.1:54486 - "POST /api/help/request-exchange HTTP/1.1" 400 Bad Request
+INFO:     127.0.0.1:54486 - "POST /api/help/request-exchange HTTP/1.1" 400 Bad Request
+INFO:     127.0.0.1:54486 - "POST /api/help/request-exchange HTTP/1.1" 400 Bad Request
+INFO:     127.0.0.1:54486 - "POST /api/help/request-exchange HTTP/1.1" 400 Bad Request
+INFO:     127.0.0.1:54486 - "POST /api/help/request-exchange HTTP/1.1" 400 Bad Request
+INFO:     127.0.0.1:54486 - "POST /api/help/request-exchange HTTP/1.1" 400 Bad Request
+INFO:     127.0.0.1:54486 - "POST /api/help/request-exchange HTTP/1.1" 400 Bad Request
+INFO:     127.0.0.1:54497 - "POST /api/help/request-exchange HTTP/1.1" 400 Bad Request
+INFO:     127.0.0.1:54497 - "POST /api/help/request-exchange HTTP/1.1" 400 Bad Request
+INFO:     127.0.0.1:54497 - "POST /api/help/request-exchange HTTP/1.1" 400 Bad Request
+INFO:     127.0.0.1:54501 - "POST /api/help/request-exchange HTTP/1.1" 400 Bad Request
+INFO:     127.0.0.1:54503 - "POST /api/help/request-exchange HTTP/1.1" 400 Bad Request
+WARNING:  WatchFiles detected changes in 'server.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [99873]
+/Users/madhukk/Library/Python/3.9/lib/python/site-packages/google/oauth2/__init__.py:40: FutureWarning: You are using a Python version 3.9 past its end of life. Google will update google-auth with critical bug fixes on a best-effort basis, but not with any other fixes or features. Please upgrade your Python version, and then update google-auth.
+  warnings.warn(eol_message.format("3.9"), FutureWarning)
+/Users/madhukk/Library/Python/3.9/lib/python/site-packages/google/auth/__init__.py:54: FutureWarning: You are using a Python version 3.9 past its end of life. Google will update google-auth with critical bug fixes on a best-effort basis, but not with any other fixes or features. Please upgrade your Python version, and then update google-auth.
+  warnings.warn(eol_message.format("3.9"), FutureWarning)
+/Users/madhukk/Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+INFO:     Started server process [1263]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'server.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [1263]
+/Users/madhukk/Library/Python/3.9/lib/python/site-packages/google/oauth2/__init__.py:40: FutureWarning: You are using a Python version 3.9 past its end of life. Google will update google-auth with critical bug fixes on a best-effort basis, but not with any other fixes or features. Please upgrade your Python version, and then update google-auth.
+  warnings.warn(eol_message.format("3.9"), FutureWarning)
+/Users/madhukk/Library/Python/3.9/lib/python/site-packages/google/auth/__init__.py:54: FutureWarning: You are using a Python version 3.9 past its end of life. Google will update google-auth with critical bug fixes on a best-effort basis, but not with any other fixes or features. Please upgrade your Python version, and then update google-auth.
+  warnings.warn(eol_message.format("3.9"), FutureWarning)
+/Users/madhukk/Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+INFO:     Started server process [1269]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     127.0.0.1:54570 - "POST /api/help/request-exchange HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54588 - "OPTIONS /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54590 - "OPTIONS /api/cart HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54586 - "GET /api/cart HTTP/1.1" 403 Forbidden
+INFO:     127.0.0.1:54593 - "OPTIONS /api/settings/announcement HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54594 - "OPTIONS /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54587 - "GET /api/settings/announcement HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54588 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54590 - "GET /api/cart HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54587 - "GET /api/settings/announcement HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54586 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54586 - "GET /api/settings/announcement HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54587 - "GET /api/hero-banners HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54590 - "GET /api/products?featured=true HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54588 - "GET /api/impact-series/active HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54594 - "GET /api/settings/announcement HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54586 - "GET /api/hero-banners HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54590 - "GET /api/impact-series/active HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54587 - "GET /api/products?featured=true HTTP/1.1" 200 OK
+2026-03-15 01:12:24,298 - notifications - INFO - Exchange request email sent for Request ID: EX-27CE3831
+INFO:     127.0.0.1:54587 - "GET /api/cart HTTP/1.1" 403 Forbidden
+INFO:     127.0.0.1:54590 - "GET /api/settings/announcement HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54586 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54594 - "GET /api/cart HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54587 - "GET /api/settings/announcement HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54588 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54604 - "OPTIONS /api/auth/login HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54604 - "POST /api/auth/login HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54604 - "GET /api/cart HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54606 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54606 - "OPTIONS /api/admin/dashboard/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54604 - "OPTIONS /api/admin/dashboard/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54606 - "GET /api/admin/dashboard/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54606 - "GET /api/admin/dashboard/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54604 - "GET /api/admin/impact-series HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54606 - "GET /api/admin/products HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54608 - "GET /api/admin/impact-series HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54604 - "GET /api/admin/products HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54604 - "GET /api/admin/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54604 - "GET /api/admin/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54604 - "OPTIONS /api/admin/customers HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54608 - "OPTIONS /api/admin/customers HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54606 - "GET /api/admin/customers HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54606 - "GET /api/admin/customers HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54606 - "GET /api/admin/inventory/low-stock HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54606 - "GET /api/admin/inventory/low-stock HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54606 - "GET /api/admin/hero-banners HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54606 - "GET /api/admin/hero-banners HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54606 - "GET /api/admin/impact-series HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54606 - "GET /api/admin/impact-series HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54620 - "GET /uploads/d85e9bf4-2074-49fa-a017-8a420debcf6e.jpg HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:54606 - "GET /api/admin/coupons HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54606 - "GET /api/admin/coupons HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54606 - "GET /api/settings/announcement HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54606 - "GET /api/settings/announcement HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54606 - "GET /api/admin/logs/admin-actions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54622 - "GET /api/admin/logs/security HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54606 - "GET /api/admin/logs/admin-actions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54624 - "GET /api/admin/logs/security HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54624 - "GET /api/admin/coupons HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54624 - "GET /api/admin/coupons HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54624 - "GET /api/admin/impact-series HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54624 - "GET /api/admin/impact-series HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54624 - "GET /api/admin/coupons HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54624 - "GET /api/admin/coupons HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54624 - "GET /api/admin/impact-series HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54624 - "GET /api/admin/impact-series HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54624 - "GET /api/admin/hero-banners HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54624 - "GET /api/admin/hero-banners HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54624 - "GET /api/admin/inventory/low-stock HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54606 - "GET /api/admin/inventory/low-stock HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54606 - "GET /api/admin/customers HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54606 - "GET /api/admin/customers HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54606 - "GET /api/admin/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54606 - "GET /api/admin/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54650 - "GET /api/admin/dashboard/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54650 - "GET /api/admin/dashboard/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54712 - "OPTIONS /api/admin/exchanges HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54713 - "OPTIONS /api/admin/exchanges HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54712 - "GET /api/admin/exchanges HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:54713 - "GET /api/admin/exchanges HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:54715 - "GET /api/admin/exchanges HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:54715 - "GET /api/admin/exchanges HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:54715 - "GET /api/admin/exchanges HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:54719 - "POST /api/help/request-exchange HTTP/1.1" 400 Bad Request
+INFO:     127.0.0.1:54724 - "GET /api/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54724 - "GET /api/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54725 - "GET /api/recommendations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54724 - "GET /api/recommendations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54724 - "OPTIONS /api/orders/LG-2A79414C HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54725 - "OPTIONS /api/orders/LG-2A79414C HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54724 - "GET /api/orders/LG-2A79414C HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54724 - "GET /api/orders/LG-2A79414C HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54727 - "POST /api/help/request-exchange HTTP/1.1" 200 OK
+2026-03-15 01:18:41,262 - notifications - INFO - Exchange request email sent for Request ID: EX-236E8B8B
+INFO:     127.0.0.1:54727 - "GET /api/admin/exchanges HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:54727 - "GET /api/admin/exchanges HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:54727 - "GET /api/admin/exchanges HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:54727 - "GET /api/admin/exchanges HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:54727 - "GET /api/admin/exchanges HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:54743 - "GET /api/admin/dashboard/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54743 - "GET /api/admin/dashboard/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54743 - "GET /api/admin/exchanges HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:54743 - "GET /api/admin/exchanges HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:54743 - "GET /api/admin/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54743 - "GET /api/admin/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54743 - "GET /api/admin/exchanges HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:54745 - "GET /api/admin/exchanges HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:54745 - "GET /api/cart HTTP/1.1" 403 Forbidden
+INFO:     127.0.0.1:54743 - "GET /api/settings/announcement HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54753 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54745 - "GET /api/cart HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54743 - "GET /api/settings/announcement HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54755 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54755 - "GET /api/admin/exchanges HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:54743 - "GET /api/admin/exchanges HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:54743 - "GET /api/cart HTTP/1.1" 403 Forbidden
+INFO:     127.0.0.1:54755 - "GET /api/settings/announcement HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54745 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54753 - "GET /api/cart HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54755 - "GET /api/settings/announcement HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54743 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54743 - "GET /api/admin/exchanges HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:54755 - "GET /api/admin/exchanges HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:54755 - "GET /api/cart HTTP/1.1" 403 Forbidden
+INFO:     127.0.0.1:54743 - "GET /api/settings/announcement HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54753 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54745 - "GET /api/cart HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54755 - "GET /api/settings/announcement HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54765 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54765 - "GET /api/admin/exchanges HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:54755 - "GET /api/admin/exchanges HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:54755 - "GET /api/admin/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54755 - "GET /api/admin/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54765 - "GET /api/admin/impact-series HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54755 - "GET /api/admin/products HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54745 - "GET /api/admin/impact-series HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54755 - "GET /api/admin/products HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54755 - "GET /api/admin/customers HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54755 - "GET /api/admin/customers HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54755 - "GET /api/admin/exchanges HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:54745 - "GET /api/admin/exchanges HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:54767 - "GET /api/admin/exchanges HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:54767 - "GET /api/admin/exchanges HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:54856 - "GET /api/admin/exchanges HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54873 - "GET /api/cart HTTP/1.1" 403 Forbidden
+INFO:     127.0.0.1:54871 - "GET /api/settings/announcement HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54875 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54873 - "GET /api/settings/announcement HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54877 - "GET /api/cart HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54871 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54875 - "GET /api/settings/announcement HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54875 - "GET /api/settings/announcement HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54885 - "GET /api/cart HTTP/1.1" 403 Forbidden
+INFO:     127.0.0.1:54886 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54883 - "GET /api/settings/announcement HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54888 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54886 - "GET /api/settings/announcement HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54885 - "GET /api/cart HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54888 - "GET /api/settings/announcement HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54888 - "GET /api/settings/announcement HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54890 - "OPTIONS /api/admin/exchanges/EX-236E8B8B/approve HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54890 - "PATCH /api/admin/exchanges/EX-236E8B8B/approve HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54890 - "GET /api/admin/exchanges HTTP/1.1" 200 OK
+2026-03-15 01:25:44,018 - notifications - INFO - Exchange approval email sent to madhukk7ckm@gmail.com
+INFO:     127.0.0.1:54901 - "GET /api/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54901 - "GET /api/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54906 - "GET /api/recommendations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54906 - "GET /api/recommendations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54906 - "GET /api/orders/LG-2A79414C HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54906 - "GET /api/orders/LG-2A79414C HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54912 - "GET /api/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54912 - "GET /api/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54913 - "GET /api/recommendations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54913 - "GET /api/recommendations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54913 - "GET /api/orders/LG-2A79414C HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54913 - "GET /api/orders/LG-2A79414C HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55004 - "GET /api/admin/impact-series HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55003 - "GET /api/admin/products HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55004 - "GET /api/admin/impact-series HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55003 - "GET /api/admin/products HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55003 - "GET /api/admin/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55003 - "GET /api/admin/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55004 - "GET /api/admin/impact-series HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55003 - "GET /api/admin/products HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55004 - "GET /api/admin/impact-series HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55003 - "GET /api/admin/products HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55003 - "GET /api/admin/dashboard/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55003 - "GET /api/admin/dashboard/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55004 - "GET /api/admin/impact-series HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55003 - "GET /api/admin/products HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55004 - "GET /api/admin/impact-series HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55006 - "GET /api/admin/products HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55006 - "GET /api/admin/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55006 - "GET /api/admin/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55008 - "OPTIONS /api/admin/orders/LG-2A79414C/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55008 - "PUT /api/admin/orders/LG-2A79414C/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55008 - "GET /api/admin/orders HTTP/1.1" 200 OK
+2026-03-15 01:32:23,334 - notifications - INFO - Order status email sent to madhukk7ckm@gmail.com for Order ID: LG-2A79414C
+INFO:     127.0.0.1:55010 - "GET /api/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55010 - "GET /api/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55018 - "GET /api/recommendations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55018 - "GET /api/recommendations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55018 - "GET /api/orders/LG-2A79414C HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55018 - "GET /api/orders/LG-2A79414C HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55023 - "GET /api/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55023 - "GET /api/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55024 - "GET /api/recommendations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55024 - "GET /api/recommendations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55024 - "GET /api/orders/LG-2A79414C HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55024 - "GET /api/orders/LG-2A79414C HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55034 - "PUT /api/admin/orders/LG-2A79414C/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55034 - "GET /api/admin/orders HTTP/1.1" 200 OK
+2026-03-15 01:33:02,377 - notifications - INFO - Order status email sent to madhukk7ckm@gmail.com for Order ID: LG-2A79414C
+INFO:     127.0.0.1:55034 - "GET /api/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55034 - "GET /api/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55042 - "GET /api/recommendations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55042 - "GET /api/recommendations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55042 - "GET /api/orders/LG-2A79414C HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55042 - "GET /api/orders/LG-2A79414C HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55052 - "GET /api/orders/LG-2A79414C HTTP/1.1" 403 Forbidden
+INFO:     127.0.0.1:55054 - "GET /api/cart HTTP/1.1" 403 Forbidden
+INFO:     127.0.0.1:55042 - "GET /api/settings/announcement HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55055 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55042 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55057 - "GET /api/settings/announcement HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55052 - "GET /api/orders/LG-2A79414C HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:55054 - "GET /api/cart HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55055 - "GET /api/settings/announcement HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55055 - "GET /api/settings/announcement HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55055 - "GET /api/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55055 - "GET /api/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55054 - "GET /api/recommendations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55055 - "GET /api/recommendations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55064 - "OPTIONS /api/auth/google HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55064 - "POST /api/auth/google HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55066 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55064 - "GET /api/cart HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55064 - "GET /api/hero-banners HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55066 - "GET /api/products?featured=true HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55071 - "GET /api/impact-series/active HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55064 - "GET /api/hero-banners HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55073 - "GET /api/products?featured=true HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55066 - "GET /api/impact-series/active HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55066 - "GET /api/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55066 - "GET /api/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55073 - "GET /api/recommendations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55066 - "GET /api/recommendations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55066 - "GET /api/orders/LG-2A79414C HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55073 - "GET /api/orders/LG-2A79414C HTTP/1.1" 200 OK
+WARNING:  WatchFiles detected changes in 'server.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [1269]
+/Users/madhukk/Library/Python/3.9/lib/python/site-packages/google/oauth2/__init__.py:40: FutureWarning: You are using a Python version 3.9 past its end of life. Google will update google-auth with critical bug fixes on a best-effort basis, but not with any other fixes or features. Please upgrade your Python version, and then update google-auth.
+  warnings.warn(eol_message.format("3.9"), FutureWarning)
+/Users/madhukk/Library/Python/3.9/lib/python/site-packages/google/auth/__init__.py:54: FutureWarning: You are using a Python version 3.9 past its end of life. Google will update google-auth with critical bug fixes on a best-effort basis, but not with any other fixes or features. Please upgrade your Python version, and then update google-auth.
+  warnings.warn(eol_message.format("3.9"), FutureWarning)
+/Users/madhukk/Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+INFO:     Started server process [2938]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'server.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [2938]
+/Users/madhukk/Library/Python/3.9/lib/python/site-packages/google/oauth2/__init__.py:40: FutureWarning: You are using a Python version 3.9 past its end of life. Google will update google-auth with critical bug fixes on a best-effort basis, but not with any other fixes or features. Please upgrade your Python version, and then update google-auth.
+  warnings.warn(eol_message.format("3.9"), FutureWarning)
+/Users/madhukk/Library/Python/3.9/lib/python/site-packages/google/auth/__init__.py:54: FutureWarning: You are using a Python version 3.9 past its end of life. Google will update google-auth with critical bug fixes on a best-effort basis, but not with any other fixes or features. Please upgrade your Python version, and then update google-auth.
+  warnings.warn(eol_message.format("3.9"), FutureWarning)
+/Users/madhukk/Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+INFO:     Started server process [2962]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'backfill_order_timeline.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [2962]
+/Users/madhukk/Library/Python/3.9/lib/python/site-packages/google/oauth2/__init__.py:40: FutureWarning: You are using a Python version 3.9 past its end of life. Google will update google-auth with critical bug fixes on a best-effort basis, but not with any other fixes or features. Please upgrade your Python version, and then update google-auth.
+  warnings.warn(eol_message.format("3.9"), FutureWarning)
+/Users/madhukk/Library/Python/3.9/lib/python/site-packages/google/auth/__init__.py:54: FutureWarning: You are using a Python version 3.9 past its end of life. Google will update google-auth with critical bug fixes on a best-effort basis, but not with any other fixes or features. Please upgrade your Python version, and then update google-auth.
+  warnings.warn(eol_message.format("3.9"), FutureWarning)
+/Users/madhukk/Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+INFO:     Started server process [2968]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'admin_routes.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [2968]
+/Users/madhukk/Library/Python/3.9/lib/python/site-packages/google/oauth2/__init__.py:40: FutureWarning: You are using a Python version 3.9 past its end of life. Google will update google-auth with critical bug fixes on a best-effort basis, but not with any other fixes or features. Please upgrade your Python version, and then update google-auth.
+  warnings.warn(eol_message.format("3.9"), FutureWarning)
+/Users/madhukk/Library/Python/3.9/lib/python/site-packages/google/auth/__init__.py:54: FutureWarning: You are using a Python version 3.9 past its end of life. Google will update google-auth with critical bug fixes on a best-effort basis, but not with any other fixes or features. Please upgrade your Python version, and then update google-auth.
+  warnings.warn(eol_message.format("3.9"), FutureWarning)
+/Users/madhukk/Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+INFO:     Started server process [3065]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'admin_routes.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [3065]
+/Users/madhukk/Library/Python/3.9/lib/python/site-packages/google/oauth2/__init__.py:40: FutureWarning: You are using a Python version 3.9 past its end of life. Google will update google-auth with critical bug fixes on a best-effort basis, but not with any other fixes or features. Please upgrade your Python version, and then update google-auth.
+  warnings.warn(eol_message.format("3.9"), FutureWarning)
+/Users/madhukk/Library/Python/3.9/lib/python/site-packages/google/auth/__init__.py:54: FutureWarning: You are using a Python version 3.9 past its end of life. Google will update google-auth with critical bug fixes on a best-effort basis, but not with any other fixes or features. Please upgrade your Python version, and then update google-auth.
+  warnings.warn(eol_message.format("3.9"), FutureWarning)
+/Users/madhukk/Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+INFO:     Started server process [3068]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'admin_routes.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [3068]
+/Users/madhukk/Library/Python/3.9/lib/python/site-packages/google/oauth2/__init__.py:40: FutureWarning: You are using a Python version 3.9 past its end of life. Google will update google-auth with critical bug fixes on a best-effort basis, but not with any other fixes or features. Please upgrade your Python version, and then update google-auth.
+  warnings.warn(eol_message.format("3.9"), FutureWarning)
+/Users/madhukk/Library/Python/3.9/lib/python/site-packages/google/auth/__init__.py:54: FutureWarning: You are using a Python version 3.9 past its end of life. Google will update google-auth with critical bug fixes on a best-effort basis, but not with any other fixes or features. Please upgrade your Python version, and then update google-auth.
+  warnings.warn(eol_message.format("3.9"), FutureWarning)
+/Users/madhukk/Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+INFO:     Started server process [3070]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     127.0.0.1:63220 - "OPTIONS /api/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63222 - "OPTIONS /api/recommendations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63224 - "OPTIONS /api/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63225 - "OPTIONS /api/recommendations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63222 - "GET /api/recommendations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63220 - "GET /api/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63225 - "GET /api/orders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63222 - "GET /api/recommendations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63222 - "OPTIONS /api/orders/LG-E3AB1542 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63225 - "OPTIONS /api/orders/LG-E3AB1542 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63220 - "GET /api/orders/LG-E3AB1542 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63220 - "GET /api/orders/LG-E3AB1542 HTTP/1.1" 200 OK

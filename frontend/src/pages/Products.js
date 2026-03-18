@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useSearchParams, Link } from 'react-router-dom';
+import { useSearchParams, Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { ChevronDown } from 'lucide-react';
 import { useCart } from '../context/CartContext';
@@ -8,6 +8,7 @@ import { toast } from 'sonner';
 
 const Products = () => {
   const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
   const { addToCart } = useCart();
   const { globalDiscount } = useSettings() || { globalDiscount: 0 };
   const [products, setProducts] = useState([]);
@@ -77,7 +78,8 @@ const Products = () => {
     e.preventDefault();
     e.stopPropagation();
     try {
-      await addToCart(product.id, 1, size, product.colors[0] || 'Default');
+      // setAddingToCart({ id: product.id, size }); // This line was in the provided snippet but not defined in the original code.
+      await addToCart(product.id, 1, size, product.colors[0] || 'Default', product);
       toast.success('Added to cart!');
     } catch (error) {
       if (error.response && error.response.status === 401) {
@@ -248,6 +250,7 @@ const Products = () => {
                         <button
                           key={size}
                           onClick={(e) => handleQuickAdd(e, product, size)}
+                          title="Add to Cart"
                           className="border border-black min-w-[32px] h-8 px-1 text-xs font-bold hover:bg-black hover:text-white transition-colors"
                         >
                           {size}

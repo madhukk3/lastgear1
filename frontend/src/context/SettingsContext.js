@@ -9,6 +9,9 @@ export const SettingsProvider = ({ children }) => {
     const [globalDiscount, setGlobalDiscount] = useState(0);
     const [shippingCharge, setShippingCharge] = useState(99);
     const [freeShippingThreshold, setFreeShippingThreshold] = useState(1500);
+    const [codEnabled, setCodEnabled] = useState(true);
+    const [codMaxAmount, setCodMaxAmount] = useState(3000);
+    const [codCharge, setCodCharge] = useState(50);
     const [announcement, setAnnouncement] = useState({ items: [], active: false });
     const [loading, setLoading] = useState(true);
 
@@ -21,6 +24,9 @@ export const SettingsProvider = ({ children }) => {
                     setGlobalDiscount(response.data.global_discount_percentage || 0);
                     setShippingCharge(response.data.shipping_charge ?? 99);
                     setFreeShippingThreshold(response.data.free_shipping_threshold ?? 1500);
+                    setCodEnabled(response.data.cod_enabled ?? true);
+                    setCodMaxAmount(response.data.cod_max_amount ?? 3000);
+                    setCodCharge(response.data.cod_charge ?? 50);
                     setAnnouncement({
                         items: response.data.announcements || [],
                         active: response.data.announcement_active || false
@@ -36,7 +42,7 @@ export const SettingsProvider = ({ children }) => {
     }, []);
 
     return (
-        <SettingsContext.Provider value={{ globalDiscount, shippingCharge, freeShippingThreshold, announcement, loading }}>
+        <SettingsContext.Provider value={{ globalDiscount, shippingCharge, freeShippingThreshold, codEnabled, codMaxAmount, codCharge, announcement, loading }}>
             {children}
         </SettingsContext.Provider>
     );

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import { User as UserIcon, Package, LogOut, Heart } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
@@ -73,9 +73,8 @@ const Account = () => {
             </div>
             <button
               onClick={() => setActiveTab('orders')}
-              className={`w-full text-left px-4 py-3 flex items-center gap-3 transition-colors ${
-                activeTab === 'orders' ? 'bg-black text-white' : 'hover:bg-gray-200'
-              }`}
+              className={`w-full text-left px-4 py-3 flex items-center gap-3 transition-colors ${activeTab === 'orders' ? 'bg-black text-white' : 'hover:bg-gray-200'
+                }`}
               data-testid="orders-tab"
             >
               <Package size={20} />
@@ -119,60 +118,41 @@ const Account = () => {
                   </button>
                 </div>
               ) : (
-                <div className="space-y-6">
+                <div className="space-y-6 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">
                   {orders.map((order) => (
-                    <div
+                    <Link
+                      to={`/account/orders/${order.id}`}
                       key={order.id}
-                      className="border border-gray-200 p-6"
+                      className="block border border-gray-200 p-5 rounded bg-white hover:border-black hover:shadow-md transition-all cursor-pointer group mb-4"
                       data-testid={`order-${order.id}`}
                     >
-                      <div className="flex justify-between mb-4">
-                        <div>
-                          <p className="text-sm text-gray-600">Order ID</p>
-                          <p className="font-bold">{order.id}</p>
-                        </div>
-                        <div className="text-right">
-                          <p className="text-sm text-gray-600">Order Date</p>
-                          <p className="font-medium">
-                            {new Date(order.created_at).toLocaleDateString()}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="flex justify-between mb-4">
-                        <div>
-                          <p className="text-sm text-gray-600">Payment Status</p>
-                          <span
-                            className={`inline-block px-3 py-1 text-xs font-bold uppercase ${
-                              order.payment_status === 'paid'
-                                ? 'bg-green-100 text-green-800'
-                                : 'bg-yellow-100 text-yellow-800'
-                            }`}
-                          >
-                            {order.payment_status}
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <div className="flex flex-col gap-1">
+                          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+                            <span className="font-bold text-sm md:text-base uppercase group-hover:text-[#ff003c] transition-colors">
+                              {order.items && order.items.length > 0
+                                ? (order.items.length === 1 ? order.items[0].name : `${order.items[0].name} + ${order.items.length - 1} MORE`)
+                                : order.id}
+                            </span>
+                            <span className="inline-block flex-shrink-0 px-2 py-0.5 text-[10px] font-bold uppercase rounded bg-gray-100 text-gray-800 tracking-wider">
+                              {order.order_status}
+                            </span>
+                          </div>
+                          <span className="text-xs text-gray-500 font-mono">
+                            {new Date(order.created_at).toLocaleDateString()} • {order.items.length} Item{order.items.length !== 1 ? 's' : ''}
                           </span>
                         </div>
-                        <div className="text-right">
-                          <p className="text-sm text-gray-600">Order Status</p>
-                          <span className="inline-block px-3 py-1 text-xs font-bold uppercase bg-blue-100 text-blue-800">
-                            {order.order_status}
+
+                        <div className="flex items-center justify-between sm:justify-end gap-6 border-t border-gray-100 sm:border-0 pt-3 sm:pt-0">
+                          <span className="text-lg font-black font-mono">
+                            ₹{order.total_amount?.toFixed(0) || 0}
+                          </span>
+                          <span className="text-xs font-bold uppercase tracking-widest text-[#ff003c] group-hover:translate-x-1 transition-transform">
+                            VIEW DETAILS &gt;
                           </span>
                         </div>
                       </div>
-                      <div className="border-t border-gray-200 pt-4">
-                        <p className="text-sm text-gray-600 mb-2">Items</p>
-                        {order.items.map((item, idx) => (
-                          <p key={idx} className="text-sm">
-                            {item.name} - Size: {item.size}, Color: {item.color} (x{item.quantity})
-                          </p>
-                        ))}
-                      </div>
-                      <div className="border-t border-gray-200 pt-4 mt-4">
-                        <div className="flex justify-between text-xl font-bold">
-                          <span>Total</span>
-                          <span>₹{order.total_amount.toFixed(0)}</span>
-                        </div>
-                      </div>
-                    </div>
+                    </Link>
                   ))}
                 </div>
               )}

@@ -17,8 +17,11 @@ import Register from './pages/Register';
 import Cart from './pages/Cart';
 import Checkout from './pages/CheckoutNew';
 import OrderSuccess from './pages/OrderSuccess';
+import OrderStatusPage from './pages/OrderStatus';
 import Wishlist from './pages/Wishlist';
 import Account from './pages/Account';
+import HelpCenter from './pages/HelpCenter';
+import AddedToCartPopup from './components/AddedToCartPopup';
 import AdminLogin from './pages/admin/AdminLogin';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import AdminProducts from './pages/admin/AdminProducts';
@@ -30,6 +33,7 @@ import AdminSettings from './pages/admin/AdminSettings';
 import AdminImpactSeries from './pages/admin/AdminImpactSeries';
 import AdminHeroBanners from './pages/admin/AdminHeroBanners';
 import AdminCoupons from './pages/admin/AdminCoupons';
+import AdminExchanges from './pages/admin/AdminExchanges';
 import './App.css';
 import './index.css';
 
@@ -40,6 +44,7 @@ function App() {
         <CartProvider>
           <AdminProvider>
             <BrowserRouter>
+              <AddedToCartPopup />
               <Toaster position="bottom-center" richColors closeButton />
               <Routes>
                 {/* Admin Routes */}
@@ -54,6 +59,7 @@ function App() {
                 <Route path="/admin/impact-series" element={<AdminRoute><AdminLayout><AdminImpactSeries /></AdminLayout></AdminRoute>} />
                 <Route path="/admin/hero-banners" element={<AdminRoute><AdminLayout><AdminHeroBanners /></AdminLayout></AdminRoute>} />
                 <Route path="/admin/coupons" element={<AdminRoute><AdminLayout><AdminCoupons /></AdminLayout></AdminRoute>} />
+                <Route path="/admin/exchanges" element={<AdminRoute><AdminLayout><AdminExchanges /></AdminLayout></AdminRoute>} />
 
                 {/* Public Routes */}
                 <Route path="*" element={
@@ -69,8 +75,10 @@ function App() {
                         <Route path="/cart" element={<Cart />} />
                         <Route path="/checkout" element={<Checkout />} />
                         <Route path="/order-success" element={<OrderSuccess />} />
+                        <Route path="/account/orders/:order_id" element={<OrderStatusPage />} />
                         <Route path="/wishlist" element={<Wishlist />} />
                         <Route path="/account" element={<Account />} />
+                        <Route path="/help" element={<HelpCenter />} />
                       </Routes>
                     </main>
                     <Footer />
