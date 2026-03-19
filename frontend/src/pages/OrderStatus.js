@@ -258,10 +258,10 @@ const OrderStatusPage = () => {
                             <div className="relative">
                                 <div className="absolute left-[15px] top-6 bottom-6 w-[2px] bg-gray-800 md:left-0 md:right-0 md:top-[15px] md:bottom-auto md:h-[2px] md:w-full"></div>
 
-                                <div className="flex justify-start relative gap-12 md:gap-16 pb-4 overflow-x-auto min-w-full">
+                                <div className="flex justify-between relative pb-4 overflow-x-auto w-full scrollbar-thin scrollbar-thumb-gray-800">
                                     {steps.map((step, idx) => {
                                         return (
-                                            <div key={idx} className={`flex flex-col items-center gap-3 text-center z-10 min-w-[120px] ${(!step.isCompleted && !step.isErrorState && !step.isCancelRequestedStep) ? 'opacity-50' : ''}`}>
+                                            <div key={idx} className={`flex flex-col items-center gap-3 text-center z-10 flex-1 min-w-[100px] px-2 ${(!step.isCompleted && !step.isErrorState && !step.isCancelRequestedStep) ? 'opacity-50' : ''}`}>
                                                 <div className={`w-8 h-8 rounded-full border-4 border-[#111] flex flex-shrink-0 items-center justify-center transition-all ${step.isCurrent ?
                                                         (step.isErrorState ? 'bg-red-600 shadow-[0_0_20px_rgba(255,0,0,0.8)] scale-110' :
                                                             step.status && step.status.includes('exchange') ? 'bg-blue-500 shadow-[0_0_20px_rgba(0,100,255,0.8)] scale-110' :
