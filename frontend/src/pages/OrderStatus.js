@@ -156,6 +156,16 @@ const OrderStatusPage = () => {
         }
     }
 
+    // Reverse calculate pricing summary for retroactive receipt rendering
+    const subtotal = order.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    const discountAmount = order.discount_applied || 0;
+    const subtotalAfterDiscount = subtotal - discountAmount;
+    
+    // Any remaining balance beyond standard subtotals represents Shipping & Handling (including COD fees)
+    // We use a small epsilon threshold (0.01) to account for float math errors
+    const unexplainedBalance = order.total_amount - subtotalAfterDiscount;
+    const shippingAndFees = unexplainedBalance > 0.01 ? unexplainedBalance : 0;
+
     return (
         <div className="min-h-screen bg-[#0a0a0a] text-gray-300 font-sans p-4 sm:p-8 pt-24 pb-20 relative overflow-hidden">
 
@@ -331,6 +341,39 @@ const OrderStatusPage = () => {
                                             </div>
                                         </div>
                                     ))}
+                                </div>
+
+                                {/* Order Summary Receipt Breakdown */}
+                                <div className="mt-8 border-t border-gray-800 pt-6 bg-[#0f0f0f] p-6 rounded-sm">
+                                    <h4 className="text-gray-500 font-bold uppercase tracking-widest text-xs mb-6 font-mono">FINANCIAL SUMMARY</h4>
+                                    <div className="space-y-4 font-mono text-sm">
+                                        <div className="flex justify-between text-gray-300">
+                                            <span>Subtotal ({order.items.reduce((acc, i) => acc + i.quantity, 0)} items)</span>
+                                            <span>₹{subtotal.toFixed(2)}</span>
+                                        </div>
+                                        {discountAmount > 0 && (
+                                            <div className="flex justify-between text-[#00f3ff]">
+                                                <span>Discount Applied{order.coupon_code ? ` [${order.coupon_code}]` : ''}</span>
+                                                <span>-₹{discountAmount.toFixed(2)}</span>
+                                            </div>
+                                        )}
+                                        {shippingAndFees > 0 ? (
+                                            <div className="flex justify-between text-gray-300">
+                                                <span>Shipping & Processing Fees</span>
+                                                <span>₹{shippingAndFees.toFixed(2)}</span>
+                                            </div>
+                                        ) : (
+                                            <div className="flex justify-between text-green-400 uppercase text-xs font-bold items-center">
+                                                <span>Shipping & Processing Fees</span>
+                                                <span>FREE DOMESTIC DROP</span>
+                                            </div>
+                                        )}
+                                        <div className="flex justify-between text-white font-black text-xl md:text-2xl pt-6 border-t border-gray-800 mt-6 relative">
+                                            <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-[#ff003c] to-transparent opacity-50"></div>
+                                            <span className="uppercase tracking-widest italic text-[#ff003c]">GRAND TOTAL</span>
+                                            <span className="text-[#ff003c]">₹{order.total_amount.toFixed(2)}</span>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 
