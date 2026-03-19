@@ -1,3 +1,5 @@
+import asyncio
+from contextlib import asynccontextmanager
 from fastapi import FastAPI, APIRouter, HTTPException, Depends, Request, Header, BackgroundTasks, UploadFile, File, Form
 from fastapi.staticfiles import StaticFiles
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
@@ -56,7 +58,14 @@ GOOGLE_CLIENT_ID = os.environ.get('GOOGLE_CLIENT_ID', 'YOUR_GOOGLE_CLIENT_ID')
 # Security
 security = HTTPBearer()
 
-app = FastAPI()
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup execution
+    yield
+    # Shutdown execution
+    client.close()
+
+app = FastAPI(lifespan=lifespan)
 api_router = APIRouter(prefix="/api")
 
 # Add rate limiting
@@ -676,7 +685,7 @@ async def get_products(
     featured: Optional[bool] = None,
     impact_series_id: Optional[str] = None
 ):
-    query = {}
+    query: Dict[str, Any] = {}
     if category:
         query["category"] = category
     if impact_series_id:
@@ -752,10 +761,10 @@ async def add_to_cart(item: CartItem, current_user: Dict = Depends(get_current_u
     if not cart:
         cart = {"user_id": current_user['id'], "items": []}
     
-    items = cart.get('items', [])
+    items: List[Dict[str, Any]] = cart.get('items', [])
     
     # Check if item already exists
-    existing_item = None
+    existing_item: int = -1
     for i, existing in enumerate(items):
         if (existing['product_id'] == item.product_id and 
             existing['size'] == item.size and 
@@ -763,7 +772,7 @@ async def add_to_cart(item: CartItem, current_user: Dict = Depends(get_current_u
             existing_item = i
             break
     
-    if existing_item is not None:
+    if existing_item != -1:
         items[existing_item]['quantity'] += item.quantity
     else:
         items.append(item.model_dump())
@@ -1290,10 +1299,12 @@ async def get_announcement_settings():
 @api_router.get("/recommendations")
 async def get_recommendations(current_user: Dict = Depends(get_current_user)):
     # Get user's order history
-    orders = await db.orders.find({"user_id": current_user['id']}, {"_id": 0}).limit(5).to_list(5)
+    orders_dump = await db.orders.find({"user_id": current_user['id']}, {"_id": 0}).limit(5).to_list(5)
+    orders: List[Dict[str, Any]] = list(orders_dump)
     
     # Get all products
-    products = await db.products.find({}, {"_id": 0}).to_list(100)
+    products_dump = await db.products.find({}, {"_id": 0}).to_list(100)
+    products: List[Dict[str, Any]] = list(products_dump)
     
     if not products:
         return []
@@ -1350,9 +1361,6 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-@app.on_event("shutdown")
-async def shutdown_db_client():
-    client.close()
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run("server:app", host="0.0.0.0", port=8000, reload=True)
