@@ -171,27 +171,33 @@ const Header = () => {
         </div>
       )}
 
-      <div className="bg-black text-white w-full">
+      <div className="w-full border-b border-white/10 bg-[#120e0b]/95 text-white backdrop-blur-xl">
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex items-center justify-between h-16">
             {/* Logo with Image */}
-            <Link to="/" className="flex items-center gap-2" data-testid="logo-link">
+            <Link to="/" className="flex items-center gap-3" data-testid="logo-link">
               <img src="/logo-white.png" alt="LAST GEAR Logo" className="h-[40px] md:h-[48px] w-auto object-contain" />
-              <span className="text-xl md:text-2xl font-puma tracking-wider">LAST GEAR</span>
+              <div className="leading-none">
+                <span className="block text-2xl md:text-3xl font-puma tracking-[0.22em]">LAST GEAR</span>
+                <span className="hidden md:block text-[10px] uppercase tracking-[0.42em] text-white/50">Fashion Division</span>
+              </div>
             </Link>
 
             {/* Desktop Navigation */}
-            <nav className="hidden lg:flex items-center space-x-8 font-nav text-[17px] capitalize">
-              <Link to="/" className="hover:text-gray-300 transition-colors" data-testid="nav-home">
+            <nav className="hidden lg:flex items-center space-x-8 font-nav text-[12px]">
+              <Link to="/" className="hover:text-[#f0d9c0] transition-colors" data-testid="nav-home">
                 Home
               </Link>
-              <Link to="/products?category=t-shirts" className="hover:text-gray-300 transition-colors" data-testid="nav-tshirts">
+              <Link to="/products?category=t-shirts" className="hover:text-[#f0d9c0] transition-colors" data-testid="nav-tshirts">
                 T-Shirts
               </Link>
-              <Link to="/products?category=hoodies" className="hover:text-gray-300 transition-colors" data-testid="nav-hoodies">
+              <Link to="/products?category=hoodies" className="hover:text-[#f0d9c0] transition-colors" data-testid="nav-hoodies">
                 Hoodies
               </Link>
-              <Link to="/products" className="hover:text-gray-300 transition-colors" data-testid="nav-all">
+              <Link to="/about" className="hover:text-[#f0d9c0] transition-colors" data-testid="nav-about">
+                About
+              </Link>
+              <Link to="/products" className="hover:text-[#f0d9c0] transition-colors" data-testid="nav-all">
                 All Products
               </Link>
             </nav>
@@ -201,7 +207,7 @@ const Header = () => {
               {/* Desktop Search Button */}
               <button
                 onClick={() => setSearchOpen(!searchOpen)}
-                className="hidden lg:flex items-center space-x-2 border border-gray-700 hover:border-white px-4 py-1.5 transition-colors font-bold text-[13px] tracking-wide"
+                className="hidden lg:flex items-center space-x-2 rounded-full border border-white/15 bg-white/5 px-4 py-1.5 transition-colors font-bold text-[11px] tracking-[0.24em] hover:border-[#d99146] hover:text-[#f0d9c0]"
                 data-testid="search-btn-desktop"
               >
                 <Search size={16} strokeWidth={2} />
@@ -211,40 +217,40 @@ const Header = () => {
               {/* Mobile Search Icon */}
               <button
                 onClick={() => setSearchOpen(!searchOpen)}
-                className="lg:hidden hover:text-gray-300 transition-colors"
+                className="lg:hidden hover:text-[#f0d9c0] transition-colors"
                 data-testid="search-icon-mobile"
               >
                 <Search size={20} strokeWidth={1.5} />
               </button>
 
               {user && (
-                <Link to="/wishlist" className="hover:text-gray-300 transition-colors" data-testid="wishlist-icon">
+                <Link to="/wishlist" className="hover:text-[#f0d9c0] transition-colors" data-testid="wishlist-icon">
                   <Heart size={20} strokeWidth={1.5} />
                 </Link>
               )}
 
-              <Link to="/cart" className="relative hover:text-gray-300 transition-colors" data-testid="cart-icon">
+              <Link to="/cart" className="relative hover:text-[#f0d9c0] transition-colors" data-testid="cart-icon">
                 <ShoppingCart size={20} strokeWidth={1.5} />
                 {cartCount > 0 && (
-                  <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center" data-testid="cart-count">
+                  <span className="absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center rounded-full bg-[#d99146] text-xs text-[#120e0b]" data-testid="cart-count">
                     {cartCount}
                   </span>
                 )}
               </Link>
 
               {user ? (
-                <Link to="/account" className="hover:text-gray-300 transition-colors" data-testid="account-icon">
+                <Link to="/account" className="hover:text-[#f0d9c0] transition-colors" data-testid="account-icon">
                   <User size={20} strokeWidth={1.5} />
                 </Link>
               ) : (
-                <Link to="/login" className="hover:text-gray-300 transition-colors" data-testid="login-icon">
+                <Link to="/login" className="hover:text-[#f0d9c0] transition-colors" data-testid="login-icon">
                   <User size={20} strokeWidth={1.5} />
                 </Link>
               )}
 
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="lg:hidden hover:text-gray-300 transition-colors"
+                className="lg:hidden hover:text-[#f0d9c0] transition-colors"
                 data-testid="mobile-menu-icon"
               >
                 {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
@@ -254,7 +260,7 @@ const Header = () => {
 
           {/* Search Bar */}
           {searchOpen && (
-            <div className="py-4 border-t border-gray-800 relative" data-testid="search-bar" ref={searchRef}>
+            <div className="relative border-t border-white/10 py-4" data-testid="search-bar" ref={searchRef}>
               <form onSubmit={handleSearch} className="flex">
                 <input
                   type="text"
@@ -267,18 +273,18 @@ const Header = () => {
                     if (recommendations.length > 0) setShowDropdown(true);
                   }}
                   placeholder="Search products..."
-                  className="flex-1 bg-gray-900 text-white px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-gray-500 rounded-none border border-gray-700"
+                  className="flex-1 rounded-l-full border border-white/15 bg-white/8 px-5 py-3 text-sm text-white placeholder:text-white/40 focus:outline-none focus:ring-1 focus:ring-[#d99146]"
                   data-testid="search-input"
                 />
-                <button type="submit" className="bg-white text-black px-6 py-3 text-sm font-bold hover:bg-gray-200 transition-colors uppercase" data-testid="search-submit">
+                <button type="submit" className="rounded-r-full bg-[#f1e6d8] px-6 py-3 text-sm font-bold uppercase tracking-[0.2em] text-[#120e0b] transition-colors hover:bg-white" data-testid="search-submit">
                   SEARCH
                 </button>
               </form>
 
               {/* Recommendations Dropdown */}
               {showDropdown && recommendations.length > 0 && (
-                <div className="absolute top-full left-0 w-full bg-white text-black shadow-lg border border-gray-200 z-50 mt-1 max-h-96 overflow-y-auto">
-                  <div className="px-4 py-2 text-xs font-bold text-gray-500 uppercase border-b border-gray-100">
+                <div className="absolute top-full left-0 z-50 mt-2 max-h-96 w-full overflow-y-auto rounded-[24px] border border-black/10 bg-white text-black shadow-lg">
+                  <div className="border-b border-gray-100 px-4 py-2 text-xs font-bold uppercase tracking-[0.2em] text-gray-500">
                     Recommended Products
                   </div>
                   <ul>
@@ -309,21 +315,24 @@ const Header = () => {
 
           {/* Mobile Menu */}
           {mobileMenuOpen && (
-            <nav className="lg:hidden py-4 border-t border-gray-800 space-y-4 font-nav text-[17px] capitalize" data-testid="mobile-menu">
-              <Link to="/" className="block hover:text-gray-300" onClick={() => setMobileMenuOpen(false)}>
+            <nav className="lg:hidden space-y-4 border-t border-white/10 py-4 font-nav text-[13px]" data-testid="mobile-menu">
+              <Link to="/" className="block hover:text-[#f0d9c0]" onClick={() => setMobileMenuOpen(false)}>
                 Home
               </Link>
-              <Link to="/products?category=t-shirts" className="block hover:text-gray-300" onClick={() => setMobileMenuOpen(false)}>
+              <Link to="/products?category=t-shirts" className="block hover:text-[#f0d9c0]" onClick={() => setMobileMenuOpen(false)}>
                 T-Shirts
               </Link>
-              <Link to="/products?category=hoodies" className="block hover:text-gray-300" onClick={() => setMobileMenuOpen(false)}>
+              <Link to="/products?category=hoodies" className="block hover:text-[#f0d9c0]" onClick={() => setMobileMenuOpen(false)}>
                 Hoodies
               </Link>
-              <Link to="/products" className="block hover:text-gray-300" onClick={() => setMobileMenuOpen(false)}>
+              <Link to="/about" className="block hover:text-[#f0d9c0]" onClick={() => setMobileMenuOpen(false)}>
+                About
+              </Link>
+              <Link to="/products" className="block hover:text-[#f0d9c0]" onClick={() => setMobileMenuOpen(false)}>
                 All Products
               </Link>
               {user && (
-                <Link to="/account" className="block hover:text-gray-300" onClick={() => setMobileMenuOpen(false)}>
+                <Link to="/account" className="block hover:text-[#f0d9c0]" onClick={() => setMobileMenuOpen(false)}>
                   MY ACCOUNT
                 </Link>
               )}

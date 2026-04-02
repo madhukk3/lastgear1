@@ -3,51 +3,57 @@ import { Link } from 'react-router-dom';
 
 const Footer = () => {
   return (
-    <footer className="bg-black text-white mt-20" data-testid="footer">
-      <div className="max-w-7xl mx-auto px-4 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+    <footer className="mt-20 overflow-hidden border-t border-white/10 bg-[#120e0b] text-white" data-testid="footer">
+      <div className="max-w-7xl mx-auto px-4 py-14">
+        <div className="grid grid-cols-1 gap-10 md:grid-cols-[1.3fr_0.8fr_0.8fr_0.8fr]">
           {/* Brand */}
           <div>
-            <div className="flex items-center gap-2 mb-4">
+            <div className="mb-5 flex items-center gap-3">
               <img src="/logo-white.png" alt="LAST GEAR Logo" className="h-[56px] md:h-[64px] w-auto object-contain opacity-90" />
-              <h3 className="text-2xl font-puma">LAST GEAR</h3>
+              <div>
+                <h3 className="text-3xl font-puma tracking-[0.18em]">LAST GEAR</h3>
+                <p className="text-[10px] uppercase tracking-[0.42em] text-white/45">Fashion Division</p>
+              </div>
             </div>
-            <p className="text-gray-400 text-sm">Premium streetwear for the modern lifestyle.</p>
+            <p className="max-w-md text-sm leading-7 text-white/62">
+              LAST GEAR Fashion is the first startup under our LAST GEAR company vision, built to make premium streetwear feel immersive, creative, and unforgettable from the first click.
+            </p>
           </div>
 
           {/* Shop */}
           <div>
-            <h4 className="font-bold mb-4">SHOP</h4>
-            <ul className="space-y-2 text-sm text-gray-400">
-              <li><Link to="/products?category=t-shirts" className="hover:text-white">T-Shirts</Link></li>
-              <li><Link to="/products?category=hoodies" className="hover:text-white">Hoodies</Link></li>
-              <li><Link to="/products" className="hover:text-white">All Products</Link></li>
+            <h4 className="mb-4 font-display text-2xl uppercase text-[#f1e6d8]">Shop</h4>
+            <ul className="space-y-3 text-sm text-white/58">
+              <li><Link to="/products?category=t-shirts" className="hover:text-[#f1e6d8]">T-Shirts</Link></li>
+              <li><Link to="/products?category=hoodies" className="hover:text-[#f1e6d8]">Hoodies</Link></li>
+              <li><Link to="/products" className="hover:text-[#f1e6d8]">All Products</Link></li>
             </ul>
           </div>
 
           {/* Support */}
           <div>
-            <h4 className="font-bold mb-4">SUPPORT</h4>
-            <ul className="space-y-2 text-sm text-gray-400">
-              <li><Link to="/" className="hover:text-white">Contact Us</Link></li>
-              <li><Link to="/" className="hover:text-white">Shipping Info</Link></li>
-              <li><Link to="/" className="hover:text-white">Returns</Link></li>
+            <h4 className="mb-4 font-display text-2xl uppercase text-[#f1e6d8]">Support</h4>
+            <ul className="space-y-3 text-sm text-white/58">
+              <li><Link to="/about" className="hover:text-[#f1e6d8]">About Us</Link></li>
+              <li><Link to="/help" className="hover:text-[#f1e6d8]">Help Center</Link></li>
+              <li><Link to="/help" className="hover:text-[#f1e6d8]">Shipping Info</Link></li>
+              <li><Link to="/help" className="hover:text-[#f1e6d8]">Returns</Link></li>
             </ul>
           </div>
 
           {/* Account */}
           <div>
-            <h4 className="font-bold mb-4">ACCOUNT</h4>
-            <ul className="space-y-2 text-sm text-gray-400">
-              <li><Link to="/account" className="hover:text-white">My Account</Link></li>
-              <li><Link to="/account" className="hover:text-white">Order History</Link></li>
-              <li><Link to="/wishlist" className="hover:text-white">Wishlist</Link></li>
+            <h4 className="mb-4 font-display text-2xl uppercase text-[#f1e6d8]">Account</h4>
+            <ul className="space-y-3 text-sm text-white/58">
+              <li><Link to="/account" className="hover:text-[#f1e6d8]">My Account</Link></li>
+              <li><Link to="/account" className="hover:text-[#f1e6d8]">Order History</Link></li>
+              <li><Link to="/wishlist" className="hover:text-[#f1e6d8]">Wishlist</Link></li>
             </ul>
           </div>
         </div>
 
-        <div className="border-t border-gray-800 mt-8 pt-8 text-center text-sm text-gray-400">
-          <p>&copy; 2026 LAST GEAR. All rights reserved.</p>
+        <div className="mt-10 border-t border-white/10 pt-8 text-center text-sm text-white/42">
+          <p>&copy; 2026 LAST GEAR. Premium streetwear, first chapter.</p>
         </div>
       </div>
     </footer>

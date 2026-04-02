@@ -21,6 +21,7 @@ import OrderStatusPage from './pages/OrderStatus';
 import Wishlist from './pages/Wishlist';
 import Account from './pages/Account';
 import HelpCenter from './pages/HelpCenter';
+import About from './pages/About';
 import AddedToCartPopup from './components/AddedToCartPopup';
 import AdminLogin from './pages/admin/AdminLogin';
 import AdminDashboard from './pages/admin/AdminDashboard';
@@ -78,6 +79,7 @@ function App() {
                         <Route path="/account/orders/:order_id" element={<OrderStatusPage />} />
                         <Route path="/wishlist" element={<Wishlist />} />
                         <Route path="/account" element={<Account />} />
+                        <Route path="/about" element={<About />} />
                         <Route path="/help" element={<HelpCenter />} />
                       </Routes>
                     </main>
