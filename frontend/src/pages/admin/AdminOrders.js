@@ -125,7 +125,8 @@ const AdminOrders = () => {
         </div>
       </div>
 
-      <div className="bg-white rounded-lg shadow overflow-hidden overflow-x-auto">
+      <div className="bg-white rounded-[28px] shadow-sm border border-black/8 overflow-hidden">
+        <div className="max-h-[68vh] overflow-auto">
         <table className="w-full min-w-[800px]">
           <thead className="bg-gray-50">
             <tr>
@@ -194,6 +195,7 @@ const AdminOrders = () => {
             ))}
           </tbody>
         </table>
+        </div>
       </div>
 
       {/* Update Status Modal */}

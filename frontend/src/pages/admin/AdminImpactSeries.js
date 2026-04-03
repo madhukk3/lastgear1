@@ -30,7 +30,7 @@ const AdminImpactSeries = () => {
     const fetchSeries = async () => {
         try {
             const response = await axios.get(`${API}/admin/impact-series`, {
-                headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+                withCredentials: true
             });
             setSeriesList(response.data);
         } catch (error) {
@@ -54,12 +54,12 @@ const AdminImpactSeries = () => {
         try {
             if (editingSeries) {
                 await axios.put(`${API}/admin/impact-series/${editingSeries.id}`, formData, {
-                    headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+                    withCredentials: true
                 });
                 toast.success('Series updated successfully');
             } else {
                 await axios.post(`${API}/admin/impact-series`, formData, {
-                    headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+                    withCredentials: true
                 });
                 toast.success('Series created successfully');
             }
@@ -74,7 +74,7 @@ const AdminImpactSeries = () => {
         if (window.confirm('Are you sure you want to delete this series?')) {
             try {
                 await axios.delete(`${API}/admin/impact-series/${id}`, {
-                    headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+                    withCredentials: true
                 });
                 toast.success('Series deleted');
                 fetchSeries();
@@ -87,7 +87,7 @@ const AdminImpactSeries = () => {
     const handleActivate = async (id) => {
         try {
             await axios.post(`${API}/admin/impact-series/${id}/activate`, {}, {
-                headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+                withCredentials: true
             });
             toast.success('Series activated successfully');
             fetchSeries();

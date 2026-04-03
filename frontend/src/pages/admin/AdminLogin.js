@@ -23,7 +23,7 @@ const AdminLogin = () => {
         toast.success('Admin login successful!');
         navigate('/admin/dashboard');
       } else {
-        logout();
+        await logout();
         toast.error('Access denied. Admin credentials required.');
       }
     } catch (error) {
@@ -50,12 +50,12 @@ const AdminLogin = () => {
               <div className="mb-5 inline-flex h-16 w-16 items-center justify-center rounded-full border border-black/10 bg-white shadow-[0_10px_30px_rgba(18,14,11,0.08)]">
                 <img src="/logo-black.png" alt="LAST GEAR Logo" className="h-10 w-auto object-contain" />
               </div>
-              <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-black/10 bg-black/[0.03] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.28em] text-black/60">
+              <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-black/10 bg-black/[0.03] px-3 py-1 font-nav text-[11px] text-black/60">
                 <ShieldCheck size={12} />
                 <span>Secure Admin Access</span>
               </div>
-              <h1 className="text-5xl font-display leading-none text-[#120e0b]">LAST GEAR</h1>
-              <p className="mt-2 text-sm uppercase tracking-[0.28em] text-black/45">Admin Panel Login</p>
+              <h1 className="font-nav text-4xl leading-none text-[#120e0b] md:text-5xl">LAST GEAR</h1>
+              <p className="mt-2 font-nav text-sm text-black/45">Admin Panel Login</p>
               <p className="mt-4 max-w-xs text-sm leading-6 text-black/55">
                 Simple access for orders, inventory, campaigns, and store control.
               </p>
@@ -63,7 +63,7 @@ const AdminLogin = () => {
 
             <form onSubmit={handleSubmit} className="space-y-5" data-testid="admin-login-form">
               <div>
-                <label htmlFor="email" className="mb-2 block text-[11px] font-semibold uppercase tracking-[0.2em] text-black/55">
+                <label htmlFor="email" className="mb-2 block font-nav text-[11px] text-black/55">
                   Email
                 </label>
                 <input
@@ -79,7 +79,7 @@ const AdminLogin = () => {
               </div>
 
               <div>
-                <label htmlFor="password" className="mb-2 block text-[11px] font-semibold uppercase tracking-[0.2em] text-black/55">
+                <label htmlFor="password" className="mb-2 block font-nav text-[11px] text-black/55">
                   Password
                 </label>
                 <input
@@ -97,7 +97,7 @@ const AdminLogin = () => {
               <button
                 type="submit"
                 disabled={loading}
-                className="inline-flex w-full items-center justify-center gap-3 rounded-2xl bg-[#120e0b] px-6 py-4 text-sm font-bold uppercase tracking-[0.28em] text-[#f1e6d8] transition hover:bg-[#2a2119] disabled:cursor-not-allowed disabled:bg-black/35"
+                className="inline-flex w-full items-center justify-center gap-3 rounded-2xl bg-[#120e0b] px-6 py-4 font-nav text-sm text-[#f1e6d8] transition hover:bg-[#2a2119] disabled:cursor-not-allowed disabled:bg-black/35"
                 data-testid="admin-login-button"
               >
                 <span>{loading ? 'Logging In...' : 'Login As Admin'}</span>

@@ -137,9 +137,9 @@ const OrderSuccess = () => {
                   <div className="inline-flex items-center gap-2 px-3 py-1 bg-green-500/10 border border-green-500/30 text-green-400 font-mono text-sm tracking-widest uppercase mb-4 rounded-sm animate-pulse">
                     <Zap size={14} /> System Verified
                   </div>
-                  <h1 className="text-4xl sm:text-5xl font-black text-white italic tracking-tighter uppercase leading-none drop-shadow-[0_0_15px_rgba(255,0,60,0.3)]">
-                    ENGINE IGNITED <br />
-                    <span className="text-[#ff003c]">YOUR ORDER IS LOCKED IN</span>
+                  <h1 className="text-4xl sm:text-5xl font-black italic uppercase tracking-tight leading-[0.95] text-white drop-shadow-[0_0_15px_rgba(255,0,60,0.3)]">
+                    <span className="block">ENGINE IGNITED</span>
+                    <span className="mt-3 block text-[#ff003c] sm:mt-4">YOUR ORDER IS LOCKED IN</span>
                   </h1>
                 </div>
                 <div className="hidden md:block">

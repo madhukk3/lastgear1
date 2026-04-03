@@ -41,7 +41,7 @@ const AdminDashboard = () => {
 
   return (
     <div data-testid="admin-dashboard">
-      <h1 className="text-3xl font-bold mb-8">Dashboard Overview</h1>
+      <h1 className="mb-8 font-nav text-4xl text-[#16120d]">Dashboard Overview</h1>
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
@@ -50,10 +50,10 @@ const AdminDashboard = () => {
             <div className="p-3 bg-green-100 rounded-lg">
               <IndianRupee className="text-green-600" size={24} />
             </div>
-            <span className="text-sm text-gray-500">Total Revenue</span>
+            <span className="font-nav text-sm text-gray-500">Total Revenue</span>
           </div>
           <div className="text-3xl font-bold">₹{stats?.total_revenue?.toLocaleString('en-IN') || 0}</div>
-          <p className="text-sm text-gray-600 mt-2">{stats?.paid_orders || 0} paid orders</p>
+          <p className="mt-2 font-nav text-sm text-gray-600">{stats?.paid_orders || 0} paid orders</p>
         </div>
 
         <div className="bg-white p-6 rounded-lg shadow" data-testid="stat-orders">
@@ -61,10 +61,10 @@ const AdminDashboard = () => {
             <div className="p-3 bg-blue-100 rounded-lg">
               <ShoppingCart className="text-blue-600" size={24} />
             </div>
-            <span className="text-sm text-gray-500">Total Orders</span>
+            <span className="font-nav text-sm text-gray-500">Total Orders</span>
           </div>
           <div className="text-3xl font-bold">{stats?.total_orders || 0}</div>
-          <p className="text-sm text-gray-600 mt-2">{stats?.recent_orders_24h || 0} in last 24h</p>
+          <p className="mt-2 font-nav text-sm text-gray-600">{stats?.recent_orders_24h || 0} in last 24h</p>
         </div>
 
         <div className="bg-white p-6 rounded-lg shadow" data-testid="stat-customers">
@@ -72,10 +72,10 @@ const AdminDashboard = () => {
             <div className="p-3 bg-purple-100 rounded-lg">
               <Users className="text-purple-600" size={24} />
             </div>
-            <span className="text-sm text-gray-500">Customers</span>
+            <span className="font-nav text-sm text-gray-500">Customers</span>
           </div>
           <div className="text-3xl font-bold">{stats?.total_customers || 0}</div>
-          <p className="text-sm text-gray-600 mt-2">Registered users</p>
+          <p className="mt-2 font-nav text-sm text-gray-600">Registered users</p>
         </div>
 
         <div className="bg-white p-6 rounded-lg shadow" data-testid="stat-products">
@@ -83,10 +83,10 @@ const AdminDashboard = () => {
             <div className="p-3 bg-orange-100 rounded-lg">
               <Package className="text-orange-600" size={24} />
             </div>
-            <span className="text-sm text-gray-500">Products</span>
+            <span className="font-nav text-sm text-gray-500">Products</span>
           </div>
           <div className="text-3xl font-bold">{stats?.total_products || 0}</div>
-          <p className="text-sm text-red-600 mt-2">
+          <p className="mt-2 font-nav text-sm text-red-600">
             <AlertTriangle size={14} className="inline mr-1" />
             {stats?.low_stock_products || 0} low stock
           </p>
@@ -97,14 +97,14 @@ const AdminDashboard = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Category Revenue Bar Chart */}
         <div className="bg-white p-6 rounded-lg shadow">
-          <h2 className="text-xl font-bold mb-4">Revenue by Category</h2>
+          <h2 className="mb-4 font-nav text-2xl text-[#16120d]">Revenue by Category</h2>
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={stats?.category_stats || []}>
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="_id" />
-              <YAxis />
-              <Tooltip formatter={(value) => `₹${value.toFixed(0)}`} />
-              <Legend />
+              <XAxis dataKey="_id" tick={{ fontFamily: 'Space Grotesk, sans-serif', fontSize: 12 }} />
+              <YAxis tick={{ fontFamily: 'Space Grotesk, sans-serif', fontSize: 12 }} />
+              <Tooltip formatter={(value) => `₹${value.toFixed(0)}`} contentStyle={{ fontFamily: 'Space Grotesk, sans-serif' }} />
+              <Legend wrapperStyle={{ fontFamily: 'Space Grotesk, sans-serif', fontSize: '12px' }} />
               <Bar dataKey="revenue" fill="#000000" name="Revenue (₹)" />
             </BarChart>
           </ResponsiveContainer>
@@ -112,7 +112,7 @@ const AdminDashboard = () => {
 
         {/* Category Orders Pie Chart */}
         <div className="bg-white p-6 rounded-lg shadow">
-          <h2 className="text-xl font-bold mb-4">Orders by Category</h2>
+          <h2 className="mb-4 font-nav text-2xl text-[#16120d]">Orders by Category</h2>
           <ResponsiveContainer width="100%" height={300}>
             <PieChart>
               <Pie
@@ -129,7 +129,7 @@ const AdminDashboard = () => {
                   <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                 ))}
               </Pie>
-              <Tooltip />
+              <Tooltip contentStyle={{ fontFamily: 'Space Grotesk, sans-serif' }} />
             </PieChart>
           </ResponsiveContainer>
         </div>
@@ -138,44 +138,44 @@ const AdminDashboard = () => {
       {/* Quick Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
         <div className="bg-white p-6 rounded-lg shadow">
-          <h3 className="text-lg font-bold mb-4">Order Status</h3>
+          <h3 className="mb-4 font-nav text-2xl text-[#16120d]">Order Status</h3>
           <div className="space-y-3">
             <div className="flex justify-between">
-              <span className="text-gray-600">Paid</span>
+              <span className="font-nav text-gray-600">Paid</span>
               <span className="font-bold text-green-600">{stats?.paid_orders || 0}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-gray-600">Pending</span>
+              <span className="font-nav text-gray-600">Pending</span>
               <span className="font-bold text-yellow-600">{stats?.pending_orders || 0}</span>
             </div>
           </div>
         </div>
 
         <div className="bg-white p-6 rounded-lg shadow">
-          <h3 className="text-lg font-bold mb-4">Inventory Status</h3>
+          <h3 className="mb-4 font-nav text-2xl text-[#16120d]">Inventory Status</h3>
           <div className="space-y-3">
             <div className="flex justify-between">
-              <span className="text-gray-600">Total Products</span>
+              <span className="font-nav text-gray-600">Total Products</span>
               <span className="font-bold">{stats?.total_products || 0}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-gray-600">Low Stock</span>
+              <span className="font-nav text-gray-600">Low Stock</span>
               <span className="font-bold text-red-600">{stats?.low_stock_products || 0}</span>
             </div>
           </div>
         </div>
 
         <div className="bg-white p-6 rounded-lg shadow">
-          <h3 className="text-lg font-bold mb-4">Performance</h3>
+          <h3 className="mb-4 font-nav text-2xl text-[#16120d]">Performance</h3>
           <div className="space-y-3">
             <div className="flex justify-between">
-              <span className="text-gray-600">Avg Order Value</span>
+              <span className="font-nav text-gray-600">Avg Order Value</span>
               <span className="font-bold">
                 ₹{stats?.paid_orders > 0 ? (stats?.total_revenue / stats?.paid_orders).toFixed(0) : 0}
               </span>
             </div>
             <div className="flex justify-between">
-              <span className="text-gray-600">Conversion Rate</span>
+              <span className="font-nav text-gray-600">Conversion Rate</span>
               <span className="font-bold">
                 {stats?.total_orders > 0 ? ((stats?.paid_orders / stats?.total_orders) * 100).toFixed(1) : 0}%
               </span>

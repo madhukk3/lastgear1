@@ -109,6 +109,44 @@ const Checkout = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  const buildCheckoutPricing = () => {
+    let combinedBaseDiscount = globalDiscount || 0;
+    if (appliedCoupon) {
+      combinedBaseDiscount += appliedCoupon.discount;
+    }
+
+    const isFirstPurchaseEligible = user?.has_used_first_purchase_discount === false;
+    if (isFirstPurchaseEligible) {
+      combinedBaseDiscount += 5;
+    }
+
+    let rawDiscountAmount = 0;
+    if (checkoutItems) {
+      checkoutItems.forEach((item) => {
+        const productObj = item.product || item;
+        let itemDiscountPercent = combinedBaseDiscount + (productObj.discount_percentage || 0);
+        if (itemDiscountPercent > 100) itemDiscountPercent = 100;
+        const itemSubtotal = (productObj.price || item.price) * item.quantity;
+        rawDiscountAmount += itemSubtotal * (itemDiscountPercent / 100);
+      });
+    }
+
+    const computedDiscountAmount = Math.round(rawDiscountAmount);
+    const subtotalAfterDiscountValue = checkoutTotal - computedDiscountAmount;
+    const hasFreeShippingItem = checkoutItems && checkoutItems.some((item) => (item.product || item)?.is_free_shipping);
+    const computedShippingCost = hasFreeShippingItem || subtotalAfterDiscountValue >= freeShippingThreshold ? 0 : shippingCharge;
+    const computedCodCharge = paymentMethod === 'cod' ? codCharge : 0;
+    const computedTotal = subtotalAfterDiscountValue + computedShippingCost + computedCodCharge;
+
+    return {
+      discountAmount: computedDiscountAmount,
+      subtotalAfterDiscount: subtotalAfterDiscountValue,
+      shippingCost: computedShippingCost,
+      currentCodCharge: computedCodCharge,
+      totalAmount: computedTotal,
+    };
+  };
+
   const handleRazorpayPayment = async (orderId, razorpayOrderId, amount, keyId) => {
     const res = await loadRazorpayScript();
 
@@ -172,31 +210,21 @@ const Checkout = () => {
 
       // Create order items
       const orderItems = checkoutItems.map(item => ({
-        product_id: item.product_id,
+        product_id: item.product_id || item.product?.id,
         name: item.product?.name || item.name,
         price: item.product?.price || item.price,
         quantity: item.quantity,
         size: item.size,
         color: item.color,
+        image: item.product?.images?.[0] || item.product?.image || item.image || null,
       }));
 
 
-      // Calculate final pricing
-      let subtotal = checkoutTotal;
-      let totalDiscountPercent = globalDiscount;
-      if (appliedCoupon) {
-        totalDiscountPercent += appliedCoupon.discount;
-      }
-
-      const discountAmount = subtotal * (totalDiscountPercent / 100);
-      const subtotalAfterDiscount = subtotal - discountAmount;
-      const shippingCost = subtotalAfterDiscount >= 1500 ? 0 : 99;
-      const currentCodCharge = paymentMethod === 'cod' ? codCharge : 0;
-      const totalAmount = parseFloat((subtotalAfterDiscount + shippingCost + currentCodCharge).toFixed(2));
+      const { discountAmount, totalAmount } = buildCheckoutPricing();
 
       // Create order
       const orderResponse = await axios.post(`${API}/orders`, {
-        discount_applied: Math.round(discountAmount),
+        discount_applied: discountAmount,
         coupon_code: appliedCoupon ? appliedCoupon.code : null,
         items: orderItems,
         total_amount: totalAmount,
@@ -236,31 +264,8 @@ const Checkout = () => {
     return null;
   }
 
-  let baseDiscountPercent = globalDiscount || 0;
-  if (appliedCoupon) {
-    baseDiscountPercent += appliedCoupon.discount;
-  }
-
   const isFirstPurchaseEligible = user?.has_used_first_purchase_discount === false;
-  if (isFirstPurchaseEligible) {
-    baseDiscountPercent += 5;
-  }
-
-  let discountAmount = 0;
-  if (checkoutItems) {
-    checkoutItems.forEach(item => {
-      const productObj = item.product || item;
-      let itemDiscountPercent = baseDiscountPercent + (productObj.discount_percentage || 0);
-      if (itemDiscountPercent > 100) itemDiscountPercent = 100;
-      const itemSubtotal = (productObj.price || item.price) * item.quantity;
-      discountAmount += itemSubtotal * (itemDiscountPercent / 100);
-    });
-  }
-  const subtotalAfterDiscount = checkoutTotal - discountAmount;
-  const hasFreeShippingItem = checkoutItems && checkoutItems.some(item => (item.product || item)?.is_free_shipping);
-  const shippingCost = hasFreeShippingItem || subtotalAfterDiscount >= freeShippingThreshold ? 0 : shippingCharge;
-  const currentCodCharge = paymentMethod === 'cod' ? codCharge : 0;
-  const totalAmount = subtotalAfterDiscount + shippingCost + currentCodCharge;
+  const { discountAmount, subtotalAfterDiscount, shippingCost, totalAmount } = buildCheckoutPricing();
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-12" data-testid="checkout-page">
@@ -543,8 +548,8 @@ const Checkout = () => {
                     <span>Shipping</span>
                     <span className="font-bold">{shippingCost === 0 ? 'FREE' : `₹${shippingCost}`}</span>
                   </div>
-                  {checkoutTotal < freeShippingThreshold && (
-                    <p className="text-xs text-green-600">Add ₹{(freeShippingThreshold - checkoutTotal).toFixed(0)} more for FREE shipping!</p>
+                  {shippingCost > 0 && subtotalAfterDiscount < freeShippingThreshold && (
+                    <p className="text-xs text-green-600">Add ₹{(freeShippingThreshold - subtotalAfterDiscount).toFixed(0)} more for FREE shipping!</p>
                   )}
 
                   {paymentMethod === 'cod' && codCharge > 0 && (

@@ -8,6 +8,142 @@ from datetime import datetime, timezone
 
 logger = logging.getLogger(__name__)
 
+def get_public_site_url() -> str:
+    return (
+        os.environ.get('PUBLIC_SITE_URL')
+        or os.environ.get('SITE_URL')
+        or os.environ.get('WEBSITE_URL')
+        or 'https://lastgear.in'
+    ).rstrip('/')
+
+def build_lastgear_email_shell(eyebrow: str, title: str, intro_html: str, body_html: str, footer_note: str = "Support: support@lastgear.in") -> str:
+    return f"""
+    <html>
+        <body style="margin: 0; padding: 12px; background: #f5efe6; font-family: 'Helvetica Neue', Arial, sans-serif; color: #16120d;">
+            <div style="max-width: 640px; margin: 0 auto;">
+                <div style="background: #fffaf3; color: #18120d !important; border: 1px solid #eadbc9; border-radius: 22px; overflow: hidden; box-shadow: 0 14px 36px rgba(18,14,11,0.08);">
+                    <div style="height: 4px; background: linear-gradient(90deg, #b7814d 0%, #efc28c 50%, #b7814d 100%);"></div>
+                    <div style="padding: 16px 18px 0;">
+                        <div style="letter-spacing: 0.26em; text-transform: uppercase; font-size: 10px; color: #9c6a3b !important;">LAST GEAR Fashion Division</div>
+                    </div>
+                    <div style="padding: 18px 18px 20px;">
+                        <p style="margin: 0 0 10px; color: #9c6a3b !important; letter-spacing: 0.2em; text-transform: uppercase; font-size: 10px; font-weight: 700;">{eyebrow}</p>
+                        <h1 style="margin: 0 0 12px; font-size: 26px; line-height: 0.96; text-transform: uppercase; color: #18120d !important; letter-spacing: 0.01em;">{title}</h1>
+                        <div style="max-width: 560px; font-size: 14px; line-height: 1.65; color: #18120d !important;">
+                            {intro_html}
+                        </div>
+                        <div style="margin-top: 16px; border-top: 1px solid #eadbc9; padding-top: 14px;">
+                            {body_html}
+                        </div>
+                    </div>
+                </div>
+                <div style="padding: 10px 4px 0; font-size: 12px; line-height: 1.55; color: #6f6052;">
+                    <p style="margin: 0;">{footer_note}</p>
+                    <p style="margin: 4px 0 0;">LAST GEAR Team</p>
+                </div>
+            </div>
+        </body>
+    </html>
+    """
+
+def build_status_panel(label: str, value: str, accent: str = "#d8b48a", extra_html: str = "") -> str:
+    return f"""
+    <div style="padding: 0 0 12px; border-bottom: 1px solid #eadbc9;">
+        <p style="margin: 0 0 6px; font-size: 10px; text-transform: uppercase; letter-spacing: 0.18em; color: {accent} !important; font-weight: 700;">{label}</p>
+        <p style="margin: 0; font-size: 18px; font-weight: 800; text-transform: uppercase; color: #18120d !important; line-height: 1.12;">{value}</p>
+        {extra_html}
+    </div>
+    """
+
+async def send_subscriber_welcome_email(email: str):
+    """
+    Send a welcome email to a new or returning subscriber.
+    """
+    email_username = os.environ.get('EMAIL_USERNAME')
+    email_password = os.environ.get('EMAIL_PASSWORD')
+
+    if not email_username or not email_password:
+        logger.warning("EMAIL_USERNAME or EMAIL_PASSWORD not set. Skipping subscriber welcome email.")
+        return {"delivered": False, "reason": "missing_credentials"}
+
+    msg = EmailMessage()
+    msg['Subject'] = "Welcome to LAST GEAR"
+    msg['From'] = email_username
+    msg['To'] = email
+    unsubscribe_link = f"{get_public_site_url()}/api/newsletter/unsubscribe?email={email}"
+    msg.set_content("You are now subscribed to LAST GEAR updates. New drops. First access.")
+    msg.add_alternative(
+        build_lastgear_email_shell(
+            "Stay In The Shift",
+            "You Are In",
+            "<p style='margin:0;'>You are now subscribed to LAST GEAR updates. New drops. First access.</p>",
+            f"""
+            <div style="padding-top: 14px; color: #18120d !important;">
+                <p style="margin: 0;">We’ll keep the updates sharp and relevant.</p>
+                <p style="margin: 14px 0 0;"><a href="{unsubscribe_link}" style="color:#9c6a3b;text-decoration:none;">Unsubscribe</a></p>
+            </div>
+            """
+        ),
+        subtype='html'
+    )
+
+    def send_email_sync():
+        with smtplib.SMTP_SSL('smtp.gmail.com', 465) as smtp:
+            smtp.login(email_username, email_password)
+            smtp.send_message(msg)
+
+    try:
+        await asyncio.to_thread(send_email_sync)
+        logger.info("Subscriber welcome email sent to %s", email)
+        return {"delivered": True}
+    except Exception as e:
+        logger.error("Failed to send subscriber welcome email to %s: %s", email, str(e))
+        return {"delivered": False, "reason": str(e)}
+
+async def send_newsletter_verification_email(email: str, otp: str):
+    """
+    Send newsletter verification OTP before saving a subscriber.
+    """
+    email_username = os.environ.get('EMAIL_USERNAME')
+    email_password = os.environ.get('EMAIL_PASSWORD')
+
+    if not email_username or not email_password:
+        logger.warning("EMAIL_USERNAME or EMAIL_PASSWORD not set. Skipping newsletter verification email.")
+        return {"delivered": False, "reason": "missing_credentials"}
+
+    msg = EmailMessage()
+    msg['Subject'] = "Verify your LAST GEAR subscription"
+    msg['From'] = email_username
+    msg['To'] = email
+    msg.set_content(f"Your LAST GEAR verification code is {otp}. It expires in 5 minutes.")
+    msg.add_alternative(
+        build_lastgear_email_shell(
+            "Email Verification",
+            "Confirm Your Subscription",
+            "<p style='margin: 0;'>Use this code to complete your LAST GEAR subscription.</p>",
+            f"""
+            {build_status_panel("Verification Code", otp)}
+            <div style="padding-top: 14px; color: #18120d !important;">
+                <p style="margin: 0;">This code expires in 5 minutes. Enter it on the site to finish subscribing.</p>
+            </div>
+            """
+        ),
+        subtype='html'
+    )
+
+    def send_email_sync():
+        with smtplib.SMTP_SSL('smtp.gmail.com', 465) as smtp:
+            smtp.login(email_username, email_password)
+            smtp.send_message(msg)
+
+    try:
+        await asyncio.to_thread(send_email_sync)
+        logger.info("Newsletter verification email sent to %s", email)
+        return {"delivered": True}
+    except Exception as e:
+        logger.error("Failed to send newsletter verification email to %s: %s", email, str(e))
+        return {"delivered": False, "reason": str(e)}
+
 async def send_order_email(order: dict):
     """
     Asynchronously send an order confirmation email via Gmail SMTP.
@@ -81,51 +217,33 @@ async def send_order_email(order: dict):
             customer_msg['From'] = email_username
             customer_msg['To'] = customer_email
             
-            customer_html = f"""
-            <html>
-                <body style="font-family: 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #1a1a1a; max-width: 600px; margin: 0 auto; padding: 20px;">
-                    <p style="font-size: 16px;">Hi <strong>{customer_name}</strong>,</p>
-                    <p style="font-size: 16px;">Thank you for shopping with LAST GEAR! Your order has been successfully placed.</p>
-                    
-                    <h3 style="border-bottom: 2px solid #eee; padding-bottom: 10px; margin-top: 30px;">Order Details</h3>
-                    <table style="width: 100%; margin-bottom: 20px;">
-                        <tr><td style="padding: 4px 0;"><strong>Order ID:</strong></td><td>{order_id}</td></tr>
-                        <tr><td style="padding: 4px 0;"><strong>Order Date:</strong></td><td>{order_date}</td></tr>
-                        <tr><td style="padding: 4px 0;"><strong>Payment Method:</strong></td><td><strong>{payment_text}</strong></td></tr>
-                    </table>
-                    
-                    <h3 style="border-bottom: 2px solid #eee; padding-bottom: 10px;">Items Ordered</h3>
-                    <ul style="list-style-type: none; padding-left: 0;">
-                        {customer_items_html}
-                    </ul>
-                    
-                    <h3 style="border-bottom: 2px solid #eee; padding-bottom: 10px; margin-top: 30px;">Shipping Address</h3>
-                    <p style="background-color: #f9f9f9; padding: 15px; border-radius: 5px;">
-                        {shipping_address_text}
-                    </p>
-                    
-                    <h3 style="border-bottom: 2px solid #eee; padding-bottom: 10px; margin-top: 30px;">Order Total</h3>
-                    <p style="font-size: 24px; font-weight: bold; color: #000; margin-top: 10px;">{total_amount}</p>
-                    
-                    <hr style="border: 0; border-top: 1px solid #ddd; margin: 40px 0;">
-                    
-                    <h4 style="margin-bottom: 15px; font-size: 18px;">What happens next?</h4>
-                    <ul style="padding-left: 20px; line-height: 1.8;">
-                        <li>We are preparing your order for shipment</li>
-                        <li>You will receive another email when your order is shipped</li>
-                        <li>Delivery usually takes 3–7 business days</li>
-                    </ul>
-                    
-                    <hr style="border: 0; border-top: 1px solid #ddd; margin: 40px 0;">
-                    <p>If you have any questions, feel free to contact us.</p>
-                    <p><strong>Email:</strong> support@lastgear.in</p>
-                    <p style="margin-top: 30px;">Thank you for choosing LAST GEAR.</p>
-                    <p style="font-style: italic; font-weight: bold; font-size: 18px;">Stay bold. Stay unstoppable. ⚡</p>
-                    <p style="margin-top: 30px; font-weight: bold;">LAST GEAR Team</p>
-                    <p><a href="https://lastgear.in" style="color: #000; text-decoration: none;">https://lastgear.in</a></p>
-                </body>
-            </html>
-            """
+            customer_html = build_lastgear_email_shell(
+                "Order Confirmed",
+                "Your Order Is Locked In",
+                f"<p style='margin: 0;'>Hi <strong>{customer_name}</strong>, your LAST GEAR order has been placed successfully.</p>",
+                f"""
+                <div>
+                    {build_status_panel("Order ID", order_id)}
+                    {build_status_panel("Payment", payment_text)}
+                    {build_status_panel("Order Total", total_amount)}
+                    <div style="padding: 14px 0; border-bottom: 1px solid #eadbc9;">
+                        <p style="margin: 0 0 10px; font-size: 10px; text-transform: uppercase; letter-spacing: 0.18em; color: #9c6a3b; font-weight: 700;">Selected Pieces</p>
+                        <ul style="list-style: none; padding: 0; margin: 0; color: #18120d !important;">
+                            {customer_items_html}
+                        </ul>
+                    </div>
+                    <div style="padding: 14px 0; border-bottom: 1px solid #eadbc9; color: #18120d !important;">
+                        <p style="margin: 0 0 8px; font-size: 10px; text-transform: uppercase; letter-spacing: 0.18em; color: #9c6a3b; font-weight: 700;">Shipping Address</p>
+                        <p style="margin: 0;">{shipping_address_text}</p>
+                    </div>
+                    <div style="padding: 14px 0 0; color: #18120d !important;">
+                        <p style="margin: 0 0 8px; font-size: 10px; text-transform: uppercase; letter-spacing: 0.18em; color: #9c6a3b; font-weight: 700;">Next</p>
+                        <p style="margin: 0;">We prepare your order, update you when it moves, and most deliveries arrive in 3 to 7 business days.</p>
+                        <p style="margin: 14px 0 0; font-size: 11px; text-transform: uppercase; letter-spacing: 0.16em; color: #9c6a3b; font-weight: 700;">Stay Tuned. Stay In The Shift.</p>
+                    </div>
+                </div>
+                """
+            )
             customer_msg.set_content("Please enable HTML viewing to see this email.")
             customer_msg.add_alternative(customer_html, subtype='html')
 
@@ -137,42 +255,29 @@ async def send_order_email(order: dict):
         admin_msg['From'] = email_username
         admin_msg['To'] = to_email
         
-        admin_html = f"""
-        <html>
-            <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
-                <p>Hello,</p>
-                <p>A new order has been placed on LAST GEAR.</p>
-                
-                <h3 style="border-bottom: 1px solid #ddd; padding-bottom: 5px;">Order Information</h3>
-                <p>
-                    <strong>Order ID:</strong> {order_id}<br>
-                    <strong>Order Date:</strong> {order_date}<br>
-                    <strong>Customer Name:</strong> {customer_name}<br>
-                    <strong>Customer Email:</strong> {customer_email}<br>
-                    <strong>Phone:</strong> {customer_phone}
-                </p>
-                
-                <h3 style="border-bottom: 1px solid #ddd; padding-bottom: 5px;">Order Items</h3>
-                <p>{admin_items_text}</p>
-                
-                <h3 style="border-bottom: 1px solid #ddd; padding-bottom: 5px;">Payment Information</h3>
-                <p>
-                    <strong>Payment Method:</strong> {payment_text}<br>
-                    <strong>Payment Status:</strong> {"<span style='color: green;'>PAID</span>" if admin_payment_status == 'Paid' else "<span style='color: orange;'>UNPAID (COD)</span>"}<br>
-                    <strong>Order Total:</strong> {total_amount}
-                </p>
-                
-                <h3 style="border-bottom: 1px solid #ddd; padding-bottom: 5px;">Delivery Address</h3>
-                <p style="background: #f4f4f4; padding: 10px;">{shipping_address_text}</p>
-                
-                <hr style="border: 0; border-top: 1px solid #ccc; margin: 30px 0;">
-                <p>Please log in to the admin dashboard to process this order.</p>
-                <p><strong>Admin Panel:</strong><br><a href="https://lastgear.in/admin">https://lastgear.in/admin</a></p>
-                
-                <p style="margin-top: 40px; font-size: 12px; color: #888;">LAST GEAR Notification System</p>
-            </body>
-        </html>
-        """
+        admin_html = build_lastgear_email_shell(
+            "Admin Alert",
+            "New Order Received",
+            f"<p style='margin: 0;'>A fresh LAST GEAR order is ready for review and processing.</p>",
+            f"""
+            {build_status_panel("Order ID", order_id)}
+            {build_status_panel("Customer", customer_name, extra_html=f"<div style='margin-top: 10px; color: #18120d !important;'>{customer_email}<br>{customer_phone}</div>")}
+            {build_status_panel("Payment", payment_text, extra_html=f"<div style='margin-top: 10px; color: #18120d !important;'>Status: {admin_payment_status}</div>")}
+            {build_status_panel("Order Total", total_amount)}
+            <div style="padding: 20px 0; border-bottom: 1px solid #eadbc9; color: #18120d !important;">
+                <p style="margin: 0 0 12px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.22em; color: #9c6a3b;">Ordered Items</p>
+                <p style="margin: 0;">{admin_items_text}</p>
+            </div>
+            <div style="padding: 20px 0; border-bottom: 1px solid #eadbc9; color: #18120d !important;">
+                <p style="margin: 0 0 12px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.22em; color: #9c6a3b;">Delivery Address</p>
+                <p style="margin: 0;">{shipping_address_text}</p>
+            </div>
+            <div style="padding-top: 22px; color: #18120d !important;">
+                <p style="margin: 0;">Open the admin panel to process this order: <a href="https://lastgear.in/admin" style="color: #9c6a3b; text-decoration: none;">lastgear.in/admin</a></p>
+            </div>
+            """,
+            footer_note="LAST GEAR Admin Notification"
+        )
         admin_msg.set_content("Please enable HTML viewing to see this email.")
         admin_msg.add_alternative(admin_html, subtype='html')
 
@@ -239,28 +344,20 @@ async def send_order_status_email(order: dict):
         msg['From'] = email_username
         msg['To'] = customer_email
         
-        tracking_html = f"<p><strong>Tracking Number:</strong> {tracking_number}</p>" if tracking_number else ""
+        tracking_html = f"<div style='margin-top: 10px; color: #18120d !important;'><strong>Tracking Number:</strong> {tracking_number}</div>" if tracking_number else ""
         
-        html_content = f"""
-        <html>
-            <body style="font-family: 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #1a1a1a; max-width: 600px; margin: 0 auto; padding: 20px;">
-                <p style="font-size: 16px;">Hi <strong>{customer_name}</strong>,</p>
-                <p style="font-size: 16px;">The status of your LAST GEAR order <strong>#{order_id}</strong> has been updated.</p>
-                
-                <div style="background-color: #f9f9f9; padding: 15px; border-radius: 5px; margin: 30px 0;">
-                    <p style="font-size: 18px; text-transform: uppercase;"><strong>Current Status: {emoji} {new_status}</strong></p>
-                    {tracking_html}
-                </div>
-                
-                <p>If you have any questions, feel free to contact us.</p>
-                <p><strong>Email:</strong> support@lastgear.in</p>
-                <p style="margin-top: 30px;">Thank you for choosing LAST GEAR.</p>
-                <p style="font-style: italic; font-weight: bold; font-size: 18px;">Stay bold. Stay unstoppable. ⚡</p>
-                <p style="margin-top: 30px; font-weight: bold;">LAST GEAR Team</p>
-                <p><a href="https://lastgear.in" style="color: #000; text-decoration: none;">https://lastgear.in</a></p>
-            </body>
-        </html>
-        """
+        html_content = build_lastgear_email_shell(
+            "Order Update",
+            "Status Shift",
+            f"<p style='margin: 0;'>Hi <strong>{customer_name}</strong>, your LAST GEAR order <strong>#{order_id}</strong> has a fresh update.</p>",
+            f"""
+            {build_status_panel("Current Status", f"{emoji} {new_status}", extra_html=tracking_html)}
+            <div style="padding-top: 14px; color: #18120d !important;">
+                <p style="margin: 0;">We will keep you posted as your order moves through the next stage.</p>
+                <p style="margin: 14px 0 0; font-size: 11px; text-transform: uppercase; letter-spacing: 0.16em; color: #9c6a3b; font-weight: 700;">Stay Tuned. Stay In The Shift.</p>
+            </div>
+            """
+        )
         msg.set_content("Please enable HTML viewing to see this email.")
         msg.add_alternative(html_content, subtype='html')
 
@@ -328,16 +425,29 @@ async def send_order_cancellation_email(order: dict):
         admin_msg['From'] = email_username
         admin_msg['To'] = to_email
         
-        admin_text = f"A cancellation request has been approved by admin.\n\n"
-        admin_text += f"Order ID: {order_id}\n"
-        admin_text += f"Customer: {customer_name}\n"
-        admin_text += f"Payment Method: {payment_text}\n"
-        admin_text += f"Total Amount: {total_amount}\n\n"
-        admin_text += f"Products:\n{admin_items_text.strip()}\n\n"
-        admin_text += f"Status:\nOrder Cancelled\n\n"
-        admin_text += f"Time:\n{timestamp}\n"
+        admin_text = f"A cancellation request has been approved by admin.\n\nOrder ID: {order_id}\nCustomer: {customer_name}\nPayment Method: {payment_text}\nTotal Amount: {total_amount}\n\nProducts:\n{admin_items_text.strip()}\n\nStatus: Order Cancelled\nTime: {timestamp}\n"
+        admin_html = build_lastgear_email_shell(
+            "Admin Alert",
+            "Order Cancelled",
+            f"<p style='margin: 0;'>An order cancellation has been approved and marked complete.</p>",
+            f"""
+            {build_status_panel("Order ID", order_id, accent="#e78b7a")}
+            {build_status_panel("Customer", customer_name)}
+            {build_status_panel("Payment", payment_text)}
+            {build_status_panel("Order Total", total_amount)}
+            <div style="padding: 20px 0; border-bottom: 1px solid #eadbc9; color: #18120d !important;">
+                <p style="margin: 0 0 12px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.22em; color: #9c6a3b;">Cancelled Items</p>
+                <p style="margin: 0; white-space: pre-line;">{admin_items_text.strip()}</p>
+            </div>
+            <div style="padding-top: 22px; color: #18120d !important;">
+                <p style="margin: 0;">Processed at {timestamp}</p>
+            </div>
+            """,
+            footer_note="LAST GEAR Admin Notification"
+        )
         
         admin_msg.set_content(admin_text)
+        admin_msg.add_alternative(admin_html, subtype='html')
 
         # 2. Customer Email
         customer_msg = None
@@ -347,24 +457,18 @@ async def send_order_cancellation_email(order: dict):
             customer_msg['From'] = email_username
             customer_msg['To'] = customer_email
             
-            customer_html = f"""
-            <html>
-                <body style="font-family: 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #1a1a1a; max-width: 600px; margin: 0 auto; padding: 20px;">
-                    <p style="font-size: 16px;">Hi <strong>{customer_name}</strong>,</p>
-                    <p style="font-size: 16px;">Your order <strong>#{order_id}</strong> has been cancelled successfully.</p>
-                    
-                    <div style="background-color: #f9f9f9; padding: 15px; border-radius: 5px; margin: 30px 0;">
-                        <p style="font-size: 18px; text-transform: uppercase;"><strong>Current Status: ❌ CANCELLED</strong></p>
-                    </div>
-                    
-                    <p>If you requested a refund for a prepaid order, it will be processed shortly (usually within 5-7 business days).</p>
-                    
-                    <p>If you have any questions, feel free to contact us.</p>
-                    <p><strong>Email:</strong> support@lastgear.in</p>
-                    <p style="margin-top: 30px;">LAST GEAR Team</p>
-                </body>
-            </html>
-            """
+            customer_html = build_lastgear_email_shell(
+                "Order Cancelled",
+                "Cancellation Confirmed",
+                f"<p style='margin: 0;'>Hi <strong>{customer_name}</strong>, your order <strong>#{order_id}</strong> has been cancelled successfully.</p>",
+                f"""
+                {build_status_panel("Current Status", "Cancelled", accent="#e78b7a")}
+                <div style="padding-top: 14px; color: #18120d !important;">
+                    <p style="margin: 0;">If this was a prepaid order, the refund will usually reflect within 5 to 7 business days.</p>
+                    <p style="margin: 14px 0 0; font-size: 11px; text-transform: uppercase; letter-spacing: 0.16em; color: #9c6a3b; font-weight: 700;">Stay Tuned. Stay In The Shift.</p>
+                </div>
+                """
+            )
             # "Your order has been cancelled successfully" text version
             customer_msg.set_content("Your order has been cancelled successfully.")
             customer_msg.add_alternative(customer_html, subtype='html')
@@ -428,7 +532,31 @@ Defect Image: {image_url}
 
 Please review this request in the LAST GEAR Admin Panel Exchange Hub.
 """
+        html_content = build_lastgear_email_shell(
+            "Admin Alert",
+            "Exchange Request",
+            f"<p style='margin: 0;'>A customer has submitted a new exchange request and it is ready for review.</p>",
+            f"""
+            {build_status_panel("Request ID", request_id)}
+            {build_status_panel("Order ID", order_id)}
+            {build_status_panel("Customer", customer_name, extra_html=f"<div style='margin-top: 10px; color: #18120d !important;'>{email}<br>{phone}</div>")}
+            <div style="padding: 20px 0; border-bottom: 1px solid #eadbc9; color: #18120d !important;">
+                <p style="margin: 0 0 12px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.22em; color: #9c6a3b;">Product Detail</p>
+                <p style="margin: 0;">{product}</p>
+                <p style="margin: 10px 0 0;">Purchased size: {size_old}<br>Requested size: {size_new}</p>
+            </div>
+            <div style="padding: 20px 0; border-bottom: 1px solid #eadbc9; color: #18120d !important;">
+                <p style="margin: 0 0 12px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.22em; color: #9c6a3b;">Reason</p>
+                <p style="margin: 0;">{reason}</p>
+            </div>
+            <div style="padding-top: 22px; color: #18120d !important;">
+                <p style="margin: 0;">Defect image: {image_url}</p>
+            </div>
+            """,
+            footer_note="LAST GEAR Admin Notification"
+        )
         msg.set_content(text_content)
+        msg.add_alternative(html_content, subtype='html')
         
         def send_email_sync():
             with smtplib.SMTP_SSL('smtp.gmail.com', 465) as smtp:
@@ -461,24 +589,19 @@ async def send_exchange_approved_email(exchange: dict):
         product = exchange.get('product_name', 'N/A')
         size_new = exchange.get('size_requested', 'N/A')
         
-        html_content = f"""
-        <html>
-            <body style="font-family: 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #1a1a1a; max-width: 600px; margin: 0 auto; padding: 20px;">
-                <h2 style="color: #ff003c; text-transform: uppercase;">Exchange Approved</h2>
-                <p style="font-size: 16px;">Hi <strong>{customer_name}</strong>,</p>
-                <p style="font-size: 16px;">Good news! Your exchange request for the <strong>{product}</strong> (New Size: {size_new}) has been verified and approved.</p>
-                
-                <div style="background-color: #f9f9f9; border-left: 4px solid #ff003c; padding: 15px; margin: 30px 0;">
-                    <p style="margin: 0; font-weight: bold;">Next Steps:</p>
-                    <p style="margin-top: 10px;">Our delivery partner will arrive within 2-4 business days to pick up the original item. Once verified, the replacement size will be dispatched immediately.</p>
-                    <p style="margin-top: 10px; font-size: 14px; color: #666;">Please ensure the item is unworn with original tags attached.</p>
-                </div>
-                
-                <p>If you have any questions, feel free to reply to this email.</p>
-                <p style="margin-top: 30px; font-weight: bold;">LAST GEAR Team</p>
-            </body>
-        </html>
-        """
+        html_content = build_lastgear_email_shell(
+            "Exchange Update",
+            "Exchange Approved",
+            f"<p style='margin: 0;'>Hi <strong>{customer_name}</strong>, your exchange request for <strong>{product}</strong> in size <strong>{size_new}</strong> has been approved.</p>",
+            f"""
+            {build_status_panel("Next Move", "Pickup Then Replacement", accent="#d8b48a")}
+            <div style="padding-top: 14px; color: #18120d !important;">
+                <p style="margin: 0 0 10px;">Our delivery partner will arrive within 2 to 4 business days to collect the original piece.</p>
+                <p style="margin: 0;">After verification, the replacement size will be dispatched immediately. Please keep the item unworn and with original tags.</p>
+                <p style="margin: 14px 0 0; font-size: 11px; text-transform: uppercase; letter-spacing: 0.16em; color: #9c6a3b; font-weight: 700;">Stay Tuned. Stay In The Shift.</p>
+            </div>
+            """
+        )
         
         msg.set_content("Your exchange request has been approved. Next steps involve our courier picking up your original item before dispatching the requested replacement.")
         msg.add_alternative(html_content, subtype='html')
@@ -492,3 +615,85 @@ async def send_exchange_approved_email(exchange: dict):
         logger.info(f"Exchange approval email sent to {customer_email}")
     except Exception as e:
         logger.error(f"Failed to send exchange approval email: {str(e)}")
+
+async def send_subscriber_broadcast_email(
+    subject: str,
+    message: str,
+    recipients: list[str],
+    preheader: str | None = None,
+    cta_label: str | None = None,
+    cta_link: str | None = None
+):
+    """
+    Send a branded update email to newsletter subscribers.
+    """
+    email_username = os.environ.get('EMAIL_USERNAME')
+    email_password = os.environ.get('EMAIL_PASSWORD')
+
+    if not email_username or not email_password or not recipients:
+        logger.warning("Missing email credentials or recipients for subscriber broadcast.")
+        return {"sent_count": 0, "failed_count": len(recipients or []), "failed_recipients": recipients or []}
+
+    safe_subject = subject.strip()
+    safe_message = message.replace("\n", "<br>")
+    safe_preheader = (preheader or "New drop. First access.").strip()
+    button_html = ""
+
+    if cta_label and cta_link:
+        button_html = f"""
+        <div style="margin-top: 28px;">
+            <a href="{cta_link}" style="display: inline-block; background: #120e0b; color: #f8f2ea; text-decoration: none; padding: 14px 24px; border-radius: 999px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; font-size: 12px;">
+                {cta_label}
+            </a>
+        </div>
+        """
+
+    def send_email_sync():
+        sent_count = 0
+        failed_recipients = []
+        with smtplib.SMTP_SSL('smtp.gmail.com', 465) as smtp:
+            smtp.login(email_username, email_password)
+            for recipient in recipients:
+                try:
+                    unsubscribe_link = f"{get_public_site_url()}/api/newsletter/unsubscribe?email={recipient}"
+                    html_content = build_lastgear_email_shell(
+                        "Stay In The Shift",
+                        safe_subject,
+                        f"<p style='margin:0;'>{safe_message}</p>",
+                        f"""
+                        <div style="padding-top: 14px; color: #18120d !important;">
+                            <p style="margin: 0;">You are receiving this because you subscribed to LAST GEAR updates.</p>
+                            {button_html}
+                            <p style="margin: 16px 0 0;"><a href="{unsubscribe_link}" style="color:#9c6a3b;text-decoration:none;">Unsubscribe</a></p>
+                        </div>
+                        """
+                    )
+                    msg = EmailMessage()
+                    msg['Subject'] = safe_subject
+                    msg['From'] = email_username
+                    msg['To'] = recipient
+                    msg.set_content(f"{safe_preheader}\n\n{message}")
+                    msg.add_alternative(html_content, subtype='html')
+                    smtp.send_message(msg)
+                    sent_count += 1
+                except Exception as recipient_error:
+                    failed_recipients.append(recipient)
+                    logger.error("Failed subscriber email for %s: %s", recipient, str(recipient_error))
+
+        return {
+            "sent_count": sent_count,
+            "failed_count": len(failed_recipients),
+            "failed_recipients": failed_recipients
+        }
+
+    try:
+        result = await asyncio.to_thread(send_email_sync)
+        logger.info(
+            "Subscriber broadcast completed. sent=%s failed=%s",
+            result["sent_count"],
+            result["failed_count"]
+        )
+        return result
+    except Exception as e:
+        logger.error(f"Failed to send subscriber broadcast email: {str(e)}")
+        return {"sent_count": 0, "failed_count": len(recipients), "failed_recipients": recipients}

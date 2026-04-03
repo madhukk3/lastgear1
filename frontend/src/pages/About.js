@@ -46,13 +46,13 @@ const About = () => {
         <div className="relative mx-auto max-w-7xl px-4 md:px-6">
           <BackButton label="Back" className="mb-8 text-white" />
           <div className="max-w-4xl">
-            <p className="text-sm font-semibold uppercase tracking-[0.38em] text-[#d99146]">About LAST GEAR</p>
-            <h1 className="mt-5 font-display text-[4rem] uppercase leading-[0.88] text-[#f8f2ea] md:text-[6rem]">
+            <p className="font-nav text-sm text-[#d99146]">About LAST GEAR</p>
+            <h1 className="mt-5 font-nav text-[2.8rem] leading-[0.94] text-[#f8f2ea] md:text-[4.5rem]">
               More Than A Brand.
               <span className="block text-transparent stroke-text">A Beginning.</span>
             </h1>
             <p className="mt-6 max-w-2xl text-lg leading-8 text-white/72">
-              LAST GEAR is our company vision. LAST GEAR Fashion is the first startup under that vision, created to make premium streetwear feel bold, fresh, and alive with creative energy.
+              LAST GEAR is our company vision. LAST GEAR Fashion is the first startup under that vision, created to make fashion feel bold, fresh, and alive with creative energy.
             </p>
           </div>
         </div>
@@ -61,8 +61,8 @@ const About = () => {
       <section className="mx-auto max-w-7xl px-4 py-20 md:px-6">
         <div className="grid gap-12 lg:grid-cols-[0.95fr_1.05fr] lg:items-start">
           <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.34em] text-[#8d5f32]">Our Story</p>
-            <h2 className="mt-3 font-display text-5xl uppercase leading-[0.94] text-[#120e0b] md:text-6xl">
+            <p className="font-nav text-sm text-[#8d5f32]">Our Story</p>
+            <h2 className="mt-3 font-nav text-4xl leading-[1] text-[#120e0b] md:text-5xl">
               Why LAST GEAR
               <span className="block">Fashion Came First</span>
             </h2>
@@ -84,8 +84,8 @@ const About = () => {
       <section className="border-y border-black/10 bg-[#e6ddcf] py-20">
         <div className="mx-auto max-w-7xl px-4 md:px-6">
           <div className="mb-12 max-w-3xl">
-            <p className="text-sm font-semibold uppercase tracking-[0.34em] text-[#8d5f32]">How We Think</p>
-            <h2 className="mt-3 font-display text-5xl uppercase leading-[0.94] text-[#120e0b] md:text-6xl">
+            <p className="font-nav text-sm text-[#8d5f32]">How We Think</p>
+            <h2 className="mt-3 font-nav text-4xl leading-[1] text-[#120e0b] md:text-5xl">
               The LAST GEAR
               <span className="block">Mindset</span>
             </h2>
@@ -95,9 +95,9 @@ const About = () => {
             {pillars.map((pillar, index) => (
               <div key={pillar.title} className="rounded-[32px] border border-black/10 bg-white/75 p-8 shadow-[0_18px_50px_rgba(15,10,6,0.08)]">
                 <div className="mb-8 inline-flex h-14 w-14 items-center justify-center rounded-full bg-[#120e0b] text-[#f1e6d8]">
-                  <span className="font-display text-2xl">{index + 1}</span>
+                  <span className="font-nav text-2xl">{index + 1}</span>
                 </div>
-                <h3 className="font-display text-3xl uppercase text-[#120e0b]">{pillar.title}</h3>
+                <h3 className="font-nav text-3xl text-[#120e0b]">{pillar.title}</h3>
                 <p className="mt-4 text-sm leading-7 text-black/68">{pillar.description}</p>
               </div>
             ))}
@@ -108,8 +108,8 @@ const About = () => {
       <section className="mx-auto max-w-7xl px-4 py-20 md:px-6">
         <div className="mb-12 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
           <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.34em] text-[#8d5f32]">What We Want People To Feel</p>
-            <h2 className="mt-3 font-display text-5xl uppercase leading-[0.94] text-[#120e0b] md:text-6xl">
+            <p className="font-nav text-sm text-[#8d5f32]">What We Want People To Feel</p>
+            <h2 className="mt-3 font-nav text-4xl leading-[1] text-[#120e0b] md:text-5xl">
               Built To Leave
               <span className="block">An Impression</span>
             </h2>
@@ -130,7 +130,7 @@ const About = () => {
                     <Icon size={22} />
                   </div>
                   <div>
-                    <h3 className="font-display text-3xl uppercase text-[#120e0b]">{value.title}</h3>
+                    <h3 className="font-nav text-3xl text-[#120e0b]">{value.title}</h3>
                     <p className="mt-3 max-w-3xl text-sm leading-7 text-black/68">{value.description}</p>
                   </div>
                 </div>
@@ -144,11 +144,11 @@ const About = () => {
         <div className="mx-auto max-w-7xl px-4 md:px-6">
           <div className="grid gap-10 lg:grid-cols-[1fr_0.9fr] lg:items-center">
             <div>
-              <div className="mb-4 inline-flex items-center gap-3 rounded-full border border-white/15 bg-white/8 px-4 py-2 text-xs font-semibold uppercase tracking-[0.28em] text-white/70">
+              <div className="mb-4 inline-flex items-center gap-3 rounded-full border border-white/15 bg-white/8 px-4 py-2 font-nav text-xs text-white/70">
                 <Compass size={14} />
                 <span>The First Chapter</span>
               </div>
-              <h2 className="font-display text-5xl uppercase leading-[0.9] text-[#f8f2ea] md:text-6xl">
+              <h2 className="font-nav text-4xl leading-[1] text-[#f8f2ea] md:text-5xl">
                 LAST GEAR Fashion
                 <span className="block text-[#d99146]">Starts Here</span>
               </h2>
@@ -160,14 +160,14 @@ const About = () => {
             <div className="flex flex-col gap-4 sm:flex-row lg:justify-end">
               <Link
                 to="/products"
-                className="inline-flex items-center justify-center gap-3 rounded-full bg-[#f1e6d8] px-8 py-4 text-sm font-bold uppercase tracking-[0.26em] text-[#120e0b] transition hover:bg-white"
+                className="inline-flex items-center justify-center gap-3 rounded-full bg-[#f1e6d8] px-8 py-4 font-nav text-sm text-[#120e0b] transition hover:bg-white"
               >
                 Shop Products
                 <ArrowRight size={18} />
               </Link>
               <Link
                 to="/"
-                className="inline-flex items-center justify-center gap-3 rounded-full border border-white/20 px-8 py-4 text-sm font-semibold uppercase tracking-[0.26em] text-white transition hover:bg-white/10"
+                className="inline-flex items-center justify-center gap-3 rounded-full border border-white/20 px-8 py-4 font-nav text-sm text-white transition hover:bg-white/10"
               >
                 Back To Home
               </Link>

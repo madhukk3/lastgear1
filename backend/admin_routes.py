@@ -3,8 +3,9 @@ from pydantic import BaseModel, Field
 from typing import List, Optional, Dict
 from datetime import datetime, timezone, timedelta
 import uuid
+import mimetypes
 from security import verify_admin, log_admin_action, sanitize_input
-from notifications import send_order_status_email, send_order_cancellation_email, send_exchange_approved_email
+from notifications import send_order_status_email, send_order_cancellation_email, send_exchange_approved_email, send_subscriber_broadcast_email
 from motor.motor_asyncio import AsyncIOMotorClient
 import os
 from dotenv import load_dotenv
@@ -18,6 +19,9 @@ import shutil
 # Ensure uploads directory exists
 UPLOADS_DIR = ROOT_DIR / "uploads"
 UPLOADS_DIR.mkdir(exist_ok=True)
+ALLOWED_UPLOAD_MIME_TYPES = {"image/jpeg", "image/png", "image/webp"}
+ALLOWED_UPLOAD_EXTENSIONS = {".jpg", ".jpeg", ".png", ".webp"}
+MAX_UPLOAD_SIZE_BYTES = 5 * 1024 * 1024
 
 # MongoDB connection
 mongo_url = os.environ['MONGO_URL']
@@ -91,6 +95,14 @@ class AnnouncementUpdate(BaseModel):
     cod_max_amount: int = 3000
     cod_charge: int = 50
 
+class SubscriberBroadcastRequest(BaseModel):
+    subject: str
+    preheader: Optional[str] = None
+    message: str
+    cta_label: Optional[str] = None
+    cta_link: Optional[str] = None
+    recipient_emails: Optional[List[str]] = None
+
 # --- IMPACT SERIES MODELS ---
 class ImpactSeries(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
@@ -120,9 +132,20 @@ async def upload_image(
 ):
     """Upload an image file and return its public URL."""
     try:
+        extension = Path(file.filename).suffix.lower()
+        detected_type = (file.content_type or mimetypes.guess_type(file.filename or "")[0] or "").lower()
+
+        if extension not in ALLOWED_UPLOAD_EXTENSIONS or detected_type not in ALLOWED_UPLOAD_MIME_TYPES:
+            raise HTTPException(status_code=400, detail="Invalid file type. Only JPG, PNG, and WEBP are allowed.")
+
+        file.file.seek(0, 2)
+        file_size = file.file.tell()
+        file.file.seek(0)
+        if file_size > MAX_UPLOAD_SIZE_BYTES:
+            raise HTTPException(status_code=400, detail="File size must be 5MB or less.")
+
         # Generate a unique filename using UUID
-        extension = file.filename.split('.')[-1] if '.' in file.filename else ''
-        unique_filename = f"{uuid.uuid4()}.{extension}"
+        unique_filename = f"{uuid.uuid4()}{extension}"
         file_path = UPLOADS_DIR / unique_filename
 
         # Save the file
@@ -643,6 +666,70 @@ async def admin_update_announcement(
     
     await log_admin_action(admin_user, "update_announcement", "global", update_data)
     return {"message": "Announcement updated"}
+
+@admin_router.get("/subscribers")
+async def admin_get_subscribers(admin_user: Dict = Depends(verify_admin)):
+    subscribers = await db.subscribers.find(
+        {"is_active": True, "is_verified": True},
+        {"_id": 0}
+    ).sort("subscribed_at", -1).to_list(500)
+
+    return {
+        "total": len(subscribers),
+        "subscribers": subscribers[:100]
+    }
+
+@admin_router.post("/subscribers/send-notification")
+async def admin_send_subscriber_notification(
+    payload: SubscriberBroadcastRequest,
+    admin_user: Dict = Depends(verify_admin)
+):
+    requested_emails = [email.strip().lower() for email in (payload.recipient_emails or []) if email and email.strip()]
+
+    query = {"is_active": True, "is_verified": True}
+    if requested_emails:
+        query["email"] = {"$in": requested_emails}
+
+    subscribers = await db.subscribers.find(
+        query,
+        {"_id": 0, "email": 1}
+    ).to_list(2000)
+    recipient_emails = [subscriber.get("email", "").strip().lower() for subscriber in subscribers if subscriber.get("email")]
+
+    if not recipient_emails:
+        raise HTTPException(status_code=400, detail="No active subscribers found")
+
+    send_result = await send_subscriber_broadcast_email(
+        sanitize_input(payload.subject),
+        sanitize_input(payload.message),
+        recipient_emails,
+        sanitize_input(payload.preheader) if payload.preheader else None,
+        sanitize_input(payload.cta_label) if payload.cta_label else None,
+        sanitize_input(payload.cta_link) if payload.cta_link else None
+    )
+
+    await log_admin_action(
+        admin_user,
+        "send_subscriber_notification",
+        "newsletter",
+        {
+            "subject": sanitize_input(payload.subject),
+            "subscriber_count": len(recipient_emails),
+            "sent_count": send_result["sent_count"],
+            "failed_count": send_result["failed_count"]
+        }
+    )
+
+    if send_result["sent_count"] == 0:
+        raise HTTPException(status_code=500, detail="Notification failed for all subscribers")
+
+    return {
+        "message": f"Notification sent to {send_result['sent_count']} subscribers",
+        "subscriber_count": len(recipient_emails),
+        "sent_count": send_result["sent_count"],
+        "failed_count": send_result["failed_count"],
+        "failed_recipients": send_result["failed_recipients"][:10]
+    }
 
 # --- ADMIN ROUTES FOR IMPACT SERIES ---
 

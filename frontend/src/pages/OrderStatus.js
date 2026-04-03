@@ -164,7 +164,7 @@ const OrderStatusPage = () => {
     // Any remaining balance beyond standard subtotals represents Shipping & Handling (including COD fees)
     // We use a small epsilon threshold (0.01) to account for float math errors
     const unexplainedBalance = order.total_amount - subtotalAfterDiscount;
-    const shippingAndFees = unexplainedBalance > 0.01 ? unexplainedBalance : 0;
+    const shippingAndFees = unexplainedBalance >= 1 ? unexplainedBalance : 0;
 
     return (
         <div className="min-h-screen bg-[#0a0a0a] text-gray-300 font-sans p-4 sm:p-8 pt-24 pb-20 relative overflow-hidden">
@@ -214,8 +214,9 @@ const OrderStatusPage = () => {
                                         <Cpu size={14} /> ORDER PROTOCOL ACTIVE
                                     </div>
                                 )}
-                                <h1 className="text-2xl sm:text-4xl font-black text-white italic tracking-tighter uppercase drop-shadow-[0_0_15px_rgba(255,0,60,0.3)]">
-                                    ORDER: <span className="text-[#ff003c]">{order.id}</span>
+                                <h1 className="text-2xl sm:text-4xl font-black italic uppercase tracking-tight leading-[0.96] text-white drop-shadow-[0_0_15px_rgba(255,0,60,0.3)]">
+                                    <span className="mr-2 inline-block">ORDER</span>
+                                    <span className="inline-block text-[#ff003c]">{order.id}</span>
                                 </h1>
                             </div>
                             <div className="flex items-center gap-3 flex-shrink-0 drop-shadow-[0_0_15px_rgba(255,255,255,0.1)]">
@@ -317,8 +318,16 @@ const OrderStatusPage = () => {
                                     <Crosshair className="text-[#ff003c]" size={18} /> Cargo Payload
                                 </h3>
                                 <div className="space-y-4">
-                                    {order.items.map((item, index) => (
-                                        <div key={index} className="flex gap-4 p-4 bg-[#0a0a0a] border border-gray-800 rounded-sm hover:border-gray-600 transition-colors">
+                                    {order.items.map((item, index) => {
+                                        const itemHref = item.product_id ? `/products/${item.product_id}` : null;
+                                        const ItemWrapper = itemHref ? Link : 'div';
+
+                                        return (
+                                        <ItemWrapper
+                                            key={index}
+                                            to={itemHref || undefined}
+                                            className={`flex gap-4 p-4 bg-[#0a0a0a] border border-gray-800 rounded-sm transition-colors ${itemHref ? 'hover:border-gray-600 cursor-pointer' : ''}`}
+                                        >
                                             <div className="w-20 h-24 bg-[#111] flex-shrink-0 relative overflow-hidden group border border-gray-800">
                                                 {item.image ? (
                                                     <img src={item.image} alt={item.name} className="w-full h-full object-cover grayscale mix-blend-luminosity group-hover:grayscale-0 transition-all duration-300" />
@@ -339,8 +348,8 @@ const OrderStatusPage = () => {
                                                 </div>
                                                 <p className="text-green-400 font-mono font-bold">₹{(item.price * item.quantity).toFixed(2)}</p>
                                             </div>
-                                        </div>
-                                    ))}
+                                        </ItemWrapper>
+                                    )})}
                                 </div>
 
                                 {/* Order Summary Receipt Breakdown */}

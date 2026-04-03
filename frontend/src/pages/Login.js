@@ -3,6 +3,7 @@ import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'sonner';
 import { GoogleLogin } from '@react-oauth/google';
+import { ArrowRight } from 'lucide-react';
 
 const Login = () => {
   const [searchParams] = useSearchParams();
@@ -15,7 +16,6 @@ const Login = () => {
   });
   const [loading, setLoading] = useState(false);
 
-  // Email Login
   const handleEmailSubmit = async (e) => {
     e.preventDefault();
     try {
@@ -36,7 +36,7 @@ const Login = () => {
     try {
       setLoading(true);
       await loginWithGoogle(credentialResponse.credential);
-      toast.success('Google Login successful!');
+      toast.success('Google login successful!');
       const redirect = searchParams.get('redirect') || '/';
       navigate(redirect);
     } catch (error) {
@@ -52,93 +52,113 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 py-12" data-testid="login-page">
-      <div className="max-w-md w-full">
-        <div className="text-center mb-8 flex flex-col items-center">
-          <img src="/logo-black.png" alt="LAST GEAR Logo" className="h-20 w-auto object-contain mb-6" />
-          <h1 className="text-4xl font-bold mb-2">LOGIN</h1>
-          <p className="text-gray-600 mb-6">Welcome back to LAST GEAR</p>
-          <div className="bg-purple-50 border border-purple-200 text-purple-800 px-4 py-3 rounded-md text-sm w-full max-w-sm shadow-sm flex items-center justify-center gap-2">
-            <span>✨</span>
-            <span><span className="font-bold">New here?</span> Create an account and get <strong>5% OFF</strong> your first purchase!</span>
-          </div>
-        </div>
+    <div className="relative min-h-screen overflow-hidden bg-[#f5efe6] px-4 py-10 md:px-6 md:py-16" data-testid="login-page">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.9),transparent_26%),radial-gradient(circle_at_left,rgba(217,145,70,0.12),transparent_18%),linear-gradient(160deg,#f7f1e8_0%,#f1ebe2_54%,#ece4d8_100%)]" />
+      <div className="pointer-events-none absolute inset-0 opacity-[0.06] lastgear-grid" />
+      <div className="pointer-events-none absolute left-1/2 top-24 h-40 w-40 -translate-x-1/2 rounded-full bg-[#d99146]/10 blur-3xl login-float-slow" />
 
-        <form onSubmit={handleEmailSubmit} className="space-y-6" data-testid="login-form">
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium mb-2">
-              EMAIL
-            </label>
-            <input
-              type="email"
-              id="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              required
-              className="w-full px-4 py-3 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-black"
-              data-testid="email-input"
-            />
-          </div>
-
-          <div>
-            <label htmlFor="password" className="block text-sm font-medium mb-2">
-              PASSWORD
-            </label>
-            <input
-              type="password"
-              id="password"
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
-              required
-              className="w-full px-4 py-3 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-black"
-              data-testid="password-input"
-            />
-          </div>
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-black text-white py-4 font-bold uppercase tracking-wider hover:bg-gray-800 transition-colors disabled:bg-gray-400"
-            data-testid="login-button"
-          >
-            {loading ? 'LOGGING IN...' : 'LOGIN'}
-          </button>
-        </form>
-
-        <div className="mt-6">
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-300"></div>
+      <div className="relative mx-auto flex min-h-[calc(100vh-8rem)] max-w-5xl items-center justify-center">
+        <div className="w-full max-w-md rounded-[32px] border border-black/8 bg-white/70 p-[1px] shadow-[0_24px_80px_rgba(18,14,11,0.12)] backdrop-blur-xl login-fade-up">
+          <div className="rounded-[31px] border border-white/70 bg-[linear-gradient(180deg,rgba(255,251,245,0.96)_0%,rgba(248,241,233,0.94)_100%)] px-6 py-8 text-[#120e0b] md:px-8 md:py-10">
+            <div className="flex flex-col items-center text-center">
+              <img src="/logo-black.png" alt="LAST GEAR Logo" className="h-14 w-auto object-contain login-fade-up" />
+              <h1 className="mt-5 font-nav text-4xl text-[#120e0b] login-fade-up md:text-5xl" style={{ animationDelay: '0.06s' }}>Login</h1>
+              <p className="mt-4 max-w-xs text-sm leading-6 text-black/55 login-fade-up" style={{ animationDelay: '0.12s' }}>
+                Welcome back to LAST GEAR.
+              </p>
             </div>
-            <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-white text-gray-500">OR CONTINUE WITH</span>
+
+            <div className="mt-6 rounded-[20px] border border-[#d99146]/16 bg-[#fff8ef] px-4 py-3 text-sm leading-6 text-[#6b4c2d] login-fade-up" style={{ animationDelay: '0.18s' }}>
+              New here? Create an account and get <span className="font-semibold text-[#ffd19d]">5% off</span> your first purchase.
+            </div>
+
+            <form onSubmit={handleEmailSubmit} className="mt-6 space-y-4 login-fade-up" style={{ animationDelay: '0.24s' }} data-testid="login-form">
+              <div>
+                <label htmlFor="email" className="mb-2 block font-nav text-[11px] text-black/45">
+                  Email
+                </label>
+                <input
+                  type="email"
+                  id="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  required
+                  autoComplete="email"
+                  placeholder="you@lastgear.com"
+                  className="w-full rounded-[18px] border border-black/10 bg-white/80 px-4 py-3.5 text-[15px] text-[#120e0b] outline-none transition duration-300 placeholder:text-black/28 focus:border-[#d99146]/55 focus:bg-white focus:shadow-[0_0_0_4px_rgba(217,145,70,0.08)]"
+                  data-testid="email-input"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="password" className="mb-2 block font-nav text-[11px] text-black/45">
+                  Password
+                </label>
+                <input
+                  type="password"
+                  id="password"
+                  name="password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  required
+                  autoComplete="current-password"
+                  placeholder="Enter your password"
+                  className="w-full rounded-[18px] border border-black/10 bg-white/80 px-4 py-3.5 text-[15px] text-[#120e0b] outline-none transition duration-300 placeholder:text-black/28 focus:border-[#d99146]/55 focus:bg-white focus:shadow-[0_0_0_4px_rgba(217,145,70,0.08)]"
+                  data-testid="password-input"
+                />
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="inline-flex w-full items-center justify-center gap-3 rounded-[18px] bg-[#d99146] px-6 py-4 font-nav text-sm text-[#130d08] transition duration-300 hover:bg-[#e59d51] active:scale-[0.985] disabled:cursor-not-allowed disabled:opacity-70"
+                data-testid="login-button"
+              >
+                <span>{loading ? 'Logging In...' : 'Enter Gear'}</span>
+                {!loading && <ArrowRight className="h-4 w-4" strokeWidth={2.2} />}
+              </button>
+            </form>
+
+            <div className="mt-6 login-fade-up" style={{ animationDelay: '0.3s' }}>
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-black/8" />
+                </div>
+                <div className="relative flex justify-center">
+                  <span className="bg-[#f8f1e9] px-3 font-nav text-[10px] text-black/34">
+                    Or continue with
+                  </span>
+                </div>
+              </div>
+
+              <div className="mt-5 rounded-[18px] border border-black/8 bg-white/60 p-3">
+                <div className="flex justify-center">
+                  <GoogleLogin
+                    onSuccess={handleGoogleSuccess}
+                    onError={() => {
+                      toast.error('Google Sign In was unsuccessful. Try again.');
+                    }}
+                    useOneTap={false}
+                    theme="filled_black"
+                    size="large"
+                    shape="pill"
+                    text="signin_with"
+                    width="280"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-6 text-center text-sm text-black/55 login-fade-up" style={{ animationDelay: '0.36s' }}>
+              <p>
+                Don&apos;t have an account?{' '}
+                <Link to="/register" className="font-semibold text-[#120e0b] transition hover:text-[#d99146]" data-testid="register-link">
+                  Create one
+                </Link>
+              </p>
             </div>
           </div>
-
-          <div className="mt-6 flex justify-center">
-            <GoogleLogin
-              onSuccess={handleGoogleSuccess}
-              onError={() => {
-                toast.error('Google Sign In was unsuccessful. Try again.');
-              }}
-              useOneTap
-              theme="outline"
-              size="large"
-              shape="rectangular"
-              text="signin_with"
-            />
-          </div>
-        </div>
-
-        <div className="mt-6 text-center">
-          <p className="text-gray-600">
-            Don't have an account?{' '}
-            <Link to="/register" className="font-bold text-black hover:underline" data-testid="register-link">
-              Register
-            </Link>
-          </p>
         </div>
       </div>
     </div>

@@ -5,8 +5,10 @@ from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 import jwt
 import re
+import hashlib
+import secrets
 from datetime import datetime, timezone, timedelta
-from typing import Dict
+from typing import Dict, Optional
 import os
 from dotenv import load_dotenv
 from pathlib import Path
@@ -24,9 +26,13 @@ db = client[os.environ['DB_NAME']]
 # JWT Configuration
 JWT_SECRET = os.environ.get('JWT_SECRET', 'lastgear_jwt_secret_key_2026_production')
 JWT_ALGORITHM = 'HS256'
+ACCESS_TOKEN_EXPIRE_MINUTES = int(os.environ.get('ACCESS_TOKEN_EXPIRE_MINUTES', '15'))
+REFRESH_TOKEN_EXPIRE_DAYS = int(os.environ.get('REFRESH_TOKEN_EXPIRE_DAYS', '14'))
+ACCESS_COOKIE_NAME = os.environ.get('ACCESS_COOKIE_NAME', 'lastgear_access_token')
+REFRESH_COOKIE_NAME = os.environ.get('REFRESH_COOKIE_NAME', 'lastgear_refresh_token')
 
 # Security
-security = HTTPBearer()
+security = HTTPBearer(auto_error=False)
 
 # Rate limiter
 limiter = Limiter(key_func=get_remote_address)
@@ -67,9 +73,68 @@ def verify_jwt_token(token: str) -> Dict:
     except jwt.InvalidTokenError:
         raise HTTPException(status_code=401, detail="Invalid token")
 
+def create_access_token(user_id: str, email: str, is_admin: bool = False) -> str:
+    payload = {
+        'user_id': user_id,
+        'email': email,
+        'is_admin': is_admin,
+        'exp': datetime.now(timezone.utc) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    }
+    return jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
+
+def create_refresh_token() -> str:
+    return secrets.token_urlsafe(48)
+
+def hash_refresh_token(token: str) -> str:
+    return hashlib.sha256(token.encode('utf-8')).hexdigest()
+
+async def store_refresh_token(user_id: str, refresh_token: str, request: Optional[Request] = None):
+    await db.refresh_tokens.insert_one({
+        "user_id": user_id,
+        "token_hash": hash_refresh_token(refresh_token),
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "expires_at": (datetime.now(timezone.utc) + timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS)).isoformat(),
+        "revoked_at": None,
+        "user_agent": request.headers.get("user-agent") if request else None,
+        "ip_address": request.client.host if request and request.client else None
+    })
+
+async def revoke_refresh_token(refresh_token: str):
+    await db.refresh_tokens.update_one(
+        {"token_hash": hash_refresh_token(refresh_token), "revoked_at": None},
+        {"$set": {"revoked_at": datetime.now(timezone.utc).isoformat()}}
+    )
+
+async def verify_refresh_token(refresh_token: str) -> Optional[Dict]:
+    token_record = await db.refresh_tokens.find_one(
+        {"token_hash": hash_refresh_token(refresh_token), "revoked_at": None},
+        {"_id": 0}
+    )
+    if not token_record:
+        return None
+
+    expires_at = token_record.get("expires_at")
+    if expires_at and datetime.fromisoformat(expires_at) < datetime.now(timezone.utc):
+        await revoke_refresh_token(refresh_token)
+        return None
+
+    return token_record
+
+def _extract_bearer_token(request: Request, credentials: Optional[HTTPAuthorizationCredentials]) -> Optional[str]:
+    if request.cookies.get(ACCESS_COOKIE_NAME):
+        return request.cookies.get(ACCESS_COOKIE_NAME)
+    if credentials and credentials.scheme.lower() == "bearer":
+        return credentials.credentials
+    return None
+
 # Get current user
-async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)) -> Dict:
-    token = credentials.credentials
+async def get_current_user(
+    request: Request,
+    credentials: Optional[HTTPAuthorizationCredentials] = Depends(security)
+) -> Dict:
+    token = _extract_bearer_token(request, credentials)
+    if not token:
+        raise HTTPException(status_code=401, detail="Authentication required")
     payload = verify_jwt_token(token)
     user = await db.users.find_one({"id": payload['user_id']}, {"_id": 0})
     if not user:

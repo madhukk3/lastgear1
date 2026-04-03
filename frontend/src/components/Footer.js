@@ -11,18 +11,18 @@ const Footer = () => {
             <div className="mb-5 flex items-center gap-3">
               <img src="/logo-white.png" alt="LAST GEAR Logo" className="h-[56px] md:h-[64px] w-auto object-contain opacity-90" />
               <div>
-                <h3 className="text-3xl font-puma tracking-[0.18em]">LAST GEAR</h3>
-                <p className="text-[10px] uppercase tracking-[0.42em] text-white/45">Fashion Division</p>
+                <h3 className="font-nav text-3xl">LAST GEAR</h3>
+                <p className="font-nav text-[10px] text-white/45">Fashion Division</p>
               </div>
             </div>
             <p className="max-w-md text-sm leading-7 text-white/62">
-              LAST GEAR Fashion is the first startup under our LAST GEAR company vision, built to make premium streetwear feel immersive, creative, and unforgettable from the first click.
+              LAST GEAR Fashion is the first startup under our LAST GEAR company vision, built to make fashion feel immersive, creative, and unforgettable from the first click.
             </p>
           </div>
 
           {/* Shop */}
           <div>
-            <h4 className="mb-4 font-display text-2xl uppercase text-[#f1e6d8]">Shop</h4>
+            <h4 className="mb-4 font-nav text-2xl text-[#f1e6d8]">Shop</h4>
             <ul className="space-y-3 text-sm text-white/58">
               <li><Link to="/products?category=t-shirts" className="hover:text-[#f1e6d8]">T-Shirts</Link></li>
               <li><Link to="/products?category=hoodies" className="hover:text-[#f1e6d8]">Hoodies</Link></li>
@@ -32,7 +32,7 @@ const Footer = () => {
 
           {/* Support */}
           <div>
-            <h4 className="mb-4 font-display text-2xl uppercase text-[#f1e6d8]">Support</h4>
+            <h4 className="mb-4 font-nav text-2xl text-[#f1e6d8]">Support</h4>
             <ul className="space-y-3 text-sm text-white/58">
               <li><Link to="/about" className="hover:text-[#f1e6d8]">About Us</Link></li>
               <li><Link to="/help" className="hover:text-[#f1e6d8]">Help Center</Link></li>
@@ -43,7 +43,7 @@ const Footer = () => {
 
           {/* Account */}
           <div>
-            <h4 className="mb-4 font-display text-2xl uppercase text-[#f1e6d8]">Account</h4>
+            <h4 className="mb-4 font-nav text-2xl text-[#f1e6d8]">Account</h4>
             <ul className="space-y-3 text-sm text-white/58">
               <li><Link to="/account" className="hover:text-[#f1e6d8]">My Account</Link></li>
               <li><Link to="/account" className="hover:text-[#f1e6d8]">Order History</Link></li>
@@ -53,7 +53,7 @@ const Footer = () => {
         </div>
 
         <div className="mt-10 border-t border-white/10 pt-8 text-center text-sm text-white/42">
-          <p>&copy; 2026 LAST GEAR. Premium streetwear, first chapter.</p>
+          <p>&copy; 2026 LAST GEAR. Fashion for every shift.</p>
         </div>
       </div>
     </footer>

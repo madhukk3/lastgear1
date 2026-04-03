@@ -10,6 +10,8 @@ const Home = () => {
   const [heroBanners, setHeroBanners] = useState([]);
   const [featuredProducts, setFeaturedProducts] = useState([]);
   const [impactSeriesData, setImpactSeriesData] = useState(null);
+  const [newsletterEmail, setNewsletterEmail] = useState('');
+  const [newsletterSubmitting, setNewsletterSubmitting] = useState(false);
   const [loading, setLoading] = useState(true);
   const [currentSlide, setCurrentSlide] = useState(0);
   const { addToCart } = useCart();
@@ -84,6 +86,43 @@ const Home = () => {
   const nextSlide = () => setCurrentSlide((prev) => (prev + 1) % heroBanners.length);
   const prevSlide = () => setCurrentSlide((prev) => (prev === 0 ? heroBanners.length - 1 : prev - 1));
 
+  const getNewsletterErrorMessage = (error) => {
+    const detail = error.response?.data?.detail;
+
+    if (typeof detail === 'string') {
+      return detail;
+    }
+
+    if (Array.isArray(detail) && detail.length > 0) {
+      return detail[0]?.msg || 'Invalid e-mail entered';
+    }
+
+    return 'Invalid e-mail entered';
+  };
+
+  const handleNewsletterSubmit = async (e) => {
+    e.preventDefault();
+
+    try {
+      setNewsletterSubmitting(true);
+      if (!newsletterEmail.trim()) {
+        toast.error('Enter your email first');
+        return;
+      }
+
+      const response = await axios.post(`${API}/newsletter/subscribe`, {
+        email: newsletterEmail.trim().toLowerCase(),
+      });
+      toast.success(response.data.message || 'Subscribed successfully');
+      setNewsletterEmail('');
+    } catch (error) {
+      const message = getNewsletterErrorMessage(error);
+      toast.error(message);
+    } finally {
+      setNewsletterSubmitting(false);
+    }
+  };
+
   return (
     <div className="bg-[#f3efe7] text-[#16120d]" data-testid="home-page">
       <section className="relative overflow-hidden border-b border-black/10 bg-[#120e0b]" data-testid="hero-section">
@@ -107,15 +146,15 @@ const Home = () => {
 
         <div className="relative mx-auto grid min-h-[calc(100vh-4rem)] max-w-7xl grid-cols-1 gap-12 px-4 py-16 md:px-6 lg:grid-cols-[1.15fr_0.85fr] lg:items-end lg:py-24">
           <div className="max-w-3xl text-white">
-            <div className="fade-up mb-6 inline-flex items-center gap-3 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.38em] text-white/80 backdrop-blur" style={{ '--delay': '0.1s' }}>
+            <div className="fade-up mb-6 inline-flex items-center gap-3 rounded-full border border-white/20 bg-white/10 px-4 py-2 font-nav text-[11px] text-white/80 backdrop-blur" style={{ '--delay': '0.1s' }}>
               <span>LAST GEAR</span>
               <span className="h-1 w-1 rounded-full bg-[#d99146]" />
-              <span>Premium Streetwear</span>
+              <span>Fashion For Every Shift</span>
             </div>
 
-            <h1 className="fade-up max-w-4xl font-display text-[4rem] uppercase leading-[0.88] tracking-[0.04em] text-[#f8f2ea] md:text-[6rem] lg:text-[8rem]" style={{ '--delay': '0.18s' }}>
+            <h1 className="fade-up max-w-4xl font-nav text-[3.3rem] leading-[0.92] text-[#f8f2ea] md:text-[5rem] lg:text-[6.5rem]" style={{ '--delay': '0.18s' }}>
               Shift Into
-              <span className="block text-transparent stroke-text">LAST GEAR</span>
+              <span className="block text-[0.72em] leading-[0.96] text-transparent stroke-text-dark-glow md:text-[0.68em]">LAST GEAR</span>
             </h1>
 
             <p className="fade-up mt-6 max-w-2xl text-base leading-7 text-white/72 md:text-lg" style={{ '--delay': '0.26s' }}>
@@ -125,14 +164,14 @@ const Home = () => {
             <div className="fade-up mt-10 flex flex-col gap-4 sm:flex-row" style={{ '--delay': '0.34s' }}>
               <Link
                 to={activeHero?.link || '/products'}
-                className="shimmer-link pulse-glow inline-flex items-center justify-center gap-3 rounded-full bg-[#f1e6d8] px-8 py-4 text-sm font-bold uppercase tracking-[0.28em] text-[#120e0b] transition hover:bg-white"
+                className="shimmer-link pulse-glow inline-flex items-center justify-center gap-3 rounded-full bg-[#f1e6d8] px-8 py-4 font-nav text-sm text-[#120e0b] transition hover:bg-white"
               >
                 {activeHero?.button_text || 'Shop The Drop'}
                 <ArrowRight size={18} />
               </Link>
               <Link
                 to="/about"
-                className="shimmer-link inline-flex items-center justify-center gap-3 rounded-full border border-white/30 px-8 py-4 text-sm font-semibold uppercase tracking-[0.28em] text-white transition hover:bg-white/10"
+                className="shimmer-link inline-flex items-center justify-center gap-3 rounded-full border border-white/30 px-8 py-4 font-nav text-sm text-white transition hover:bg-white/10"
               >
                 Discover LAST GEAR
               </Link>
@@ -142,10 +181,10 @@ const Home = () => {
           <div className="fade-in grid gap-4 self-end lg:justify-self-end" style={{ '--delay': '0.28s' }}>
             <div className="rounded-[32px] border border-white/15 bg-white/10 p-6 text-white shadow-[0_20px_80px_rgba(0,0,0,0.35)] backdrop-blur-md">
               <div className="mb-4 flex items-center justify-between">
-                <span className="text-xs font-semibold uppercase tracking-[0.3em] text-white/60">Now Showing</span>
+                <span className="font-nav text-xs text-white/60">Now Showing</span>
                 <span className="text-sm text-[#f0d9c0]">{String(currentSlide + 1).padStart(2, '0')}/{String(Math.max(heroBanners.length, 1)).padStart(2, '0')}</span>
               </div>
-              <h2 className="font-display text-4xl uppercase leading-none text-[#f7f1e8]">
+              <h2 className="font-nav text-3xl leading-none text-[#f7f1e8] md:text-4xl">
                 {activeHero?.title || 'Wear The Final Shift'}
               </h2>
               <p className="mt-4 text-sm leading-6 text-white/70">
@@ -155,16 +194,16 @@ const Home = () => {
 
             <div className="grid grid-cols-3 gap-3">
               <div className="rounded-[24px] border border-white/12 bg-black/25 p-4 text-white backdrop-blur-sm">
-                <div className="font-display text-2xl uppercase text-[#d99146]">01</div>
-                <p className="mt-2 text-xs uppercase tracking-[0.18em] text-white/62">Fashion Division</p>
+                <div className="font-nav text-2xl text-[#d99146]">01</div>
+                <p className="mt-2 font-nav text-xs text-white/62">Fashion Division</p>
               </div>
               <div className="rounded-[24px] border border-white/12 bg-black/25 p-4 text-white backdrop-blur-sm">
-                <div className="font-display text-2xl uppercase text-[#d99146]">New</div>
-                <p className="mt-2 text-xs uppercase tracking-[0.18em] text-white/62">Premium Drops</p>
+                <div className="font-nav text-2xl text-[#d99146]">New</div>
+                <p className="mt-2 font-nav text-xs text-white/62">Premium Drops</p>
               </div>
               <div className="rounded-[24px] border border-white/12 bg-black/25 p-4 text-white backdrop-blur-sm">
-                <div className="font-display text-2xl uppercase text-[#d99146]">Bold</div>
-                <p className="mt-2 text-xs uppercase tracking-[0.18em] text-white/62">Street Energy</p>
+                <div className="font-nav text-2xl text-[#d99146]">Bold</div>
+                <p className="mt-2 font-nav text-xs text-white/62">Street Energy</p>
               </div>
             </div>
           </div>
@@ -204,8 +243,7 @@ const Home = () => {
       <section className="mx-auto max-w-7xl px-4 py-20 md:px-6" data-testid="categories-section">
         <div className="mb-10 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
           <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.34em] text-[#8d5f32]">Shop By Drop</p>
-            <h2 className="mt-2 font-display text-5xl uppercase leading-none text-[#120e0b] md:text-6xl">Choose Your Gear</h2>
+            <p className="font-nav text-sm text-[#8d5f32]">Shop By Drop</p>
           </div>
         </div>
 
@@ -214,14 +252,14 @@ const Home = () => {
             <img src="https://images.unsplash.com/photo-1581655353564-df123a1eb820?w=1200" alt="T-Shirts Collection" className="absolute inset-0 h-full w-full object-cover transition duration-700 group-hover:scale-105" />
             <div className="absolute inset-0 bg-[linear-gradient(140deg,rgba(0,0,0,0.18),rgba(0,0,0,0.74))]" />
             <div className="relative flex h-full flex-col justify-between p-8 md:p-10">
-              <span className="w-fit rounded-full border border-white/20 bg-white/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.28em] text-white/75">T-Shirts</span>
+              <span className="w-fit rounded-full border border-white/20 bg-white/10 px-4 py-2 font-nav text-xs text-white/75">T-Shirts</span>
               <div>
-                <p className="mb-3 text-sm uppercase tracking-[0.38em] text-[#f0d9c0]">Clean Impact</p>
-                <h3 className="font-display text-6xl uppercase leading-[0.9] md:text-7xl">Everyday Heat</h3>
+                <p className="mb-3 font-nav text-sm text-[#f0d9c0]">Clean Impact</p>
+                <h3 className="font-nav text-5xl leading-[0.94] md:text-6xl">Everyday Heat</h3>
                 <p className="mt-4 max-w-md text-sm leading-7 text-white/72">
                   Clean lines. Strong presence.
                 </p>
-                <span className="mt-8 inline-flex items-center gap-3 text-sm font-semibold uppercase tracking-[0.28em] text-white">
+                <span className="mt-8 inline-flex items-center gap-3 font-nav text-sm text-white">
                   Shop T-Shirts
                   <ArrowRight size={18} className="transition-transform group-hover:translate-x-1" />
                 </span>
@@ -233,14 +271,14 @@ const Home = () => {
             <img src="https://images.unsplash.com/photo-1590759483822-b2fee5aa6bd3?w=1200" alt="Hoodies Collection" className="absolute inset-0 h-full w-full object-cover transition duration-700 group-hover:scale-105" />
             <div className="absolute inset-0 bg-[linear-gradient(140deg,rgba(240,232,223,0.22),rgba(18,14,11,0.56))]" />
             <div className="relative flex h-full flex-col justify-between p-8 md:p-10 text-white">
-              <span className="w-fit rounded-full border border-white/25 bg-black/20 px-4 py-2 text-xs font-semibold uppercase tracking-[0.28em] text-white/80">Hoodies</span>
+              <span className="w-fit rounded-full border border-white/25 bg-black/20 px-4 py-2 font-nav text-xs text-white/80">Hoodies</span>
               <div>
-                <p className="mb-3 text-sm uppercase tracking-[0.38em] text-[#f0d9c0]">Heavy Presence</p>
-                <h3 className="font-display text-6xl uppercase leading-[0.9] md:text-7xl">Layered Power</h3>
+                <p className="mb-3 font-nav text-sm text-[#f0d9c0]">Heavy Presence</p>
+                <h3 className="font-nav text-5xl leading-[0.94] md:text-6xl">Layered Power</h3>
                 <p className="mt-4 max-w-md text-sm leading-7 text-white/72">
                   Heavy feel. Clear attitude.
                 </p>
-                <span className="mt-8 inline-flex items-center gap-3 text-sm font-semibold uppercase tracking-[0.28em] text-white">
+                <span className="mt-8 inline-flex items-center gap-3 font-nav text-sm text-white">
                   Shop Hoodies
                   <ArrowRight size={18} className="transition-transform group-hover:translate-x-1" />
                 </span>
@@ -257,11 +295,11 @@ const Home = () => {
 
           <div className="relative mx-auto grid max-w-7xl gap-10 px-4 md:px-6 lg:grid-cols-[0.85fr_1.15fr] lg:items-center">
             <div className="rounded-[34px] border border-white/12 bg-white/8 p-8 backdrop-blur-md">
-              <p className="text-sm uppercase tracking-[0.34em] text-[#d99146]">Impact Series</p>
-              <h2 className="mt-4 font-display text-5xl uppercase leading-[0.92] text-[#f8f2ea] md:text-6xl">
+              <p className="font-nav text-sm text-[#d99146]">Impact Series</p>
+              <h2 className="mt-4 font-nav text-4xl leading-[0.96] text-[#f8f2ea] md:text-5xl">
                 {impactSeriesData.title || 'Impact Series'}
               </h2>
-              <div className="mt-6 flex flex-wrap gap-3 text-xs font-semibold uppercase tracking-[0.25em] text-white/60">
+              <div className="mt-6 flex flex-wrap gap-3 font-nav text-xs text-white/60">
                 <span>{impactSeriesData.edition || 'Edition 01'}</span>
                 <span>/</span>
                 <span>{impactSeriesData.subtitle || 'Signature Drop'}</span>
@@ -274,7 +312,7 @@ const Home = () => {
               </p>
               <Link
                 to={`/products?impact_series_id=${impactSeriesData.id}&impact_series_title=${encodeURIComponent(impactSeriesData.title)}`}
-                className="mt-8 inline-flex items-center gap-3 rounded-full bg-[#f1e6d8] px-8 py-4 text-sm font-bold uppercase tracking-[0.26em] text-[#120e0b] transition hover:bg-white"
+                className="mt-8 inline-flex items-center gap-3 rounded-full bg-[#f1e6d8] px-8 py-4 font-nav text-sm text-[#120e0b] transition hover:bg-white"
               >
                 Shop The Series
                 <ArrowRight size={18} />
@@ -287,10 +325,10 @@ const Home = () => {
       <section className="mx-auto max-w-7xl px-4 py-20 md:px-6" data-testid="featured-products-section">
         <div className="mb-10 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
           <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.34em] text-[#8d5f32]">Featured Drop</p>
-            <h2 className="mt-2 font-display text-5xl uppercase leading-none text-[#120e0b] md:text-6xl">New Arrivals</h2>
+            <p className="font-nav text-sm text-[#8d5f32]">Featured Drop</p>
+            <h2 className="mt-2 font-nav text-4xl leading-none text-[#120e0b] md:text-5xl">New Arrivals</h2>
           </div>
-          <Link to="/products" className="inline-flex items-center gap-3 text-sm font-semibold uppercase tracking-[0.26em] text-[#120e0b] transition hover:text-[#8d5f32]">
+          <Link to="/products" className="inline-flex items-center gap-3 font-nav text-sm text-[#120e0b] transition hover:text-[#8d5f32]">
             See Full Collection
             <ArrowRight size={18} />
           </Link>
@@ -316,20 +354,20 @@ const Home = () => {
                 >
                   <div className="relative aspect-[4/5] overflow-hidden bg-[#e7dfd3]">
                     {product.badge && (
-                      <div className="absolute left-4 top-4 z-10 rounded-full bg-[#120e0b] px-3 py-2 text-[10px] font-bold uppercase tracking-[0.25em] text-[#f1e6d8]">
+                      <div className="absolute left-4 top-4 z-10 rounded-full bg-[#120e0b] px-3 py-2 font-nav text-[10px] text-[#f1e6d8]">
                         {product.badge}
                       </div>
                     )}
                     <img src={product.images[0]} alt={product.name} className="h-full w-full object-cover transition duration-700 group-hover:scale-110" />
                     <div className="absolute inset-x-0 bottom-0 translate-y-full bg-[linear-gradient(to_top,rgba(18,14,11,0.96),rgba(18,14,11,0.78),transparent)] p-4 transition duration-300 group-hover:translate-y-0">
-                      <p className="mb-3 text-xs font-semibold uppercase tracking-[0.22em] text-[#f0d9c0]">Quick Add</p>
+                      <p className="mb-3 font-nav text-xs text-[#f0d9c0]">Quick Add</p>
                       <div className="flex flex-wrap gap-2">
                         {product.sizes.map((size) => (
                           <button
                             key={size}
                             onClick={(e) => handleQuickAdd(e, product, size)}
                             title="Add to Cart"
-                            className="rounded-full border border-white/20 px-3 py-2 text-xs font-semibold uppercase tracking-[0.12em] text-white transition hover:bg-white hover:text-[#120e0b]"
+                            className="rounded-full border border-white/20 px-3 py-2 font-nav text-xs text-white transition hover:bg-white hover:text-[#120e0b]"
                           >
                             {size}
                           </button>
@@ -339,10 +377,10 @@ const Home = () => {
                   </div>
 
                   <div className="space-y-3 p-5">
-                    <p className="text-[11px] uppercase tracking-[0.26em] text-black/42">
+                    <p className="font-nav text-[11px] text-black/42">
                       {product.colors.length} color{product.colors.length > 1 ? 's' : ''}
                     </p>
-                    <h3 className="font-display text-2xl uppercase leading-none text-[#120e0b]">
+                    <h3 className="font-nav text-2xl leading-none text-[#120e0b]">
                       {product.name}
                     </h3>
                     {totalDiscount > 0 ? (
@@ -367,7 +405,7 @@ const Home = () => {
             <div className="inline-flex rounded-full bg-[#120e0b] p-3 text-[#f1e6d8]">
               <TrendingUp size={24} strokeWidth={1.7} />
             </div>
-            <h3 className="mt-4 font-display text-[2rem] uppercase leading-none text-[#120e0b]">Premium Quality</h3>
+            <h3 className="mt-4 font-nav text-[2rem] leading-none text-[#120e0b]">Premium Quality</h3>
             <p className="mt-2 text-sm leading-6 text-black/64">Better fabric. Better feel.</p>
           </div>
 
@@ -375,7 +413,7 @@ const Home = () => {
             <div className="inline-flex rounded-full bg-[#120e0b] p-3 text-[#f1e6d8]">
               <Truck size={24} strokeWidth={1.7} />
             </div>
-            <h3 className="mt-4 font-display text-[2rem] uppercase leading-none text-[#120e0b]">Free Shipping</h3>
+            <h3 className="mt-4 font-nav text-[2rem] leading-none text-[#120e0b]">Free Shipping</h3>
             <p className="mt-2 text-sm leading-6 text-black/64">Free over ₹{freeShippingThreshold}. No extra noise.</p>
           </div>
 
@@ -383,7 +421,7 @@ const Home = () => {
             <div className="inline-flex rounded-full bg-[#120e0b] p-3 text-[#f1e6d8]">
               <Package size={24} strokeWidth={1.7} />
             </div>
-            <h3 className="mt-4 font-display text-[2rem] uppercase leading-none text-[#120e0b]">Easy Exchanges</h3>
+            <h3 className="mt-4 font-nav text-[2rem] leading-none text-[#120e0b]">Easy Exchanges</h3>
             <p className="mt-2 text-sm leading-6 text-black/64">Simple steps. Quick support.</p>
           </div>
         </div>
@@ -392,27 +430,31 @@ const Home = () => {
       <section className="relative overflow-hidden bg-[#120e0b] py-24 text-white" data-testid="newsletter-section">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(217,145,70,0.22),transparent_30%),linear-gradient(to_bottom,transparent,rgba(0,0,0,0.35))]" />
         <div className="relative mx-auto max-w-4xl px-4 text-center md:px-6">
-          <p className="text-sm font-semibold uppercase tracking-[0.36em] text-[#d99146]">Stay In The Shift</p>
-          <h2 className="mt-4 font-display text-5xl uppercase leading-[0.92] text-[#f8f2ea] md:text-6xl">
+          <p className="font-nav text-sm text-[#d99146]">Stay In The Shift</p>
+          <h2 className="mt-4 font-nav text-4xl leading-[0.96] text-[#f8f2ea] md:text-5xl">
             Be First For
             <span className="block">The Next Drop</span>
           </h2>
           <p className="mx-auto mt-6 max-w-2xl text-base leading-8 text-white/68">
             New drops. First access.
           </p>
-          <form className="mx-auto mt-10 flex max-w-2xl flex-col gap-4 sm:flex-row" onSubmit={(e) => e.preventDefault()}>
+          <form className="mx-auto mt-10 flex max-w-2xl flex-col gap-4 sm:flex-row" onSubmit={handleNewsletterSubmit}>
             <input
               type="email"
               placeholder="Enter your email"
+              value={newsletterEmail}
+              onChange={(e) => setNewsletterEmail(e.target.value)}
               className="flex-1 rounded-full border border-white/15 bg-white/10 px-6 py-4 text-white placeholder:text-white/45 focus:outline-none focus:ring-2 focus:ring-[#d99146]"
               data-testid="newsletter-input"
+              disabled={newsletterSubmitting}
             />
             <button
               type="submit"
-              className="rounded-full bg-[#f1e6d8] px-10 py-4 text-sm font-bold uppercase tracking-[0.28em] text-[#120e0b] transition hover:bg-white"
+              disabled={newsletterSubmitting}
+              className="rounded-full bg-[#f1e6d8] px-10 py-4 font-nav text-sm text-[#120e0b] transition hover:bg-white"
               data-testid="newsletter-submit"
             >
-              Subscribe
+              {newsletterSubmitting ? 'Sending...' : 'Subscribe'}
             </button>
           </form>
         </div>

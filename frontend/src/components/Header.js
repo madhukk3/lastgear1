@@ -149,7 +149,7 @@ const Header = () => {
               </div>
             </div>
 
-            <div className="flex items-center space-x-4 whitespace-nowrap text-[13px] font-medium tracking-normal normal-case text-black">
+            <div className="font-nav flex items-center space-x-3 whitespace-nowrap text-[11px] tracking-normal normal-case text-black">
               <Link to="/help" className="hover:text-gray-600 transition-colors">Help</Link>
               <span className="text-gray-400 font-normal">|</span>
               {user ? (

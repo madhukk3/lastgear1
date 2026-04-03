@@ -1,15 +1,18 @@
 import asyncio
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, APIRouter, HTTPException, Depends, Request, Header, BackgroundTasks, UploadFile, File, Form
+from fastapi import FastAPI, APIRouter, HTTPException, Depends, Request, Header, BackgroundTasks, UploadFile, File, Form, Query, Response, status
 from fastapi.staticfiles import StaticFiles
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from fastapi.responses import HTMLResponse
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from starlette.middleware.trustedhost import TrustedHostMiddleware
+from fastapi.exceptions import RequestValidationError
 from motor.motor_asyncio import AsyncIOMotorClient
 import os
 import shutil
 import logging
+import re
 from pathlib import Path
 from pydantic import BaseModel, Field, ConfigDict, EmailStr
 from typing import List, Optional, Dict, Any
@@ -22,15 +25,16 @@ import bcrypt
 import razorpay
 import hmac
 import hashlib
-from notifications import send_order_email, send_exchange_request_email
+from notifications import send_order_email, send_exchange_request_email, send_subscriber_welcome_email
 # from emergentintegrations.llm.chat import LlmChat, UserMessage
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 from security import (
-    verify_jwt_token, get_current_user, verify_admin, validate_password_strength,
+    verify_admin, validate_password_strength,
     track_login_attempt, check_account_locked, log_security_event,
-    sanitize_input, limiter
+    sanitize_input, limiter, create_access_token, create_refresh_token,
+    hash_refresh_token, store_refresh_token, revoke_refresh_token, verify_refresh_token
 )
 from admin_routes import admin_router
 
@@ -45,7 +49,31 @@ db = client[os.environ['DB_NAME']]
 # JWT Configuration
 JWT_SECRET = os.environ.get('JWT_SECRET', 'lastgear_jwt_secret_key_2026_production')
 JWT_ALGORITHM = 'HS256'
-JWT_EXPIRATION_DAYS = 30
+ACCESS_TOKEN_EXPIRE_MINUTES = int(os.environ.get('ACCESS_TOKEN_EXPIRE_MINUTES', '15'))
+REFRESH_TOKEN_EXPIRE_DAYS = int(os.environ.get('REFRESH_TOKEN_EXPIRE_DAYS', '14'))
+ACCESS_COOKIE_NAME = os.environ.get('ACCESS_COOKIE_NAME', 'lastgear_access_token')
+REFRESH_COOKIE_NAME = os.environ.get('REFRESH_COOKIE_NAME', 'lastgear_refresh_token')
+COOKIE_DOMAIN = os.environ.get('COOKIE_DOMAIN') or None
+APP_ENV = os.environ.get('ENVIRONMENT', os.environ.get('ENV', 'development')).lower()
+COOKIE_SECURE = os.environ.get('COOKIE_SECURE', 'true' if APP_ENV == 'production' else 'false').lower() == 'true'
+COOKIE_SAMESITE = os.environ.get('COOKIE_SAMESITE', 'none' if COOKIE_SECURE else 'lax')
+TRUSTED_HOSTS = [host.strip() for host in os.environ.get('TRUSTED_HOSTS', '').split(',') if host.strip()]
+
+DEFAULT_ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "http://localhost:3001",
+    "http://127.0.0.1:3001"
+]
+
+DISPOSABLE_EMAIL_DOMAINS = {
+    "mailinator.com", "guerrillamail.com", "10minutemail.com", "tempmail.com",
+    "temp-mail.org", "yopmail.com", "sharklasers.com", "throwawaymail.com",
+    "getnada.com", "maildrop.cc", "mintemail.com", "dispostable.com"
+}
+BLOCKED_NEWSLETTER_LOCAL_PARTS = {
+    "asdf", "qwer", "test", "admin", "zdda", "abcd", "abcde", "qwerty", "zxca", "hello"
+}
 
 # Razorpay Configuration
 razorpay_key_id = os.environ.get('RAZORPAY_KEY_ID')
@@ -55,8 +83,7 @@ razorpay_client = razorpay.Client(auth=(razorpay_key_id, razorpay_key_secret))
 # Google Auth Configuration
 GOOGLE_CLIENT_ID = os.environ.get('GOOGLE_CLIENT_ID', 'YOUR_GOOGLE_CLIENT_ID')
 
-# Security
-security = HTTPBearer()
+security = HTTPBearer(auto_error=False)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -92,6 +119,32 @@ async def add_security_headers(request: Request, call_next):
     response.headers["Permissions-Policy"] = "geolocation=(), microphone=(), camera=()"
     return response
 
+@app.middleware("http")
+async def enforce_browser_origin(request: Request, call_next):
+    if request.method in {"POST", "PUT", "PATCH", "DELETE"}:
+        origin = request.headers.get("origin")
+        if origin and origin not in ALLOWED_ORIGINS:
+            raise HTTPException(status_code=403, detail="Blocked origin")
+    return await call_next(request)
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    logger.warning("Validation error on %s: %s", request.url.path, exc.errors())
+    return Response(
+        content='{"detail":"Invalid request payload"}',
+        media_type="application/json",
+        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY
+    )
+
+@app.exception_handler(Exception)
+async def generic_exception_handler(request: Request, exc: Exception):
+    logger.exception("Unhandled error on %s", request.url.path)
+    return Response(
+        content='{"detail":"Something went wrong"}',
+        media_type="application/json",
+        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
+    )
+
 # --- AUTH MODELS ---
 class UserRegister(BaseModel):
     email: EmailStr
@@ -113,7 +166,7 @@ class UserResponse(BaseModel):
     is_admin: bool = False
 
 class AuthResponse(BaseModel):
-    token: str
+    token: Optional[str] = None
     user: UserResponse
 
 class SendOTPRequest(BaseModel):
@@ -284,6 +337,17 @@ class SiteSettings(BaseModel):
     cod_charge: int = 50
     updated_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
 
+class SubscriberCreate(BaseModel):
+    email: EmailStr
+
+def get_allowed_origins() -> List[str]:
+    configured = [origin.strip() for origin in os.environ.get('CORS_ORIGINS', '').split(',') if origin.strip()]
+    if configured:
+        return configured
+    return DEFAULT_ALLOWED_ORIGINS
+
+ALLOWED_ORIGINS = get_allowed_origins()
+
 # --- COUPON MODELS ---
 class Coupon(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
@@ -331,14 +395,6 @@ def hash_password(password: str) -> str:
 def verify_password(password: str, hashed: str) -> bool:
     return bcrypt.checkpw(password.encode('utf-8'), hashed.encode('utf-8'))
 
-def create_jwt_token(user_id: str, email: str) -> str:
-    payload = {
-        'user_id': user_id,
-        'email': email,
-        'exp': datetime.now(timezone.utc) + timedelta(days=JWT_EXPIRATION_DAYS)
-    }
-    return jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
-
 def verify_jwt_token(token: str) -> Dict:
     try:
         payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
@@ -348,8 +404,57 @@ def verify_jwt_token(token: str) -> Dict:
     except jwt.InvalidTokenError:
         raise HTTPException(status_code=401, detail="Invalid token")
 
-async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)) -> Dict:
-    token = credentials.credentials
+def _cookie_kwargs(max_age: int) -> Dict[str, Any]:
+    return {
+        "httponly": True,
+        "secure": COOKIE_SECURE,
+        "samesite": COOKIE_SAMESITE,
+        "domain": COOKIE_DOMAIN,
+        "path": "/",
+        "max_age": max_age
+    }
+
+def set_auth_cookies(response: Response, access_token: str, refresh_token: str):
+    response.set_cookie(ACCESS_COOKIE_NAME, access_token, **_cookie_kwargs(ACCESS_TOKEN_EXPIRE_MINUTES * 60))
+    response.set_cookie(REFRESH_COOKIE_NAME, refresh_token, **_cookie_kwargs(REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60))
+
+def clear_auth_cookies(response: Response):
+    response.delete_cookie(ACCESS_COOKIE_NAME, domain=COOKIE_DOMAIN, path="/")
+    response.delete_cookie(REFRESH_COOKIE_NAME, domain=COOKIE_DOMAIN, path="/")
+
+def _extract_request_token(request: Request, credentials: Optional[HTTPAuthorizationCredentials]) -> Optional[str]:
+    cookie_token = request.cookies.get(ACCESS_COOKIE_NAME)
+    if cookie_token:
+        return cookie_token
+    if credentials and credentials.scheme.lower() == "bearer":
+        return credentials.credentials
+    return None
+
+def _build_user_response(user: Dict) -> UserResponse:
+    return UserResponse(
+        id=user['id'],
+        email=user['email'],
+        name=user.get('name', ''),
+        phone=user.get('phone'),
+        created_at=user['created_at'],
+        has_used_first_purchase_discount=user.get('has_used_first_purchase_discount', False),
+        is_admin=user.get('is_admin', False)
+    )
+
+async def issue_auth_session(response: Response, user: Dict, request: Optional[Request] = None) -> AuthResponse:
+    access_token = create_access_token(user['id'], user['email'], user.get('is_admin', False))
+    refresh_token = create_refresh_token()
+    await store_refresh_token(user['id'], refresh_token, request)
+    set_auth_cookies(response, access_token, refresh_token)
+    return AuthResponse(token=None, user=_build_user_response(user))
+
+async def get_current_user(
+    request: Request,
+    credentials: Optional[HTTPAuthorizationCredentials] = Depends(security)
+) -> Dict:
+    token = _extract_request_token(request, credentials)
+    if not token:
+        raise HTTPException(status_code=401, detail="Authentication required")
     payload = verify_jwt_token(token)
     user = await db.users.find_one({"id": payload['user_id']}, {"_id": 0})
     if not user:
@@ -358,7 +463,8 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(s
 
 # --- AUTH ENDPOINTS ---
 @api_router.post("/auth/register", response_model=AuthResponse)
-async def register(user_data: UserRegister):
+@limiter.limit("5/minute")
+async def register(request: Request, response: Response, user_data: UserRegister):
     existing_user = await db.users.find_one({"email": user_data.email}, {"_id": 0})
     if existing_user:
         raise HTTPException(status_code=400, detail="Email already registered")
@@ -367,6 +473,8 @@ async def register(user_data: UserRegister):
     verified_email = await db.verified_emails.find_one({"email": user_data.email})
     if not verified_email:
         raise HTTPException(status_code=401, detail="Email not verified. Please verify your email first.")
+
+    validate_password_strength(user_data.password)
     
     user_id = str(uuid.uuid4())
     hashed_pw = hash_password(user_data.password)
@@ -375,8 +483,8 @@ async def register(user_data: UserRegister):
         "id": user_id,
         "email": user_data.email,
         "password": hashed_pw,
-        "name": user_data.name,
-        "phone": user_data.phone,
+        "name": sanitize_input(user_data.name),
+        "phone": sanitize_input(user_data.phone) if user_data.phone else None,
         "email_verified": True,
         "created_at": datetime.now(timezone.utc).isoformat(),
         "has_used_first_purchase_discount": False
@@ -390,44 +498,53 @@ async def register(user_data: UserRegister):
     
     # Remove from verified_emails collection
     await db.verified_emails.delete_one({"email": user_data.email})
-    
-    token = create_jwt_token(user_id, user_data.email)
-    
-    user_response = UserResponse(
-        id=user_id,
-        email=user_data.email,
-        name=user_data.name,
-        phone=user_data.phone,
-        created_at=user_doc["created_at"],
-        has_used_first_purchase_discount=False,
-        is_admin=False
-    )
-    
-    return AuthResponse(token=token, user=user_response)
+    return await issue_auth_session(response, user_doc, request)
 
 @api_router.post("/auth/login", response_model=AuthResponse)
-async def login(credentials: UserLogin):
+@limiter.limit("5/minute")
+async def login(request: Request, response: Response, credentials: UserLogin):
+    await check_account_locked(credentials.email)
     user = await db.users.find_one({"email": credentials.email}, {"_id": 0})
+    client_ip = request.client.host if request.client else None
+
     if not user or not verify_password(credentials.password, user['password']):
+        await track_login_attempt(credentials.email, False, client_ip)
         raise HTTPException(status_code=401, detail="Invalid email or password")
-    
-    token = create_jwt_token(user['id'], user['email'])
-    
-    user_response = UserResponse(
-        id=user['id'],
-        email=user['email'],
-        name=user['name'],
-        phone=user.get('phone'),
-        created_at=user['created_at'],
-        has_used_first_purchase_discount=user.get('has_used_first_purchase_discount', False),
-        is_admin=user.get('is_admin', False)
-    )
-    
-    return AuthResponse(token=token, user=user_response)
+    await track_login_attempt(credentials.email, True, client_ip)
+    return await issue_auth_session(response, user, request)
 
 @api_router.get("/auth/me", response_model=UserResponse)
 async def get_me(current_user: Dict = Depends(get_current_user)):
     return UserResponse(**current_user)
+
+@api_router.post("/auth/refresh", response_model=AuthResponse)
+@limiter.limit("10/minute")
+async def refresh_auth_session(request: Request, response: Response):
+    refresh_token = request.cookies.get(REFRESH_COOKIE_NAME)
+    if not refresh_token:
+        raise HTTPException(status_code=401, detail="Refresh token missing")
+
+    token_record = await verify_refresh_token(refresh_token)
+    if not token_record:
+        clear_auth_cookies(response)
+        raise HTTPException(status_code=401, detail="Session expired")
+
+    user = await db.users.find_one({"id": token_record["user_id"]}, {"_id": 0})
+    if not user:
+        await revoke_refresh_token(refresh_token)
+        clear_auth_cookies(response)
+        raise HTTPException(status_code=401, detail="User not found")
+
+    await revoke_refresh_token(refresh_token)
+    return await issue_auth_session(response, user, request)
+
+@api_router.post("/auth/logout")
+async def logout(response: Response, request: Request):
+    refresh_token = request.cookies.get(REFRESH_COOKIE_NAME)
+    if refresh_token:
+        await revoke_refresh_token(refresh_token)
+    clear_auth_cookies(response)
+    return {"message": "Logged out successfully"}
 
 # --- OTP ENDPOINTS ---
 import random
@@ -466,11 +583,12 @@ def send_otp_email(to_email: str, otp: str):
         raise HTTPException(status_code=500, detail="Failed to send OTP email")
 
 @api_router.post("/auth/google", response_model=AuthResponse)
-async def google_auth(request: VerifyGoogleRequest):
+@limiter.limit("5/minute")
+async def google_auth(request: Request, response: Response, payload: VerifyGoogleRequest):
     try:
-        idinfo = id_token.verify_oauth2_token(request.credential, google_requests.Request(), GOOGLE_CLIENT_ID)
+        idinfo = id_token.verify_oauth2_token(payload.credential, google_requests.Request(), GOOGLE_CLIENT_ID)
         email = idinfo['email']
-        name = idinfo.get('name', '')
+        name = sanitize_input(idinfo.get('name', ''))
         
         user = await db.users.find_one({"email": email}, {"_id": 0})
         
@@ -490,19 +608,7 @@ async def google_auth(request: VerifyGoogleRequest):
             await db.wishlists.insert_one({"user_id": user_id, "product_ids": []})
             user = user_doc
             
-        token = create_jwt_token(user['id'], user['email'])
-        
-        user_response = UserResponse(
-            id=user['id'],
-            email=user['email'],
-            name=user.get('name', ''),
-            phone=user.get('phone'),
-            created_at=user['created_at'],
-            has_used_first_purchase_discount=user.get('has_used_first_purchase_discount', False),
-            is_admin=user.get('is_admin', False)
-        )
-        
-        return AuthResponse(token=token, user=user_response)
+        return await issue_auth_session(response, user, request)
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid Google token")
 
@@ -580,7 +686,8 @@ async def verify_email_otp(body: VerifyEmailOTPRequest):
     return {"message": "Email verified successfully"}
 
 @api_router.post("/auth/register-otp", response_model=AuthResponse)
-async def register_otp(user_data: VerifyOTPRegisterRequest):
+@limiter.limit("5/minute")
+async def register_otp(request: Request, response: Response, user_data: VerifyOTPRegisterRequest):
     # Verify OTP
     otp_record = await db.otps.find_one({"phone": user_data.phone, "otp": user_data.otp})
     if not otp_record:
@@ -598,6 +705,8 @@ async def register_otp(user_data: VerifyOTPRegisterRequest):
     existing_user_phone = await db.users.find_one({"phone": user_data.phone}, {"_id": 0})
     if existing_user_phone:
         raise HTTPException(status_code=400, detail="Phone number already registered")
+
+    validate_password_strength(user_data.password)
     
     user_id = str(uuid.uuid4())
     hashed_pw = hash_password(user_data.password)
@@ -606,8 +715,8 @@ async def register_otp(user_data: VerifyOTPRegisterRequest):
         "id": user_id,
         "email": user_data.email,
         "password": hashed_pw,
-        "name": user_data.name,
-        "phone": user_data.phone,
+        "name": sanitize_input(user_data.name),
+        "phone": sanitize_input(user_data.phone),
         "created_at": datetime.now(timezone.utc).isoformat(),
         "has_used_first_purchase_discount": False
     }
@@ -621,49 +730,27 @@ async def register_otp(user_data: VerifyOTPRegisterRequest):
     # Delete the used OTP
     await db.otps.delete_one({"phone": user_data.phone})
     
-    token = create_jwt_token(user_id, user_data.email)
-    
-    user_response = UserResponse(
-        id=user_id,
-        email=user_data.email,
-        name=user_data.name,
-        phone=user_data.phone,
-        created_at=user_doc["created_at"],
-        has_used_first_purchase_discount=False,
-        is_admin=False
-    )
-    
-    return AuthResponse(token=token, user=user_response)
+    return await issue_auth_session(response, user_doc, request)
 
 @api_router.post("/auth/login-otp", response_model=AuthResponse)
-async def login_otp(request: VerifyOTPLoginRequest):
+@limiter.limit("5/minute")
+async def login_otp(request: Request, response: Response, payload: VerifyOTPLoginRequest):
     # Verify OTP
-    otp_record = await db.otps.find_one({"phone": request.phone, "otp": request.otp})
+    otp_record = await db.otps.find_one({"phone": payload.phone, "otp": payload.otp})
     if not otp_record:
         raise HTTPException(status_code=400, detail="Invalid OTP")
     
     if datetime.fromisoformat(otp_record['expires_at']) < datetime.now(timezone.utc):
         raise HTTPException(status_code=400, detail="OTP has expired")
         
-    user = await db.users.find_one({"phone": request.phone}, {"_id": 0})
+    user = await db.users.find_one({"phone": payload.phone}, {"_id": 0})
     if not user:
         raise HTTPException(status_code=404, detail="User with this phone number not found")
     
     # Delete the used OTP
-    await db.otps.delete_one({"phone": request.phone})
+    await db.otps.delete_one({"phone": payload.phone})
     
-    token = create_jwt_token(user['id'], user['email'])
-    
-    user_response = UserResponse(
-        id=user['id'],
-        email=user['email'],
-        name=user['name'],
-        phone=user.get('phone'),
-        created_at=user['created_at'],
-        has_used_first_purchase_discount=user.get('has_used_first_purchase_discount', False),
-        is_admin=user.get('is_admin', False)
-    )
-    return AuthResponse(token=token, user=user_response)
+    return await issue_auth_session(response, user, request)
 
 # --- PUBLIC ROUTES FOR IMPACT SERIES ---
 
@@ -707,9 +794,10 @@ async def get_products(
     if size:
         query["sizes"] = {"$in": [size]}
     if search:
+        safe_search = re.escape(search.strip())
         query["$or"] = [
-            {"name": {"$regex": search, "$options": "i"}},
-            {"description": {"$regex": search, "$options": "i"}}
+            {"name": {"$regex": safe_search, "$options": "i"}},
+            {"description": {"$regex": safe_search, "$options": "i"}}
         ]
     if featured is not None:
         query["featured"] = featured
@@ -1302,6 +1390,73 @@ async def get_announcement_settings():
             "global_discount_percentage": 0
         }
     return settings
+
+@api_router.post("/newsletter/subscribe")
+async def subscribe_to_newsletter(subscriber: SubscriberCreate):
+    email = subscriber.email.strip().lower()
+    local_part = email.split("@")[0]
+    domain = email.split("@")[-1]
+    existing_subscriber = await db.subscribers.find_one({"email": email}, {"_id": 0})
+    now = datetime.now(timezone.utc).isoformat()
+
+    if domain in DISPOSABLE_EMAIL_DOMAINS or len(local_part) < 5 or local_part in BLOCKED_NEWSLETTER_LOCAL_PARTS:
+        raise HTTPException(status_code=400, detail="Please use a real email address")
+
+    if existing_subscriber and existing_subscriber.get("is_active", True) and existing_subscriber.get("is_verified", False):
+        welcome_result = await send_subscriber_welcome_email(email)
+        if not welcome_result.get("delivered"):
+            raise HTTPException(status_code=400, detail="Invalid email entered")
+        return {"message": "You are already subscribed.", "already_subscribed": True}
+
+    welcome_result = await send_subscriber_welcome_email(email)
+    if not welcome_result.get("delivered"):
+        raise HTTPException(status_code=400, detail="Invalid email entered")
+
+    if existing_subscriber:
+        await db.subscribers.update_one(
+            {"email": email},
+            {"$set": {"is_active": True, "is_verified": True, "verified_at": now, "updated_at": now}}
+        )
+    else:
+        subscriber_doc = {
+            "id": str(uuid.uuid4()),
+            "email": email,
+            "is_active": True,
+            "is_verified": True,
+            "source": "homepage",
+            "subscribed_at": now,
+            "verified_at": now,
+            "updated_at": now
+        }
+        await db.subscribers.insert_one(subscriber_doc)
+
+    return {"message": "You are in. Stay ready for the next drop.", "verified": True}
+
+@api_router.get("/newsletter/unsubscribe", response_class=HTMLResponse)
+async def unsubscribe_from_newsletter(email: str = Query(...)):
+    normalized_email = email.strip().lower()
+    subscriber = await db.subscribers.find_one({"email": normalized_email}, {"_id": 0})
+
+    if subscriber:
+        await db.subscribers.update_one(
+            {"email": normalized_email},
+            {"$set": {"is_active": False, "updated_at": datetime.now(timezone.utc).isoformat()}}
+        )
+
+    return """
+    <html>
+        <body style="margin:0;padding:24px;background:#f5efe6;font-family:'Helvetica Neue',Arial,sans-serif;color:#18120d;">
+            <div style="max-width:640px;margin:0 auto;background:#fffaf3;border:1px solid #eadbc9;border-radius:22px;overflow:hidden;box-shadow:0 14px 36px rgba(18,14,11,0.08);">
+                <div style="height:4px;background:linear-gradient(90deg,#b7814d 0%,#efc28c 50%,#b7814d 100%);"></div>
+                <div style="padding:22px 22px 24px;">
+                    <p style="margin:0 0 10px;color:#9c6a3b;letter-spacing:0.2em;text-transform:uppercase;font-size:10px;font-weight:700;">LAST GEAR</p>
+                    <h1 style="margin:0 0 12px;font-size:28px;line-height:1;text-transform:uppercase;color:#18120d;">You’re Unsubscribed</h1>
+                    <p style="margin:0;font-size:15px;line-height:1.7;color:#18120d;">You will no longer receive LAST GEAR subscriber updates at this email.</p>
+                </div>
+            </div>
+        </body>
+    </html>
+    """
 # --- AI RECOMMENDATIONS ENDPOINT ---
 @api_router.get("/recommendations")
 async def get_recommendations(current_user: Dict = Depends(get_current_user)):
@@ -1343,14 +1498,12 @@ async def get_recommendations(current_user: Dict = Depends(get_current_user)):
 app.include_router(api_router)
 app.include_router(admin_router)
 
-# CORS with stricter configuration
-allowed_origins = os.environ.get('CORS_ORIGINS', '*').split(',')
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
-    allow_origins=allowed_origins if '*' not in allowed_origins else ["*"],
+    allow_origins=ALLOWED_ORIGINS,
     allow_methods=["GET", "POST", "PUT", "DELETE", "PATCH"],
-    allow_headers=["*"],
+    allow_headers=["Authorization", "Content-Type", "Accept", "Origin", "X-Requested-With"],
     max_age=3600,
 )
 
@@ -1359,8 +1512,8 @@ uploads_dir = Path(__file__).parent / "uploads"
 uploads_dir.mkdir(exist_ok=True)
 app.mount("/uploads", StaticFiles(directory=uploads_dir), name="uploads")
 
-# Add Trusted Host middleware for production
-# app.add_middleware(TrustedHostMiddleware, allowed_hosts=["lastgear.in", "www.lastgear.in", "*.emergentagent.com"])
+if TRUSTED_HOSTS:
+    app.add_middleware(TrustedHostMiddleware, allowed_hosts=TRUSTED_HOSTS)
 
 logging.basicConfig(
     level=logging.INFO,

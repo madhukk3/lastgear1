@@ -1,18 +1,18 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import axios from 'axios';
 import { useAuth } from './AuthContext';
 
 const CartContext = createContext(null);
 
-export const useCart = () => {
+export function useCart() {
   const context = useContext(CartContext);
   if (!context) {
     throw new Error('useCart must be used within CartProvider');
   }
   return context;
-};
+}
 
-export const CartProvider = ({ children }) => {
+export function CartProvider({ children }) {
   const [cart, setCart] = useState({ items: [] });
   const [loading, setLoading] = useState(false);
   const [addedItem, setAddedItem] = useState(null);
@@ -21,13 +21,7 @@ export const CartProvider = ({ children }) => {
   const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
   const API = `${BACKEND_URL}/api`;
 
-  useEffect(() => {
-    if (token) {
-      fetchCart();
-    }
-  }, [token]);
-
-  const fetchCart = async () => {
+  const fetchCart = useCallback(async () => {
     try {
       setLoading(true);
       const response = await axios.get(`${API}/cart`);
@@ -37,7 +31,15 @@ export const CartProvider = ({ children }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [API]);
+
+  useEffect(() => {
+    if (token) {
+      fetchCart();
+    } else {
+      setCart({ items: [] });
+    }
+  }, [fetchCart, token]);
 
   const addToCart = async (product_id, quantity, size, color, fullProductData = null) => {
     try {
@@ -92,4 +94,4 @@ export const CartProvider = ({ children }) => {
       {children}
     </CartContext.Provider>
   );
-};
+}

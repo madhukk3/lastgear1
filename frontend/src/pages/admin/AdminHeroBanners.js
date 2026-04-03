@@ -30,7 +30,7 @@ const AdminHeroBanners = () => {
     const fetchBanners = async () => {
         try {
             const response = await axios.get(`${API}/admin/hero-banners`, {
-                headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+                withCredentials: true
             });
             setBanners(response.data);
         } catch (error) {
@@ -54,12 +54,12 @@ const AdminHeroBanners = () => {
         try {
             if (editingBanner) {
                 await axios.put(`${API}/admin/hero-banners/${editingBanner.id}`, formData, {
-                    headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+                    withCredentials: true
                 });
                 toast.success('Banner updated successfully');
             } else {
                 await axios.post(`${API}/admin/hero-banners`, formData, {
-                    headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+                    withCredentials: true
                 });
                 toast.success('Banner created successfully');
             }
@@ -74,7 +74,7 @@ const AdminHeroBanners = () => {
         if (window.confirm('Are you sure you want to delete this banner?')) {
             try {
                 await axios.delete(`${API}/admin/hero-banners/${id}`, {
-                    headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+                    withCredentials: true
                 });
                 toast.success('Banner deleted');
                 fetchBanners();
@@ -87,7 +87,7 @@ const AdminHeroBanners = () => {
     const handleToggleActive = async (id) => {
         try {
             await axios.post(`${API}/admin/hero-banners/${id}/toggle-active`, {}, {
-                headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+                withCredentials: true
             });
             toast.success('Banner status updated');
             fetchBanners();

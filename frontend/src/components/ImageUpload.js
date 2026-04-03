@@ -38,12 +38,11 @@ const ImageUpload = ({ value, onChange, label = "Product Image" }) => {
             const formData = new FormData();
             formData.append('file', file);
 
-            const token = localStorage.getItem('token');
             const response = await axios.post(`${API}/admin/upload`, formData, {
                 headers: {
-                    'Content-Type': 'multipart/form-data',
-                    'Authorization': `Bearer ${token}`
-                }
+                    'Content-Type': 'multipart/form-data'
+                },
+                withCredentials: true
             });
 
             // The backend returns a relative path like /uploads/filename.jpg
