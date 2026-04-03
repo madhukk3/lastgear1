@@ -14,7 +14,7 @@ const AdminRoute = ({ children }) => {
   }
 
   // Check if user is admin
-  const isAdmin = user?.email === 'admin@lastgear.in';
+  const isAdmin = user?.is_admin === true;
 
   if (!user) {
     return <Navigate to="/admin/login" replace />;

@@ -488,14 +488,21 @@ async def admin_reject_cancel(order_id: str, background_tasks: BackgroundTasks, 
     if not order.get("cancel_requested"):
         raise HTTPException(status_code=400, detail="Cancellation not requested for this order")
         
+    restored_status = order.get("previous_order_status") or "processing"
     update_data = {
         "cancel_requested": False,
         "cancel_rejected": True,
-        "order_status": "processing",  # Safely revert pipeline
+        "order_status": restored_status,
         "updated_at": datetime.now(timezone.utc).isoformat()
     }
     
-    await db.orders.update_one({"id": order_id}, {"$set": update_data})
+    await db.orders.update_one(
+        {"id": order_id},
+        {
+            "$set": update_data,
+            "$unset": {"previous_order_status": ""}
+        }
+    )
     await log_admin_action(admin_user, "reject_cancellation", order_id, update_data)
     
     # Notify User conditionally
@@ -868,7 +875,41 @@ async def admin_approve_exchange(request_id: str, background_tasks: BackgroundTa
     exchange = await db.exchange_requests.find_one({"request_id": request_id}, {"_id": 0})
     if not exchange:
         raise HTTPException(status_code=404, detail="Exchange request not found")
+    if exchange.get("status") != "pending":
+        raise HTTPException(status_code=400, detail="Only pending exchange requests can be approved")
+
+    order = await db.orders.find_one({"id": exchange["order_id"]}, {"_id": 0})
+    if not order:
+        raise HTTPException(status_code=404, detail="Associated order not found")
+
+    target_item = next((item for item in order.get("items", []) if item.get("name") == exchange["product_name"]), None)
+    if not target_item:
+        raise HTTPException(status_code=400, detail="Unable to match the requested product in the order")
+
+    product_id = target_item.get("product_id")
+    new_size = exchange.get("size_requested")
+    qty = target_item.get("quantity", 1)
+    product = await db.products.find_one({"id": product_id}, {"_id": 0})
+    if not product:
+        raise HTTPException(status_code=404, detail="Replacement product not found")
+
+    size_stock = product.get("size_stock") or {}
+    available_stock = size_stock.get(new_size, product.get("stock", 0))
+    if available_stock < qty:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Not enough stock for size {new_size}. Available: {available_stock}, required: {qty}"
+        )
         
+    # Reserve replacement stock first so status changes only happen when inventory is available.
+    await db.products.update_one(
+        {"id": product_id},
+        {"$inc": {
+            "stock": -qty,
+            f"size_stock.{new_size}": -qty
+        }}
+    )
+
     await db.exchange_requests.update_one(
         {"request_id": request_id},
         {"$set": {"status": "approved"}}
@@ -879,6 +920,7 @@ async def admin_approve_exchange(request_id: str, background_tasks: BackgroundTa
         {"id": exchange["order_id"]},
         {
             "$set": {
+                "exchange_requested": False,
                 "order_status": "exchange_approved",
                 "updated_at": time_now
             },
@@ -890,24 +932,6 @@ async def admin_approve_exchange(request_id: str, background_tasks: BackgroundTa
             }
         }
     )
-    
-    # Reserve replacement stock (Deduct new size)
-    order = await db.orders.find_one({"id": exchange["order_id"]})
-    if order:
-        target_item = next((item for item in order.get("items", []) if item.get("name") == exchange["product_name"]), None)
-        if target_item:
-            product_id = target_item.get("product_id")
-            new_size = exchange.get("size_requested")
-            qty = target_item.get("quantity", 1)
-            
-            await db.products.update_one(
-                {"id": product_id},
-                {"$inc": {
-                    "stock": -qty,
-                    f"size_stock.{new_size}": -qty
-                }}
-            )
-            
     await log_admin_action(admin_user, "approve_exchange", request_id, {"order_id": exchange["order_id"]})
     background_tasks.add_task(send_exchange_approved_email, exchange)
     return {"message": "Exchange request approved successfully"}

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { ShieldCheck, Send, Loader, AlertTriangle, HelpCircle } from 'lucide-react';
+import BackButton from '../components/BackButton';
 import { toast } from 'sonner';
 
 const HelpCenter = () => {
@@ -70,6 +71,7 @@ const HelpCenter = () => {
             <div className="absolute inset-0 pointer-events-none opacity-20" style={{ backgroundImage: 'radial-gradient(circle at top center, #ff003c 0%, transparent 40%)', top: '-20%' }}></div>
 
             <div className="max-w-4xl mx-auto relative z-10">
+                <BackButton label="Back" className="mb-8 text-white" />
                 <div className="text-center mb-16">
                     <HelpCircle size={48} className="mx-auto text-[#ff003c] mb-6 animate-pulse" />
                     <h1 className="text-4xl md:text-5xl font-black text-white italic uppercase tracking-tighter mb-4">

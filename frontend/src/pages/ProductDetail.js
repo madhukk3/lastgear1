@@ -5,6 +5,7 @@ import { Heart, ShoppingCart, Check } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import { useSettings } from '../context/SettingsContext';
+import BackButton from '../components/BackButton';
 import { toast } from 'sonner';
 
 const ProductDetail = () => {
@@ -173,6 +174,7 @@ const ProductDetail = () => {
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-12" data-testid="product-detail-page">
+      <BackButton label="Back" className="mb-8 text-[#120e0b]" />
       <div className="grid grid-cols-1 md:grid-cols-12 gap-8 lg:gap-12">
         {/* Media Gallery */}
         <div className="md:col-span-4 flex flex-col gap-4">

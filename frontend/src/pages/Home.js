@@ -301,7 +301,7 @@ const Home = () => {
             Loading the newest pieces...
           </div>
         ) : (
-          <div className="reveal-row grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-4">
+          <div className="reveal-row grid grid-cols-2 gap-4 sm:grid-cols-2 sm:gap-6 xl:grid-cols-4">
             {featuredProducts.slice(0, 8).map((product) => {
               const totalDiscount = (globalDiscount || 0) + (product.discount_percentage || 0);
               const discountedPrice = product.price * (1 - totalDiscount / 100);

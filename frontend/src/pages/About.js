@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Compass, Rocket, ShieldCheck, Sparkles } from 'lucide-react';
+import BackButton from '../components/BackButton';
 
 const pillars = [
   {
@@ -43,6 +44,7 @@ const About = () => {
         <div className="lastgear-grid absolute inset-0 opacity-20" />
 
         <div className="relative mx-auto max-w-7xl px-4 md:px-6">
+          <BackButton label="Back" className="mb-8 text-white" />
           <div className="max-w-4xl">
             <p className="text-sm font-semibold uppercase tracking-[0.38em] text-[#d99146]">About LAST GEAR</p>
             <h1 className="mt-5 font-display text-[4rem] uppercase leading-[0.88] text-[#f8f2ea] md:text-[6rem]">

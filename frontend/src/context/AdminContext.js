@@ -20,7 +20,7 @@ export const AdminProvider = ({ children }) => {
   const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
   const API = `${BACKEND_URL}/api`;
 
-  const isAdmin = user?.email === 'admin@lastgear.in';
+  const isAdmin = user?.is_admin === true;
 
   const fetchDashboardStats = async () => {
     try {

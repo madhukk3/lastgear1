@@ -32,10 +32,11 @@ const Products = () => {
   const colors = ['Black', 'White', 'Gray', 'Navy', 'Charcoal', 'Olive', 'Burgundy', 'Cream', 'Sand'];
   const priceRanges = [
     { label: 'All', min: '', max: '' },
-    { label: 'Under $30', min: '', max: '30' },
-    { label: '$30 - $50', min: '30', max: '50' },
-    { label: '$50 - $80', min: '50', max: '80' },
-    { label: 'Over $80', min: '80', max: '' },
+    { label: 'Under ₹300', min: '', max: '300' },
+    { label: '₹300 - ₹500', min: '300', max: '500' },
+    { label: '₹500 - ₹1000', min: '500', max: '1000' },
+    { label: '₹1000 - ₹1500', min: '1000', max: '1500' },
+    { label: 'Over ₹1500', min: '1500', max: '' },
   ];
 
   useEffect(() => {

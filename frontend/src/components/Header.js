@@ -142,14 +142,14 @@ const Header = () => {
       {/* Top Announcement Bar */}
       {announcementActive && announcements.length > 0 && (
         <div className="bg-[#f4f4f4] border-b border-gray-300 text-black w-full relative z-50 overflow-hidden">
-          <div className="hidden lg:flex max-w-7xl mx-auto px-4 py-2 items-center justify-between text-[11px] font-bold tracking-widest uppercase">
-            <div className="flex-1"></div>
-
-            <div className={`flex-1 text-center truncate px-4 transition-opacity duration-500 ease-in-out ${fadeStatus}`} key={currentAnnouncementIndex}>
-              {renderAnnouncement(announcements[currentAnnouncementIndex])}
+          <div className="hidden lg:flex max-w-7xl mx-auto px-4 py-1.5 items-center justify-between gap-6">
+            <div className={`min-w-0 flex-1 text-[10px] font-bold tracking-[0.32em] uppercase transition-opacity duration-500 ease-in-out ${fadeStatus}`} key={currentAnnouncementIndex}>
+              <div className="truncate">
+                {renderAnnouncement(announcements[currentAnnouncementIndex])}
+              </div>
             </div>
 
-            <div className="flex-1 flex justify-end items-center space-x-4 text-[13px] font-medium tracking-normal normal-case text-black">
+            <div className="flex items-center space-x-4 whitespace-nowrap text-[13px] font-medium tracking-normal normal-case text-black">
               <Link to="/help" className="hover:text-gray-600 transition-colors">Help</Link>
               <span className="text-gray-400 font-normal">|</span>
               {user ? (
@@ -165,7 +165,7 @@ const Header = () => {
           </div>
 
           {/* Mobile Announcement Bar */}
-          <div className={`lg:hidden py-2 px-4 text-center text-[10px] font-bold uppercase tracking-wider truncate transition-opacity duration-500 ease-in-out ${fadeStatus}`} key={`mobile-${currentAnnouncementIndex}`}>
+          <div className={`lg:hidden px-4 py-1.5 text-center text-[10px] font-bold uppercase tracking-wider truncate transition-opacity duration-500 ease-in-out ${fadeStatus}`} key={`mobile-${currentAnnouncementIndex}`}>
             {renderAnnouncement(announcements[currentAnnouncementIndex])}
           </div>
         </div>
@@ -173,12 +173,12 @@ const Header = () => {
 
       <div className="w-full border-b border-white/10 bg-[#120e0b]/95 text-white backdrop-blur-xl">
         <div className="max-w-7xl mx-auto px-4">
-          <div className="flex items-center justify-between h-16">
+          <div className="flex items-center justify-between h-14 md:h-[60px]">
             {/* Logo with Image */}
             <Link to="/" className="flex items-center gap-3" data-testid="logo-link">
-              <img src="/logo-white.png" alt="LAST GEAR Logo" className="h-[40px] md:h-[48px] w-auto object-contain" />
+              <img src="/logo-white.png" alt="LAST GEAR Logo" className="h-[34px] md:h-[40px] w-auto object-contain" />
               <div className="leading-none">
-                <span className="block text-2xl md:text-3xl font-puma tracking-[0.22em]">LAST GEAR</span>
+                <span className="block text-[28px] md:text-[32px] font-puma tracking-[0.18em]">LAST GEAR</span>
                 <span className="hidden md:block text-[10px] uppercase tracking-[0.42em] text-white/50">Fashion Division</span>
               </div>
             </Link>
@@ -203,7 +203,7 @@ const Header = () => {
             </nav>
 
             {/* Icons */}
-            <div className="flex items-center space-x-6">
+            <div className="flex items-center space-x-5">
               {/* Desktop Search Button */}
               <button
                 onClick={() => setSearchOpen(!searchOpen)}

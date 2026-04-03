@@ -110,6 +110,7 @@ class UserResponse(BaseModel):
     phone: Optional[str] = None
     created_at: str
     has_used_first_purchase_discount: bool = False
+    is_admin: bool = False
 
 class AuthResponse(BaseModel):
     token: str
@@ -398,7 +399,8 @@ async def register(user_data: UserRegister):
         name=user_data.name,
         phone=user_data.phone,
         created_at=user_doc["created_at"],
-        has_used_first_purchase_discount=False
+        has_used_first_purchase_discount=False,
+        is_admin=False
     )
     
     return AuthResponse(token=token, user=user_response)
@@ -417,7 +419,8 @@ async def login(credentials: UserLogin):
         name=user['name'],
         phone=user.get('phone'),
         created_at=user['created_at'],
-        has_used_first_purchase_discount=user.get('has_used_first_purchase_discount', False)
+        has_used_first_purchase_discount=user.get('has_used_first_purchase_discount', False),
+        is_admin=user.get('is_admin', False)
     )
     
     return AuthResponse(token=token, user=user_response)
@@ -495,7 +498,8 @@ async def google_auth(request: VerifyGoogleRequest):
             name=user.get('name', ''),
             phone=user.get('phone'),
             created_at=user['created_at'],
-            has_used_first_purchase_discount=user.get('has_used_first_purchase_discount', False)
+            has_used_first_purchase_discount=user.get('has_used_first_purchase_discount', False),
+            is_admin=user.get('is_admin', False)
         )
         
         return AuthResponse(token=token, user=user_response)
@@ -625,7 +629,8 @@ async def register_otp(user_data: VerifyOTPRegisterRequest):
         name=user_data.name,
         phone=user_data.phone,
         created_at=user_doc["created_at"],
-        has_used_first_purchase_discount=False
+        has_used_first_purchase_discount=False,
+        is_admin=False
     )
     
     return AuthResponse(token=token, user=user_response)
@@ -655,7 +660,8 @@ async def login_otp(request: VerifyOTPLoginRequest):
         name=user['name'],
         phone=user.get('phone'),
         created_at=user['created_at'],
-        has_used_first_purchase_discount=user.get('has_used_first_purchase_discount', False)
+        has_used_first_purchase_discount=user.get('has_used_first_purchase_discount', False),
+        is_admin=user.get('is_admin', False)
     )
     return AuthResponse(token=token, user=user_response)
 
@@ -991,6 +997,7 @@ async def request_order_cancellation(order_id: str, payload: CancelRequest, curr
     update_data = {
         "cancel_requested": True,
         "cancel_request_time": datetime.now(timezone.utc).isoformat(),
+        "previous_order_status": order.get("order_status"),
         "order_status": "cancel_requested",
         "cancel_reason": payload.reason
     }
