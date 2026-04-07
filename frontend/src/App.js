@@ -35,8 +35,67 @@ import AdminImpactSeries from './pages/admin/AdminImpactSeries';
 import AdminHeroBanners from './pages/admin/AdminHeroBanners';
 import AdminCoupons from './pages/admin/AdminCoupons';
 import AdminExchanges from './pages/admin/AdminExchanges';
+import BrandLoader from './components/BrandLoader';
+import { useAuth } from './context/AuthContext';
+import { useSettings } from './context/SettingsContext';
 import './App.css';
 import './index.css';
+
+function AppShell() {
+  const { loading: authLoading } = useAuth();
+  const { loading: settingsLoading } = useSettings();
+
+  if (authLoading || settingsLoading) {
+    return <BrandLoader fullScreen eyebrow="Booting" />;
+  }
+
+  return (
+    <BrowserRouter>
+      <AddedToCartPopup />
+      <Toaster position="bottom-center" richColors closeButton />
+      <Routes>
+        {/* Admin Routes */}
+        <Route path="/admin/login" element={<AdminLogin />} />
+        <Route path="/admin/dashboard" element={<AdminRoute><AdminLayout><AdminDashboard /></AdminLayout></AdminRoute>} />
+        <Route path="/admin/products" element={<AdminRoute><AdminLayout><AdminProducts /></AdminLayout></AdminRoute>} />
+        <Route path="/admin/orders" element={<AdminRoute><AdminLayout><AdminOrders /></AdminLayout></AdminRoute>} />
+        <Route path="/admin/customers" element={<AdminRoute><AdminLayout><AdminCustomers /></AdminLayout></AdminRoute>} />
+        <Route path="/admin/inventory" element={<AdminRoute><AdminLayout><AdminInventory /></AdminLayout></AdminRoute>} />
+        <Route path="/admin/logs" element={<AdminRoute><AdminLayout><AdminLogs /></AdminLayout></AdminRoute>} />
+        <Route path="/admin/settings" element={<AdminRoute><AdminLayout><AdminSettings /></AdminLayout></AdminRoute>} />
+        <Route path="/admin/impact-series" element={<AdminRoute><AdminLayout><AdminImpactSeries /></AdminLayout></AdminRoute>} />
+        <Route path="/admin/hero-banners" element={<AdminRoute><AdminLayout><AdminHeroBanners /></AdminLayout></AdminRoute>} />
+        <Route path="/admin/coupons" element={<AdminRoute><AdminLayout><AdminCoupons /></AdminLayout></AdminRoute>} />
+        <Route path="/admin/exchanges" element={<AdminRoute><AdminLayout><AdminExchanges /></AdminLayout></AdminRoute>} />
+
+        {/* Public Routes */}
+        <Route path="*" element={
+          <div className="App min-h-screen flex flex-col">
+            <Header />
+            <main className="flex-1">
+              <Routes>
+                <Route path="/" element={<Home />} />
+                <Route path="/products" element={<Products />} />
+                <Route path="/products/:id" element={<ProductDetail />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/register" element={<Register />} />
+                <Route path="/cart" element={<Cart />} />
+                <Route path="/checkout" element={<Checkout />} />
+                <Route path="/order-success" element={<OrderSuccess />} />
+                <Route path="/account/orders/:order_id" element={<OrderStatusPage />} />
+                <Route path="/wishlist" element={<Wishlist />} />
+                <Route path="/account" element={<Account />} />
+                <Route path="/about" element={<About />} />
+                <Route path="/help" element={<HelpCenter />} />
+              </Routes>
+            </main>
+            <Footer />
+          </div>
+        } />
+      </Routes>
+    </BrowserRouter>
+  );
+}
 
 function App() {
   return (
@@ -44,50 +103,7 @@ function App() {
       <SettingsProvider>
         <CartProvider>
           <AdminProvider>
-            <BrowserRouter>
-              <AddedToCartPopup />
-              <Toaster position="bottom-center" richColors closeButton />
-              <Routes>
-                {/* Admin Routes */}
-                <Route path="/admin/login" element={<AdminLogin />} />
-                <Route path="/admin/dashboard" element={<AdminRoute><AdminLayout><AdminDashboard /></AdminLayout></AdminRoute>} />
-                <Route path="/admin/products" element={<AdminRoute><AdminLayout><AdminProducts /></AdminLayout></AdminRoute>} />
-                <Route path="/admin/orders" element={<AdminRoute><AdminLayout><AdminOrders /></AdminLayout></AdminRoute>} />
-                <Route path="/admin/customers" element={<AdminRoute><AdminLayout><AdminCustomers /></AdminLayout></AdminRoute>} />
-                <Route path="/admin/inventory" element={<AdminRoute><AdminLayout><AdminInventory /></AdminLayout></AdminRoute>} />
-                <Route path="/admin/logs" element={<AdminRoute><AdminLayout><AdminLogs /></AdminLayout></AdminRoute>} />
-                <Route path="/admin/settings" element={<AdminRoute><AdminLayout><AdminSettings /></AdminLayout></AdminRoute>} />
-                <Route path="/admin/impact-series" element={<AdminRoute><AdminLayout><AdminImpactSeries /></AdminLayout></AdminRoute>} />
-                <Route path="/admin/hero-banners" element={<AdminRoute><AdminLayout><AdminHeroBanners /></AdminLayout></AdminRoute>} />
-                <Route path="/admin/coupons" element={<AdminRoute><AdminLayout><AdminCoupons /></AdminLayout></AdminRoute>} />
-                <Route path="/admin/exchanges" element={<AdminRoute><AdminLayout><AdminExchanges /></AdminLayout></AdminRoute>} />
-
-                {/* Public Routes */}
-                <Route path="*" element={
-                  <div className="App min-h-screen flex flex-col">
-                    <Header />
-                    <main className="flex-1">
-                      <Routes>
-                        <Route path="/" element={<Home />} />
-                        <Route path="/products" element={<Products />} />
-                        <Route path="/products/:id" element={<ProductDetail />} />
-                        <Route path="/login" element={<Login />} />
-                        <Route path="/register" element={<Register />} />
-                        <Route path="/cart" element={<Cart />} />
-                        <Route path="/checkout" element={<Checkout />} />
-                        <Route path="/order-success" element={<OrderSuccess />} />
-                        <Route path="/account/orders/:order_id" element={<OrderStatusPage />} />
-                        <Route path="/wishlist" element={<Wishlist />} />
-                        <Route path="/account" element={<Account />} />
-                        <Route path="/about" element={<About />} />
-                        <Route path="/help" element={<HelpCenter />} />
-                      </Routes>
-                    </main>
-                    <Footer />
-                  </div>
-                } />
-              </Routes>
-            </BrowserRouter>
+            <AppShell />
           </AdminProvider>
         </CartProvider>
       </SettingsProvider>

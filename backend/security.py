@@ -13,6 +13,7 @@ import os
 from dotenv import load_dotenv
 from pathlib import Path
 from motor.motor_asyncio import AsyncIOMotorClient
+from ipaddress import ip_address
 
 # Load environment variables
 ROOT_DIR = Path(__file__).parent
@@ -30,6 +31,8 @@ ACCESS_TOKEN_EXPIRE_MINUTES = int(os.environ.get('ACCESS_TOKEN_EXPIRE_MINUTES', 
 REFRESH_TOKEN_EXPIRE_DAYS = int(os.environ.get('REFRESH_TOKEN_EXPIRE_DAYS', '14'))
 ACCESS_COOKIE_NAME = os.environ.get('ACCESS_COOKIE_NAME', 'lastgear_access_token')
 REFRESH_COOKIE_NAME = os.environ.get('REFRESH_COOKIE_NAME', 'lastgear_refresh_token')
+TRUST_PROXY_HEADERS = os.environ.get('TRUST_PROXY_HEADERS', 'true').lower() == 'true'
+ADMIN_ALLOWED_IPS = {ip.strip() for ip in os.environ.get('ADMIN_ALLOWED_IPS', '').split(',') if ip.strip()}
 
 # Security
 security = HTTPBearer(auto_error=False)
@@ -141,16 +144,41 @@ async def get_current_user(
         raise HTTPException(status_code=404, detail="User not found")
     return user
 
+def get_client_ip(request: Optional[Request]) -> Optional[str]:
+    if not request:
+        return None
+
+    if TRUST_PROXY_HEADERS:
+        forwarded_for = request.headers.get("x-forwarded-for", "").split(",")[0].strip()
+        if forwarded_for:
+            return forwarded_for
+
+    if request.client:
+        return request.client.host
+
+    return None
+
 # Admin verification
-async def verify_admin(current_user: Dict = Depends(get_current_user)) -> Dict:
+async def verify_admin(request: Request, current_user: Dict = Depends(get_current_user)) -> Dict:
+    client_ip = get_client_ip(request)
+
     if not current_user.get('is_admin', False):
         # Log unauthorized access attempt
         await log_security_event(
             event_type="unauthorized_admin_access",
             user_id=current_user.get('id'),
-            details={"email": current_user.get('email')}
+            details={"email": current_user.get('email'), "ip_address": client_ip}
         )
         raise HTTPException(status_code=403, detail="Admin access required")
+
+    if ADMIN_ALLOWED_IPS and client_ip not in ADMIN_ALLOWED_IPS:
+        await log_security_event(
+            event_type="blocked_admin_ip",
+            user_id=current_user.get('id'),
+            details={"email": current_user.get('email'), "ip_address": client_ip}
+        )
+        raise HTTPException(status_code=403, detail="Admin access blocked from this network")
+
     return current_user
 
 # Login attempt tracking

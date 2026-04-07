@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import { useAuth } from '../../context/AuthContext';
 import { ArrowRight, ShieldCheck } from 'lucide-react';
 import { toast } from 'sonner';
@@ -12,6 +13,8 @@ const AdminLogin = () => {
     password: '',
   });
   const [loading, setLoading] = useState(false);
+  const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+  const API = `${BACKEND_URL}/api`;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -20,6 +23,7 @@ const AdminLogin = () => {
       const response = await login(formData.email, formData.password);
 
       if (response.user?.is_admin) {
+        await axios.get(`${API}/admin/session`, { withCredentials: true });
         toast.success('Admin login successful!');
         navigate('/admin/dashboard');
       } else {

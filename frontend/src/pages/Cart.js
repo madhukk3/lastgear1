@@ -4,6 +4,7 @@ import { Trash2, ShoppingBag } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { useSettings } from '../context/SettingsContext';
+import BrandLoader from '../components/BrandLoader';
 import { toast } from 'sonner';
 
 const Cart = () => {
@@ -31,7 +32,7 @@ const Cart = () => {
   };
 
   if (cartLoading) {
-    return <div className="max-w-7xl mx-auto px-4 py-20 text-center">Loading...</div>;
+    return <BrandLoader minHeight="72vh" eyebrow="Cart" />;
   }
 
   const isFirstPurchaseEligible = user?.has_used_first_purchase_discount === false;
@@ -80,20 +81,29 @@ const Cart = () => {
                 className="flex gap-6 border-b border-gray-200 pb-6"
                 data-testid={`cart-item-${index}`}
               >
-                <div className="w-32 h-40 bg-gray-100 flex-shrink-0">
-                  <img
-                    src={item.product?.images[0]}
-                    alt={item.product?.name}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <div className="flex-1">
-                  <h3 className="text-lg font-bold mb-2">{item.product?.name}</h3>
-                  <p className="text-sm text-gray-600 mb-1">Size: {item.size}</p>
-                  <p className="text-sm text-gray-600 mb-2">Color: {item.color}</p>
-                  <p className="text-sm text-gray-600 mb-4">Quantity: {item.quantity}</p>
-                  <p className="text-lg font-bold">₹{(item.product?.price * item.quantity).toFixed(0)}</p>
-                </div>
+                <Link
+                  to={`/products/${item.product_id}`}
+                  className="flex flex-1 gap-6 group"
+                >
+                  <div className="w-32 h-40 bg-gray-100 flex-shrink-0 overflow-hidden">
+                    <img
+                      src={item.product?.images[0]}
+                      alt={item.product?.name}
+                      className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-lg font-bold mb-2 group-hover:underline">{item.product?.name}</h3>
+                    <p className="text-sm text-gray-600 mb-1">Size: {item.size}</p>
+                    <p className="text-sm text-gray-600 mb-2">Color: {item.color}</p>
+                    <p className="text-sm text-gray-600 mb-4">Quantity: {item.quantity}</p>
+                    <p className="text-lg font-bold">
+                      {item.quantity > 1
+                        ? `₹${item.product?.price?.toFixed(0)} × ${item.quantity} = ₹${(item.product?.price * item.quantity).toFixed(0)}`
+                        : `₹${(item.product?.price * item.quantity).toFixed(0)}`}
+                    </p>
+                  </div>
+                </Link>
                 <button
                   onClick={() => handleRemoveItem(item)}
                   className="text-gray-400 hover:text-red-600 transition-colors"

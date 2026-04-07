@@ -475,13 +475,17 @@ const Checkout = () => {
               <div className="space-y-4 mb-6">
                 {checkoutItems.map((item, index) => {
                   const productObj = item.product || item;
+                  const unitPrice = productObj.price || item.price;
+                  const lineTotal = unitPrice * item.quantity;
                   return (
                     <div key={index} className="flex justify-between text-sm">
                       <span>
                         {productObj.name || item.name} ({item.size}, {item.color}) x{item.quantity}
                       </span>
                       <span className="font-medium">
-                        ₹{((productObj.price || item.price) * item.quantity).toFixed(0)}
+                        {item.quantity > 1
+                          ? `₹${unitPrice.toFixed(0)} × ${item.quantity} = ₹${lineTotal.toFixed(0)}`
+                          : `₹${lineTotal.toFixed(0)}`}
                       </span>
                     </div>
                   )

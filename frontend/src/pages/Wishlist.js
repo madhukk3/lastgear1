@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Trash2, ShoppingBag } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import BrandLoader from '../components/BrandLoader';
 import { toast } from 'sonner';
 
 const Wishlist = () => {
@@ -51,7 +52,7 @@ const Wishlist = () => {
   }
 
   if (loading) {
-    return <div className="max-w-7xl mx-auto px-4 py-20 text-center">Loading...</div>;
+    return <BrandLoader minHeight="72vh" eyebrow="Wishlist" />;
   }
 
   return (

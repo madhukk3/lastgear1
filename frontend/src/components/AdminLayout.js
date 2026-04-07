@@ -146,14 +146,8 @@ const AdminLayout = ({ children }) => {
       <main className="flex-1 w-full md:ml-0 p-4 md:p-8 mt-16 md:mt-0 max-w-[100vw] overflow-x-hidden block">
         <div className="mb-6 rounded-[28px] border border-black/8 bg-white px-5 py-5 shadow-sm md:px-7">
           <p className="font-nav text-[11px] text-[#8d6a46]">Admin Section</p>
-          <div className="mt-2 flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
-            <div>
-              <h1 className="font-nav text-3xl text-[#16120d] md:text-4xl">{activeItem?.label || 'Admin'}</h1>
-              <p className="mt-1 font-nav text-sm text-black/52">{activeItem?.description || 'Manage your store clearly and quickly.'}</p>
-            </div>
-            <div className="rounded-2xl bg-[#f4f1eb] px-4 py-3 font-nav text-sm text-black/58">
-              Keep records tidy. Work section by section.
-            </div>
+          <div className="mt-2">
+            <h1 className="font-nav text-3xl text-[#16120d] md:text-4xl">{activeItem?.label || 'Admin'}</h1>
           </div>
         </div>
         {children}

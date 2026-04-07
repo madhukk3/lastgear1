@@ -4,6 +4,7 @@ import axios from 'axios';
 import { ArrowRight, ChevronLeft, ChevronRight, Package, TrendingUp, Truck } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useSettings } from '../context/SettingsContext';
+import BrandLoader from '../components/BrandLoader';
 import { toast } from 'sonner';
 
 const Home = () => {
@@ -144,67 +145,40 @@ const Home = () => {
           <div className="lastgear-grid absolute inset-0 opacity-20" />
         </div>
 
-        <div className="relative mx-auto grid min-h-[calc(100vh-4rem)] max-w-7xl grid-cols-1 gap-12 px-4 py-16 md:px-6 lg:grid-cols-[1.15fr_0.85fr] lg:items-end lg:py-24">
-          <div className="max-w-3xl text-white">
-            <div className="fade-up mb-6 inline-flex items-center gap-3 rounded-full border border-white/20 bg-white/10 px-4 py-2 font-nav text-[11px] text-white/80 backdrop-blur" style={{ '--delay': '0.1s' }}>
+        <div className="relative mx-auto flex min-h-[calc(100vh-4rem)] max-w-7xl items-center justify-center px-4 py-14 md:px-6 lg:items-end lg:justify-start lg:py-24">
+          <div className="max-w-3xl text-center text-white lg:text-left">
+            <div className="fade-up mb-5 inline-flex items-center gap-3 rounded-full border border-white/20 bg-white/10 px-4 py-2 font-nav text-[11px] text-white/80 backdrop-blur" style={{ '--delay': '0.1s' }}>
               <span>LAST GEAR</span>
-              <span className="h-1 w-1 rounded-full bg-[#d99146]" />
-              <span>Fashion For Every Shift</span>
+              {heroBanners.length > 1 && (
+                <>
+                  <span className="h-1 w-1 rounded-full bg-[#d99146]" />
+                  <span>{String(currentSlide + 1).padStart(2, '0')}/{String(heroBanners.length).padStart(2, '0')}</span>
+                </>
+              )}
             </div>
 
-            <h1 className="fade-up max-w-4xl font-nav text-[3.3rem] leading-[0.92] text-[#f8f2ea] md:text-[5rem] lg:text-[6.5rem]" style={{ '--delay': '0.18s' }}>
-              Shift Into
-              <span className="block text-[0.72em] leading-[0.96] text-transparent stroke-text-dark-glow md:text-[0.68em]">LAST GEAR</span>
+            <h1 className="hero-title-3d fade-up mt-3 max-w-4xl font-nav text-[3.1rem] leading-[0.9] text-[#f8f2ea] md:text-[5rem] lg:text-[6.2rem]" style={{ '--delay': '0.18s' }}>
+              <span className="hero-title-top block">Shift Into</span>
+              <span className="hero-title-bottom block text-[0.72em] leading-[0.94] md:text-[0.68em]">LAST GEAR</span>
             </h1>
 
-            <p className="fade-up mt-6 max-w-2xl text-base leading-7 text-white/72 md:text-lg" style={{ '--delay': '0.26s' }}>
-              Sharp fits. Bold mood. Pure drop energy.
-            </p>
+            <div className="fade-up mt-6 max-w-xl mx-auto lg:mx-0" style={{ '--delay': '0.26s' }}>
+              <p className="font-nav text-sm text-[#d99146]">
+                {activeHero?.subtitle || 'Built to stand out.'}
+              </p>
+              <p className="mt-3 text-lg leading-[1.1] text-white/92 md:text-[1.65rem]">
+                {activeHero?.title || 'Impact Series'}
+              </p>
+            </div>
 
-            <div className="fade-up mt-10 flex flex-col gap-4 sm:flex-row" style={{ '--delay': '0.34s' }}>
+            <div className="fade-up mt-8 flex justify-center lg:justify-start" style={{ '--delay': '0.34s' }}>
               <Link
                 to={activeHero?.link || '/products'}
                 className="shimmer-link pulse-glow inline-flex items-center justify-center gap-3 rounded-full bg-[#f1e6d8] px-8 py-4 font-nav text-sm text-[#120e0b] transition hover:bg-white"
               >
-                {activeHero?.button_text || 'Shop The Drop'}
+                {activeHero?.button_text || 'Shop Now'}
                 <ArrowRight size={18} />
               </Link>
-              <Link
-                to="/about"
-                className="shimmer-link inline-flex items-center justify-center gap-3 rounded-full border border-white/30 px-8 py-4 font-nav text-sm text-white transition hover:bg-white/10"
-              >
-                Discover LAST GEAR
-              </Link>
-            </div>
-          </div>
-
-          <div className="fade-in grid gap-4 self-end lg:justify-self-end" style={{ '--delay': '0.28s' }}>
-            <div className="rounded-[32px] border border-white/15 bg-white/10 p-6 text-white shadow-[0_20px_80px_rgba(0,0,0,0.35)] backdrop-blur-md">
-              <div className="mb-4 flex items-center justify-between">
-                <span className="font-nav text-xs text-white/60">Now Showing</span>
-                <span className="text-sm text-[#f0d9c0]">{String(currentSlide + 1).padStart(2, '0')}/{String(Math.max(heroBanners.length, 1)).padStart(2, '0')}</span>
-              </div>
-              <h2 className="font-nav text-3xl leading-none text-[#f7f1e8] md:text-4xl">
-                {activeHero?.title || 'Wear The Final Shift'}
-              </h2>
-              <p className="mt-4 text-sm leading-6 text-white/70">
-                {activeHero?.subtitle || 'Built to stand out.'}
-              </p>
-            </div>
-
-            <div className="grid grid-cols-3 gap-3">
-              <div className="rounded-[24px] border border-white/12 bg-black/25 p-4 text-white backdrop-blur-sm">
-                <div className="font-nav text-2xl text-[#d99146]">01</div>
-                <p className="mt-2 font-nav text-xs text-white/62">Fashion Division</p>
-              </div>
-              <div className="rounded-[24px] border border-white/12 bg-black/25 p-4 text-white backdrop-blur-sm">
-                <div className="font-nav text-2xl text-[#d99146]">New</div>
-                <p className="mt-2 font-nav text-xs text-white/62">Premium Drops</p>
-              </div>
-              <div className="rounded-[24px] border border-white/12 bg-black/25 p-4 text-white backdrop-blur-sm">
-                <div className="font-nav text-2xl text-[#d99146]">Bold</div>
-                <p className="mt-2 font-nav text-xs text-white/62">Street Energy</p>
-              </div>
             </div>
           </div>
         </div>
@@ -335,9 +309,7 @@ const Home = () => {
         </div>
 
         {loading ? (
-          <div className="rounded-[28px] border border-black/10 bg-white/70 px-6 py-16 text-center text-black/60">
-            Loading the newest pieces...
-          </div>
+          <BrandLoader minHeight="40vh" eyebrow="Featured" />
         ) : (
           <div className="reveal-row grid grid-cols-2 gap-4 sm:grid-cols-2 sm:gap-6 xl:grid-cols-4">
             {featuredProducts.slice(0, 8).map((product) => {

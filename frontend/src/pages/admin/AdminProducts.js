@@ -193,73 +193,75 @@ const AdminProducts = () => {
       </div>
 
       {/* Products Table */}
-      <div className="bg-white rounded-lg shadow overflow-hidden overflow-x-auto">
-        <table className="w-full min-w-[800px]">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Product</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Category</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Price</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Stock</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Featured</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-200">
-            {filteredProducts.map((product) => (
-              <tr key={product.id} data-testid={`product-row-${product.id}`}>
-                <td className="px-6 py-4">
-                  <div className="flex items-center gap-3">
-                    <img src={product.images[0]} alt={product.name} className="w-12 h-12 object-cover rounded" />
-                    <div>
-                      <div className="font-medium">{product.name}</div>
-                      <div className="text-sm text-gray-500">{product.colors.length} colors</div>
-                    </div>
-                  </div>
-                </td>
-                <td className="px-6 py-4 capitalize">{product.category}</td>
-                <td className="px-6 py-4 font-medium">₹{product.price.toFixed(0)}</td>
-                <td className="px-6 py-4">
-                  <div className="flex flex-col gap-1">
-                    <span className={`w-fit px-2 py-1 rounded text-sm ${product.stock < 10 ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}`}>
-                      Total: {product.stock}
-                    </span>
-                    {product.size_stock && Object.keys(product.size_stock).length > 0 && (
-                      <span className="text-xs text-gray-500">
-                        {Object.entries(product.size_stock).map(([size, amt]) => `${size}:${amt}`).join(', ')}
-                      </span>
-                    )}
-                  </div>
-                </td>
-                <td className="px-6 py-4">
-                  {product.featured ? (
-                    <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded text-sm">Yes</span>
-                  ) : (
-                    <span className="px-2 py-1 bg-gray-100 text-gray-800 rounded text-sm">No</span>
-                  )}
-                </td>
-                <td className="px-6 py-4">
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => handleEdit(product)}
-                      className="p-2 hover:bg-gray-100 rounded"
-                      data-testid={`edit-${product.id}`}
-                    >
-                      <Edit2 size={16} />
-                    </button>
-                    <button
-                      onClick={() => handleDelete(product.id)}
-                      className="p-2 hover:bg-red-100 text-red-600 rounded"
-                      data-testid={`delete-${product.id}`}
-                    >
-                      <Trash2 size={16} />
-                    </button>
-                  </div>
-                </td>
+      <div className="bg-white rounded-lg shadow overflow-hidden">
+        <div className="max-h-[72vh] overflow-auto">
+          <table className="w-full min-w-[800px]">
+            <thead className="bg-gray-50 sticky top-0 z-10">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Product</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Category</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Price</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Stock</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Featured</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="divide-y divide-gray-200">
+              {filteredProducts.map((product) => (
+                <tr key={product.id} data-testid={`product-row-${product.id}`}>
+                  <td className="px-6 py-4">
+                    <div className="flex items-center gap-3">
+                      <img src={product.images[0]} alt={product.name} className="w-12 h-12 object-cover rounded" />
+                      <div>
+                        <div className="font-medium">{product.name}</div>
+                        <div className="text-sm text-gray-500">{product.colors.length} colors</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 capitalize">{product.category}</td>
+                  <td className="px-6 py-4 font-medium">₹{product.price.toFixed(0)}</td>
+                  <td className="px-6 py-4">
+                    <div className="flex flex-col gap-1">
+                      <span className={`w-fit px-2 py-1 rounded text-sm ${product.stock < 10 ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}`}>
+                        Total: {product.stock}
+                      </span>
+                      {product.size_stock && Object.keys(product.size_stock).length > 0 && (
+                        <span className="text-xs text-gray-500">
+                          {Object.entries(product.size_stock).map(([size, amt]) => `${size}:${amt}`).join(', ')}
+                        </span>
+                      )}
+                    </div>
+                  </td>
+                  <td className="px-6 py-4">
+                    {product.featured ? (
+                      <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded text-sm">Yes</span>
+                    ) : (
+                      <span className="px-2 py-1 bg-gray-100 text-gray-800 rounded text-sm">No</span>
+                    )}
+                  </td>
+                  <td className="px-6 py-4">
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => handleEdit(product)}
+                        className="p-2 hover:bg-gray-100 rounded"
+                        data-testid={`edit-${product.id}`}
+                      >
+                        <Edit2 size={16} />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(product.id)}
+                        className="p-2 hover:bg-red-100 text-red-600 rounded"
+                        data-testid={`delete-${product.id}`}
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       {/* Add/Edit Modal */}

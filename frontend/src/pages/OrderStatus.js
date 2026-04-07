@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import axios from 'axios';
 import { format } from 'date-fns';
 import { Loader, Zap, Crosshair, Cpu, CheckCircle, AlertTriangle } from 'lucide-react';
+import BrandLoader from '../components/BrandLoader';
 import { toast } from 'sonner';
 
 const OrderStatusPage = () => {
@@ -50,20 +51,7 @@ const OrderStatusPage = () => {
     };
 
     if (loading) {
-        return (
-            <div className="min-h-screen bg-[#0a0a0a] text-white flex items-center justify-center font-mono pt-20">
-                <div className="text-center space-y-4">
-                    <div className="relative mx-auto w-24 h-24">
-                        <div className="absolute inset-0 border-4 border-t-[#ff003c] border-gray-800 rounded-full animate-spin"></div>
-                        <div className="absolute inset-2 border-4 border-b-[#00f3ff] border-gray-800 rounded-full animate-spin-reverse"></div>
-                        <Loader className="absolute inset-0 m-auto text-[#ff003c] animate-pulse" size={32} />
-                    </div>
-                    <p className="text-[#ff003c] text-xl tracking-[0.2em] animate-pulse">
-                        LOADING TELEMETRY...
-                    </p>
-                </div>
-            </div>
-        );
+        return <BrandLoader fullScreen eyebrow="Telemetry" />;
     }
 
     if (error || !order) {

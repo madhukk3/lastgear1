@@ -103,6 +103,19 @@ class SubscriberBroadcastRequest(BaseModel):
     cta_link: Optional[str] = None
     recipient_emails: Optional[List[str]] = None
 
+
+@admin_router.get("/session")
+async def admin_session(admin_user: Dict = Depends(verify_admin)):
+    return {
+        "ok": True,
+        "user": {
+            "id": admin_user.get("id"),
+            "email": admin_user.get("email"),
+            "name": admin_user.get("name"),
+            "is_admin": True
+        }
+    }
+
 # --- IMPACT SERIES MODELS ---
 class ImpactSeries(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))

@@ -4,6 +4,7 @@ import axios from 'axios';
 import { ChevronDown } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useSettings } from '../context/SettingsContext';
+import BrandLoader from '../components/BrandLoader';
 import { toast } from 'sonner';
 
 const Products = () => {
@@ -40,20 +41,31 @@ const Products = () => {
   ];
 
   useEffect(() => {
-    fetchProducts();
+    const nextFilters = {
+      category: searchParams.get('category') || '',
+      search: searchParams.get('search') || '',
+      color: searchParams.get('color') || '',
+      size: searchParams.get('size') || '',
+      min_price: searchParams.get('min_price') || '',
+      max_price: searchParams.get('max_price') || '',
+      impact_series_id: searchParams.get('impact_series_id') || '',
+    };
+
+    setFilters(nextFilters);
+    fetchProducts(nextFilters);
   }, [searchParams]);
 
-  const fetchProducts = async () => {
+  const fetchProducts = async (activeFilters = filters) => {
     try {
       setLoading(true);
       const params = new URLSearchParams();
-      if (filters.category) params.append('category', filters.category);
-      if (filters.search) params.append('search', filters.search);
-      if (filters.color) params.append('color', filters.color);
-      if (filters.size) params.append('size', filters.size);
-      if (filters.min_price) params.append('min_price', filters.min_price);
-      if (filters.max_price) params.append('max_price', filters.max_price);
-      if (filters.impact_series_id) params.append('impact_series_id', filters.impact_series_id);
+      if (activeFilters.category) params.append('category', activeFilters.category);
+      if (activeFilters.search) params.append('search', activeFilters.search);
+      if (activeFilters.color) params.append('color', activeFilters.color);
+      if (activeFilters.size) params.append('size', activeFilters.size);
+      if (activeFilters.min_price) params.append('min_price', activeFilters.min_price);
+      if (activeFilters.max_price) params.append('max_price', activeFilters.max_price);
+      if (activeFilters.impact_series_id) params.append('impact_series_id', activeFilters.impact_series_id);
 
       const response = await axios.get(`${API}/products?${params}`);
       setProducts(response.data);
@@ -212,7 +224,7 @@ const Products = () => {
       {/* Products Grid */}
       <div className="max-w-7xl mx-auto px-4 py-12">
         {loading ? (
-          <div className="text-center py-20">Loading products...</div>
+          <BrandLoader minHeight="48vh" eyebrow="Products" />
         ) : products.length === 0 ? (
           <div className="text-center py-20">
             <p className="text-xl text-gray-600">No products found</p>

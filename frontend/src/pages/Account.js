@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
-import { User as UserIcon, Package, LogOut, Heart } from 'lucide-react';
+import { User as UserIcon, Package, LogOut, Heart, MapPin, ArrowRight, ShoppingBag, Truck } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'sonner';
 
@@ -15,6 +15,20 @@ const Account = () => {
 
   const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
   const API = `${BACKEND_URL}/api`;
+
+  const sortedOrders = useMemo(
+    () => [...orders].sort((a, b) => new Date(b.created_at) - new Date(a.created_at)),
+    [orders]
+  );
+
+  const latestOrder = sortedOrders[0] || null;
+  const latestShippingAddress = latestOrder?.shipping_address || null;
+
+  const formatStatus = (status) => (status || '').replace(/_/g, ' ').toUpperCase();
+  const formatDate = (value) =>
+    value
+      ? new Date(value).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })
+      : '---';
 
   useEffect(() => {
     if (!user) {
@@ -58,18 +72,19 @@ const Account = () => {
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-12" data-testid="account-page">
-      <h1 className="text-4xl font-bold mb-8">MY ACCOUNT</h1>
+      <h1 className="font-puma text-4xl mb-8">MY ACCOUNT</h1>
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
         {/* Sidebar */}
         <div className="lg:col-span-1">
-          <div className="bg-gray-50 p-6 space-y-4" data-testid="account-sidebar">
+          <div className="bg-white border border-black/10 p-6 space-y-5 shadow-[0_18px_50px_-35px_rgba(18,14,11,0.35)]" data-testid="account-sidebar">
             <div className="pb-4 border-b border-gray-300">
               <div className="flex items-center gap-3 mb-2">
                 <UserIcon size={20} />
-                <span className="font-bold">{user.name}</span>
+                <span className="font-nav text-base">{user.name}</span>
               </div>
               <p className="text-sm text-gray-600">{user.email}</p>
+              {user.phone && <p className="mt-1 text-xs text-gray-500">{user.phone}</p>}
             </div>
             <button
               onClick={() => setActiveTab('orders')}
@@ -89,6 +104,14 @@ const Account = () => {
               <span className="font-medium">Wishlist</span>
             </button>
             <button
+              onClick={() => navigate('/products')}
+              className="w-full text-left px-4 py-3 flex items-center gap-3 hover:bg-gray-200 transition-colors"
+              data-testid="continue-shopping-button"
+            >
+              <ShoppingBag size={20} />
+              <span className="font-medium">Continue Shopping</span>
+            </button>
+            <button
               onClick={handleLogout}
               className="w-full text-left px-4 py-3 flex items-center gap-3 hover:bg-red-600 hover:text-white transition-colors"
               data-testid="logout-button"
@@ -96,6 +119,23 @@ const Account = () => {
               <LogOut size={20} />
               <span className="font-medium">Logout</span>
             </button>
+
+            {latestShippingAddress && (
+              <div className="pt-4 border-t border-gray-200">
+                <div className="flex items-center gap-2 text-[11px] text-gray-500 uppercase tracking-[0.22em] mb-3">
+                  <MapPin size={14} />
+                  <span>Recent Delivery</span>
+                </div>
+                <div className="bg-[#f7f3ed] border border-black/5 p-4 text-sm leading-6">
+                  <p className="font-nav text-sm text-black">{latestShippingAddress.full_name}</p>
+                  <p className="text-gray-700">{latestShippingAddress.address_line1}</p>
+                  {latestShippingAddress.address_line2 && <p className="text-gray-700">{latestShippingAddress.address_line2}</p>}
+                  <p className="text-gray-700">
+                    {latestShippingAddress.city}, {latestShippingAddress.state} {latestShippingAddress.postal_code}
+                  </p>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
@@ -103,10 +143,45 @@ const Account = () => {
         <div className="lg:col-span-3">
           {activeTab === 'orders' && (
             <div data-testid="orders-section">
-              <h2 className="text-2xl font-bold mb-6">ORDER HISTORY</h2>
+              {latestOrder && (
+                <div className="mb-8 border border-black/10 bg-white p-6 shadow-[0_18px_50px_-35px_rgba(18,14,11,0.25)]">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-5">
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-2 text-[11px] text-gray-500 uppercase tracking-[0.22em]">
+                        <Truck size={14} />
+                        <span>Latest Order</span>
+                      </div>
+                      <div>
+                        <h2 className="font-puma text-3xl leading-none">
+                          {latestOrder.items && latestOrder.items.length > 0 ? latestOrder.items[0].name : latestOrder.id}
+                        </h2>
+                        <p className="mt-2 text-sm text-gray-600">
+                          {formatDate(latestOrder.created_at)} • {latestOrder.items?.length || 0} Item{latestOrder.items?.length !== 1 ? 's' : ''}
+                        </p>
+                      </div>
+                      <div className="flex flex-wrap items-center gap-3">
+                        <span className="inline-flex items-center rounded-full bg-black px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] text-white">
+                          {formatStatus(latestOrder.order_status)}
+                        </span>
+                        <span className="text-lg font-black">₹{Number(latestOrder.total_amount || 0).toFixed(0)}</span>
+                      </div>
+                    </div>
+
+                    <Link
+                      to={`/account/orders/${latestOrder.id}`}
+                      className="inline-flex items-center justify-center gap-2 border border-black bg-black px-6 py-3 font-nav text-sm text-white transition-colors hover:bg-white hover:text-black"
+                    >
+                      Track Latest Order
+                      <ArrowRight size={16} />
+                    </Link>
+                  </div>
+                </div>
+              )}
+
+              <h2 className="font-puma text-2xl mb-6">ORDER HISTORY</h2>
               {loading ? (
                 <div className="text-center py-12">Loading orders...</div>
-              ) : orders.length === 0 ? (
+              ) : sortedOrders.length === 0 ? (
                 <div className="text-center py-12" data-testid="no-orders">
                   <Package size={48} className="mx-auto mb-4 text-gray-400" />
                   <p className="text-xl text-gray-600 mb-4">No orders yet</p>
@@ -119,7 +194,7 @@ const Account = () => {
                 </div>
               ) : (
                 <div className="space-y-6 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">
-                  {orders.map((order) => (
+                  {sortedOrders.map((order) => (
                     <Link
                       to={`/account/orders/${order.id}`}
                       key={order.id}
@@ -135,11 +210,11 @@ const Account = () => {
                                 : order.id}
                             </span>
                             <span className="inline-block flex-shrink-0 px-2 py-0.5 text-[10px] font-bold uppercase rounded bg-gray-100 text-gray-800 tracking-wider">
-                              {order.order_status}
+                              {formatStatus(order.order_status)}
                             </span>
                           </div>
                           <span className="text-xs text-gray-500 font-mono">
-                            {new Date(order.created_at).toLocaleDateString()} • {order.items.length} Item{order.items.length !== 1 ? 's' : ''}
+                            {formatDate(order.created_at)} • {order.items.length} Item{order.items.length !== 1 ? 's' : ''}
                           </span>
                         </div>
 

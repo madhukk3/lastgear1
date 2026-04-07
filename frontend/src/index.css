@@ -115,6 +115,34 @@ code {
   text-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
 }
 
+.hero-title-3d {
+  color: #fbf6ef;
+  text-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.25),
+    0 2px 0 rgba(236, 223, 208, 0.2),
+    0 8px 18px rgba(0, 0, 0, 0.26),
+    0 0 18px rgba(255, 255, 255, 0.14);
+}
+
+.hero-title-top,
+.hero-title-bottom {
+  position: relative;
+  display: block;
+}
+
+.hero-title-top {
+  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.18));
+}
+
+.hero-title-bottom {
+  -webkit-text-stroke: 1px rgba(18, 14, 11, 0.45);
+  text-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.22),
+    0 3px 0 rgba(170, 154, 136, 0.16),
+    0 10px 20px rgba(0, 0, 0, 0.3),
+    0 0 20px rgba(255, 255, 255, 0.16);
+}
+
 .lastgear-grid {
   background-image:
     linear-gradient(rgba(255, 255, 255, 0.09) 1px, transparent 1px),
@@ -147,6 +175,15 @@ code {
 .pulse-glow {
   box-shadow: 0 0 0 rgba(217, 145, 70, 0);
   animation: pulseGlow 3.6s ease-in-out infinite;
+}
+
+.loader-bolt-float {
+  animation: loaderBoltFloat 2.6s ease-in-out infinite;
+}
+
+.loader-bar {
+  animation: loaderBar 1.2s ease-in-out infinite;
+  transform-origin: center bottom;
 }
 
 .shimmer-link,
@@ -260,6 +297,28 @@ code {
   }
   50% {
     box-shadow: 0 10px 30px rgba(217, 145, 70, 0.22);
+  }
+}
+
+@keyframes loaderBoltFloat {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+  50% {
+    transform: translate3d(0, -5px, 0);
+  }
+}
+
+@keyframes loaderBar {
+  0%,
+  100% {
+    transform: scaleY(0.72);
+    opacity: 0.45;
+  }
+  50% {
+    transform: scaleY(1.08);
+    opacity: 1;
   }
 }
 

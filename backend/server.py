@@ -3,7 +3,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, APIRouter, HTTPException, Depends, Request, Header, BackgroundTasks, UploadFile, File, Form, Query, Response, status
 from fastapi.staticfiles import StaticFiles
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, JSONResponse
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from starlette.middleware.trustedhost import TrustedHostMiddleware
@@ -25,6 +25,7 @@ import bcrypt
 import razorpay
 import hmac
 import hashlib
+from urllib.parse import urlparse
 from notifications import send_order_email, send_exchange_request_email, send_subscriber_welcome_email
 # from emergentintegrations.llm.chat import LlmChat, UserMessage
 from slowapi import Limiter, _rate_limit_exceeded_handler
@@ -58,6 +59,10 @@ APP_ENV = os.environ.get('ENVIRONMENT', os.environ.get('ENV', 'development')).lo
 COOKIE_SECURE = os.environ.get('COOKIE_SECURE', 'true' if APP_ENV == 'production' else 'false').lower() == 'true'
 COOKIE_SAMESITE = os.environ.get('COOKIE_SAMESITE', 'none' if COOKIE_SECURE else 'lax')
 TRUSTED_HOSTS = [host.strip() for host in os.environ.get('TRUSTED_HOSTS', '').split(',') if host.strip()]
+FORCE_HTTPS = os.environ.get('FORCE_HTTPS', 'true' if APP_ENV == 'production' else 'false').lower() == 'true'
+TRUST_PROXY_HEADERS = os.environ.get('TRUST_PROXY_HEADERS', 'true').lower() == 'true'
+MAX_REQUEST_SIZE_MB = int(os.environ.get('MAX_REQUEST_SIZE_MB', '5'))
+MAX_REQUEST_SIZE_BYTES = MAX_REQUEST_SIZE_MB * 1024 * 1024
 
 DEFAULT_ALLOWED_ORIGINS = [
     "http://localhost:3000",
@@ -85,6 +90,30 @@ GOOGLE_CLIENT_ID = os.environ.get('GOOGLE_CLIENT_ID', 'YOUR_GOOGLE_CLIENT_ID')
 
 security = HTTPBearer(auto_error=False)
 
+
+def _get_effective_scheme(request: Request) -> str:
+    if TRUST_PROXY_HEADERS:
+        forwarded_proto = request.headers.get("x-forwarded-proto", "").split(",")[0].strip()
+        if forwarded_proto:
+            return forwarded_proto
+    return request.url.scheme
+
+
+def _matches_allowed_origin(source: str) -> bool:
+    if not source:
+        return True
+
+    try:
+        parsed = urlparse(source)
+    except Exception:
+        return False
+
+    if not parsed.scheme or not parsed.netloc:
+        return False
+
+    normalized = f"{parsed.scheme}://{parsed.netloc}"
+    return normalized in ALLOWED_ORIGINS
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup execution
@@ -103,28 +132,58 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 @app.middleware("http")
 async def add_security_headers(request: Request, call_next):
     response = await call_next(request)
-    # Prevent clickjacking
     response.headers["X-Frame-Options"] = "DENY"
-    # Prevent MIME sniffing
     response.headers["X-Content-Type-Options"] = "nosniff"
-    # Enable XSS protection
     response.headers["X-XSS-Protection"] = "1; mode=block"
-    # Content Security Policy
-    response.headers["Content-Security-Policy"] = "default-src 'self' https:; script-src 'self' 'unsafe-inline' https://checkout.razorpay.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' https: data:; connect-src 'self' https:;"
-    # Strict Transport Security
-    response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
-    # Referrer Policy
     response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
-    # Permissions Policy
     response.headers["Permissions-Policy"] = "geolocation=(), microphone=(), camera=()"
+    response.headers["Cross-Origin-Opener-Policy"] = "same-origin"
+    response.headers["Cross-Origin-Resource-Policy"] = "cross-origin"
+    response.headers["Cross-Origin-Embedder-Policy"] = "unsafe-none"
+    response.headers["Content-Security-Policy"] = (
+        "default-src 'self' https:; "
+        "base-uri 'self'; "
+        "object-src 'none'; "
+        "frame-ancestors 'none'; "
+        "script-src 'self' 'unsafe-inline' https://checkout.razorpay.com https://accounts.google.com https://apis.google.com; "
+        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
+        "font-src 'self' https://fonts.gstatic.com data:; "
+        "img-src 'self' https: data: blob:; "
+        "connect-src 'self' https: wss:; "
+        "frame-src 'self' https://api.razorpay.com https://checkout.razorpay.com https://accounts.google.com;"
+    )
+    if FORCE_HTTPS or COOKIE_SECURE:
+        response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains; preload"
     return response
 
 @app.middleware("http")
 async def enforce_browser_origin(request: Request, call_next):
+    if request.method not in {"GET", "HEAD", "OPTIONS", "POST", "PUT", "PATCH", "DELETE"}:
+        return JSONResponse(status_code=405, content={"detail": "Method not allowed"})
+
+    content_length = request.headers.get("content-length")
+    if content_length:
+        try:
+            if int(content_length) > MAX_REQUEST_SIZE_BYTES:
+                return JSONResponse(
+                    status_code=413,
+                    content={"detail": f"Request too large. Max {MAX_REQUEST_SIZE_MB}MB allowed."}
+                )
+        except ValueError:
+            return JSONResponse(status_code=400, content={"detail": "Invalid Content-Length header"})
+
+    if FORCE_HTTPS and _get_effective_scheme(request) != "https":
+        return JSONResponse(status_code=400, content={"detail": "HTTPS is required"})
+
     if request.method in {"POST", "PUT", "PATCH", "DELETE"}:
         origin = request.headers.get("origin")
-        if origin and origin not in ALLOWED_ORIGINS:
-            raise HTTPException(status_code=403, detail="Blocked origin")
+        referer = request.headers.get("referer")
+
+        if origin and not _matches_allowed_origin(origin):
+            return JSONResponse(status_code=403, content={"detail": "Blocked origin"})
+        if not origin and referer and not _matches_allowed_origin(referer):
+            return JSONResponse(status_code=403, content={"detail": "Blocked referer"})
+
     return await call_next(request)
 
 @app.exception_handler(RequestValidationError)
@@ -1502,8 +1561,8 @@ app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
     allow_origins=ALLOWED_ORIGINS,
-    allow_methods=["GET", "POST", "PUT", "DELETE", "PATCH"],
-    allow_headers=["Authorization", "Content-Type", "Accept", "Origin", "X-Requested-With"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+    allow_headers=["Authorization", "Content-Type", "Accept", "Origin", "Referer", "X-Requested-With", "X-CSRF-Token"],
     max_age=3600,
 )
 

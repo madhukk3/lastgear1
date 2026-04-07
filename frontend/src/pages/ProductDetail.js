@@ -6,6 +6,7 @@ import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import { useSettings } from '../context/SettingsContext';
 import BackButton from '../components/BackButton';
+import BrandLoader from '../components/BrandLoader';
 import { toast } from 'sonner';
 
 const ProductDetail = () => {
@@ -163,7 +164,7 @@ const ProductDetail = () => {
   };
 
   if (loading) {
-    return <div className="max-w-7xl mx-auto px-4 py-20 text-center">Loading...</div>;
+    return <BrandLoader minHeight="72vh" eyebrow="Product" />;
   }
 
   if (!product) {
@@ -315,35 +316,35 @@ const ProductDetail = () => {
                 )}
               </button>
 
-              <button
-                onClick={handleBuyNow}
-                disabled={addingToCart || buyingNow || currentStock === 0}
-                className="flex-1 bg-black text-white py-4 font-bold uppercase tracking-wider hover:bg-gray-800 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                data-testid="buy-now-button"
-              >
-                {buyingNow ? (
-                  'PROCESSING...'
-                ) : currentStock === 0 ? (
-                  'OUT OF STOCK'
-                ) : (
-                  'BUY NOW'
-                )}
-              </button>
+              {user && (
+                <button
+                  onClick={toggleWishlist}
+                  className={`flex-1 border-2 py-4 font-bold uppercase tracking-wider transition-colors flex items-center justify-center gap-2 ${isInWishlist
+                    ? 'border-black bg-black text-white'
+                    : 'border-black text-black hover:bg-black hover:text-white'
+                    }`}
+                  data-testid="wishlist-button"
+                >
+                  <Heart size={20} fill={isInWishlist ? 'currentColor' : 'none'} />
+                  {isInWishlist ? 'IN WISHLIST' : 'ADD TO WISHLIST'}
+                </button>
+              )}
             </div>
 
-            {user && (
-              <button
-                onClick={toggleWishlist}
-                className={`w-full border-2 py-4 font-bold uppercase tracking-wider transition-colors flex items-center justify-center gap-2 ${isInWishlist
-                  ? 'border-black bg-black text-white'
-                  : 'border-black text-black hover:bg-black hover:text-white'
-                  }`}
-                data-testid="wishlist-button"
-              >
-                <Heart size={20} fill={isInWishlist ? 'currentColor' : 'none'} />
-                {isInWishlist ? 'IN WISHLIST' : 'ADD TO WISHLIST'}
-              </button>
-            )}
+            <button
+              onClick={handleBuyNow}
+              disabled={addingToCart || buyingNow || currentStock === 0}
+              className="w-full bg-black text-white py-4 font-bold uppercase tracking-wider hover:bg-gray-800 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              data-testid="buy-now-button"
+            >
+              {buyingNow ? (
+                'PROCESSING...'
+              ) : currentStock === 0 ? (
+                'OUT OF STOCK'
+              ) : (
+                'BUY NOW'
+              )}
+            </button>
           </div>
 
           {/* Stock Info */}
