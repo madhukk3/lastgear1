@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Search, Heart, ShoppingCart, User, Menu, X } from 'lucide-react';
+import { Search, Heart, ShoppingCart, User, Menu, X, ChevronLeft } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import axios from 'axios';
@@ -17,6 +17,7 @@ const Header = () => {
 
   const [recommendations, setRecommendations] = useState([]);
   const [suggestedProducts, setSuggestedProducts] = useState([]);
+  const [recentlyViewedProducts, setRecentlyViewedProducts] = useState([]);
   const [showDropdown, setShowDropdown] = useState(false);
   const searchRef = useRef(null);
   const headerShellRef = useRef(null);
@@ -74,6 +75,17 @@ const Header = () => {
 
     fetchSuggestedProducts();
   }, [API, searchOpen, suggestedProducts.length]);
+
+  useEffect(() => {
+    if (!searchOpen || typeof window === 'undefined') return;
+
+    try {
+      const savedProducts = JSON.parse(localStorage.getItem('lastgear_recently_viewed') || '[]');
+      setRecentlyViewedProducts(Array.isArray(savedProducts) ? savedProducts.slice(0, 4) : []);
+    } catch (error) {
+      setRecentlyViewedProducts([]);
+    }
+  }, [searchOpen, location.pathname]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -400,101 +412,227 @@ const Header = () => {
 
           {/* Search Bar */}
           {searchOpen && (
-            <div className="relative border-t border-white/10 py-4" data-testid="search-bar" ref={searchRef}>
-              <form onSubmit={handleSearch} className="flex">
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => {
-                    setSearchQuery(e.target.value);
-                    setShowDropdown(true);
-                  }}
-                  onFocus={() => {
-                    if (recommendations.length > 0) setShowDropdown(true);
-                  }}
-                  placeholder="Search products..."
-                  className="flex-1 rounded-l-full border border-white/15 bg-white/8 px-5 py-3 text-sm text-white placeholder:text-white/40 focus:outline-none focus:ring-1 focus:ring-[#d99146]"
-                  data-testid="search-input"
-                />
-                <button type="submit" className="rounded-r-full bg-[#f1e6d8] px-6 py-3 text-sm font-bold uppercase tracking-[0.2em] text-[#120e0b] transition-colors hover:bg-white" data-testid="search-submit">
-                  SEARCH
-                </button>
-              </form>
+            <div
+              className={`${isMobileHeader ? 'bg-white text-black' : 'relative border-t border-white/10 py-4'}`}
+              data-testid="search-bar"
+              ref={searchRef}
+            >
+              {isMobileHeader ? (
+                <div className="mx-[-1rem] min-h-[calc(100vh-56px)] bg-white px-5 py-5">
+                  <div className="flex items-center gap-4">
+                    <button
+                      type="button"
+                      onClick={closeSearchPanel}
+                      className="text-[#16120d] transition-colors hover:text-[#8d5f32]"
+                      data-testid="search-back-button"
+                    >
+                      <ChevronLeft size={22} strokeWidth={2.2} />
+                    </button>
 
-              <div className="absolute top-full left-0 z-50 mt-2 w-full overflow-hidden rounded-[24px] border border-black/10 bg-white text-black shadow-lg">
-                <div className="max-h-[75vh] overflow-y-auto px-4 py-4">
-                  {searchQuery.trim().length > 1 ? (
-                    <>
-                      <div className="border-b border-gray-100 px-1 pb-3 text-xs font-bold uppercase tracking-[0.2em] text-gray-500">
-                        Search Results
+                    <form onSubmit={handleSearch} className="flex-1">
+                      <div className="flex items-center gap-3 border-2 border-[#7e858e] bg-white px-4 py-3 shadow-[0_0_0_1px_rgba(22,18,13,0.1),0_3px_8px_rgba(22,18,13,0.18)]">
+                        <input
+                          type="text"
+                          value={searchQuery}
+                          onChange={(e) => setSearchQuery(e.target.value)}
+                          placeholder="SEARCH LAST GEAR"
+                          className="flex-1 bg-transparent text-sm text-[#16120d] placeholder:text-[#a4aab3] focus:outline-none"
+                          data-testid="search-input"
+                          autoFocus
+                        />
+                        <button type="submit" className="text-[#16120d]" data-testid="search-submit">
+                          <Search size={20} strokeWidth={2.1} />
+                        </button>
                       </div>
-                      {recommendations.length > 0 ? (
-                        <ul className="mt-2">
-                          {recommendations.map((product) => (
-                            <li key={product.id}>
+                    </form>
+                  </div>
+
+                  <div className="mt-8 space-y-10">
+                    {searchQuery.trim().length > 1 ? (
+                      <div>
+                        <div className="font-puma text-[13px] tracking-[0.08em] text-[#16120d]">
+                          SEARCH RESULTS
+                        </div>
+                        {recommendations.length > 0 ? (
+                          <div className="mt-5 space-y-5">
+                            {recommendations.map((product) => (
                               <Link
+                                key={product.id}
                                 to={`/products/${product.id}`}
-                                className="flex items-center gap-4 border-b border-gray-100 px-1 py-3 transition-colors hover:bg-gray-50"
+                                className="flex items-start gap-4"
                                 onClick={closeSearchPanel}
                               >
-                                <img src={product.images[0]} alt={product.name} className="h-16 w-12 object-cover" />
-                                <div>
-                                  <p className="font-bold text-sm uppercase">{product.name}</p>
-                                  <p className="mt-1 text-sm text-gray-600">₹{product.price.toFixed(0)}</p>
+                                <img src={product.images[0]} alt={product.name} className="h-20 w-16 bg-[#f7f7f7] object-cover" />
+                                <div className="flex-1">
+                                  <p className="font-semibold text-[15px] leading-6 text-[#16120d]">{product.name}</p>
+                                  <p className="mt-1 text-[15px] font-semibold text-[#c44b33]">₹{product.price.toFixed(0)}</p>
                                 </div>
                               </Link>
-                            </li>
-                          ))}
-                        </ul>
-                      ) : (
-                        <div className="px-1 py-6 text-sm text-gray-500">No matching products yet.</div>
-                      )}
-                    </>
-                  ) : (
-                    <div className="space-y-8">
-                      <div>
-                        <div className="text-xs font-bold uppercase tracking-[0.2em] text-gray-500">
-                          Trending Searches
-                        </div>
-                        <div className="mt-4 flex flex-col gap-4">
-                          {trendingSearches.map((term) => (
-                            <button
-                              key={term}
-                              type="button"
-                              onClick={() => handleTrendingSearchClick(term)}
-                              className="text-left text-base font-bold text-[#16120d] transition-colors hover:text-[#8d5f32]"
-                            >
-                              {term}
-                            </button>
-                          ))}
-                        </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <div className="mt-5 text-sm text-gray-500">No matching products yet.</div>
+                        )}
                       </div>
+                    ) : (
+                      <>
+                        <div>
+                          <div className="font-puma text-[13px] tracking-[0.08em] text-[#16120d]">
+                            TRENDING SEARCHES
+                          </div>
+                          <div className="mt-5 flex flex-col gap-4">
+                            {trendingSearches.map((term) => (
+                              <button
+                                key={term}
+                                type="button"
+                                onClick={() => handleTrendingSearchClick(term)}
+                                className="text-left text-[15px] font-semibold text-[#16120d] transition-colors hover:text-[#8d5f32]"
+                              >
+                                {term}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
 
-                      <div>
-                        <div className="text-xs font-bold uppercase tracking-[0.2em] text-gray-500">
-                          Suggested Products
+                        <div>
+                          <div className="font-puma text-[13px] tracking-[0.08em] text-[#16120d]">
+                            RECENTLY VIEWED
+                          </div>
+                          <div className="mt-5 space-y-5">
+                            {(recentlyViewedProducts.length > 0 ? recentlyViewedProducts : suggestedProducts).map((product) => (
+                              <Link
+                                key={product.id}
+                                to={`/products/${product.id}`}
+                                className="flex items-start gap-4"
+                                onClick={closeSearchPanel}
+                              >
+                                <img src={product.images[0]} alt={product.name} className="h-20 w-16 bg-[#f7f7f7] object-cover" />
+                                <div className="flex-1">
+                                  <p className="font-semibold text-[15px] leading-6 text-[#16120d]">{product.name}</p>
+                                  <p className="mt-1 text-[15px] font-semibold text-[#c44b33]">₹{product.price.toFixed(0)}</p>
+                                </div>
+                              </Link>
+                            ))}
+                          </div>
                         </div>
-                        <div className="mt-4 space-y-4">
-                          {suggestedProducts.map((product) => (
-                            <Link
-                              key={product.id}
-                              to={`/products/${product.id}`}
-                              className="flex items-center gap-4 transition-colors hover:bg-gray-50"
-                              onClick={closeSearchPanel}
-                            >
-                              <img src={product.images[0]} alt={product.name} className="h-20 w-16 bg-gray-100 object-cover" />
-                              <div>
-                                <p className="font-bold text-sm uppercase leading-5">{product.name}</p>
-                                <p className="mt-2 text-sm font-medium text-[#c44b33]">₹{product.price.toFixed(0)}</p>
-                              </div>
-                            </Link>
-                          ))}
-                        </div>
+                      </>
+                    )}
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <div className="absolute left-1/2 top-full z-50 mt-3 w-[min(1120px,calc(100vw-40px))] -translate-x-1/2 overflow-hidden border border-black/10 bg-white text-black shadow-[0_24px_80px_-40px_rgba(18,14,11,0.45)]">
+                    <div className="border-b border-black/10 px-6 py-6">
+                      <div className="flex items-center gap-4">
+                        <form onSubmit={handleSearch} className="flex-1">
+                          <div className="flex items-center gap-3 border-2 border-[#7e858e] bg-white px-4 py-3 shadow-[0_0_0_1px_rgba(22,18,13,0.1),0_3px_8px_rgba(22,18,13,0.18)]">
+                            <input
+                              type="text"
+                              value={searchQuery}
+                              onChange={(e) => {
+                                setSearchQuery(e.target.value);
+                                setShowDropdown(true);
+                              }}
+                              onFocus={() => {
+                                if (recommendations.length > 0) setShowDropdown(true);
+                              }}
+                              placeholder="SEARCH LAST GEAR"
+                              className="flex-1 bg-transparent text-sm text-[#16120d] placeholder:text-[#a4aab3] focus:outline-none"
+                              data-testid="search-input"
+                              autoFocus
+                            />
+                            <button type="submit" className="text-[#16120d]" data-testid="search-submit">
+                              <Search size={20} strokeWidth={2.1} />
+                            </button>
+                          </div>
+                        </form>
+
+                        <button
+                          type="button"
+                          onClick={closeSearchPanel}
+                          className="text-[#16120d] transition-colors hover:text-[#8d5f32]"
+                          data-testid="search-close-button-desktop"
+                        >
+                          <ChevronLeft size={22} strokeWidth={2.2} />
+                        </button>
                       </div>
                     </div>
-                  )}
-                </div>
-              </div>
+
+                    <div className="max-h-[70vh] overflow-y-auto px-6 py-7">
+                      {searchQuery.trim().length > 1 ? (
+                        <>
+                          <div className="border-b border-gray-100 pb-3 text-xs font-bold uppercase tracking-[0.2em] text-gray-500">
+                            Search Results
+                          </div>
+                          {recommendations.length > 0 ? (
+                            <ul className="mt-4 grid grid-cols-2 gap-x-10 gap-y-5">
+                              {recommendations.map((product) => (
+                                <li key={product.id}>
+                                  <Link
+                                    to={`/products/${product.id}`}
+                                    className="flex items-start gap-4"
+                                    onClick={closeSearchPanel}
+                                  >
+                                    <img src={product.images[0]} alt={product.name} className="h-20 w-16 bg-[#f7f7f7] object-cover" />
+                                    <div className="flex-1">
+                                      <p className="font-semibold text-[15px] leading-6 text-[#16120d]">{product.name}</p>
+                                      <p className="mt-1 text-[15px] font-semibold text-[#c44b33]">₹{product.price.toFixed(0)}</p>
+                                    </div>
+                                  </Link>
+                                </li>
+                              ))}
+                            </ul>
+                          ) : (
+                            <div className="px-1 py-6 text-sm text-gray-500">No matching products yet.</div>
+                          )}
+                        </>
+                      ) : (
+                        <div className="grid grid-cols-[280px_minmax(0,1fr)] gap-14">
+                          <div>
+                            <div className="font-puma text-[13px] tracking-[0.08em] text-[#16120d]">
+                              Trending Searches
+                            </div>
+                            <div className="mt-4 flex flex-col gap-4">
+                              {trendingSearches.map((term) => (
+                                <button
+                                  key={term}
+                                  type="button"
+                                  onClick={() => handleTrendingSearchClick(term)}
+                                  className="text-left text-[15px] font-semibold text-[#16120d] transition-colors hover:text-[#8d5f32]"
+                                >
+                                  {term}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+
+                          <div>
+                            <div className="font-puma text-[13px] tracking-[0.08em] text-[#16120d]">
+                              Recently Viewed
+                            </div>
+                            <div className="mt-4 grid grid-cols-2 gap-x-10 gap-y-5">
+                              {(recentlyViewedProducts.length > 0 ? recentlyViewedProducts : suggestedProducts).map((product) => (
+                                <Link
+                                  key={product.id}
+                                  to={`/products/${product.id}`}
+                                  className="flex items-start gap-4"
+                                  onClick={closeSearchPanel}
+                                >
+                                  <img src={product.images[0]} alt={product.name} className="h-20 w-16 bg-[#f7f7f7] object-cover" />
+                                  <div className="flex-1">
+                                    <p className="font-semibold text-[15px] leading-6 text-[#16120d]">{product.name}</p>
+                                    <p className="mt-1 text-[15px] font-semibold text-[#c44b33]">₹{product.price.toFixed(0)}</p>
+                                  </div>
+                                </Link>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
           )}
 

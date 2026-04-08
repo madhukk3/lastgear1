@@ -80,6 +80,12 @@ BLOCKED_NEWSLETTER_LOCAL_PARTS = {
     "asdf", "qwer", "test", "admin", "zdda", "abcd", "abcde", "qwerty", "zxca", "hello"
 }
 
+PRODUCT_SEARCH_CATEGORY_ALIASES = {
+    "tshirts": ["t-shirts", "t shirts", "tshirt", "t shirt", "tee", "tees", "crew tee", "v neck tee"],
+    "hoodies": ["hoodies", "hoodie", "pullover hoodie", "zip hoodie"],
+    "impactseries": ["impact series", "impact", "series"],
+}
+
 # Razorpay Configuration
 razorpay_key_id = os.environ.get('RAZORPAY_KEY_ID')
 razorpay_key_secret = os.environ.get('RAZORPAY_KEY_SECRET')
@@ -113,6 +119,37 @@ def _matches_allowed_origin(source: str) -> bool:
 
     normalized = f"{parsed.scheme}://{parsed.netloc}"
     return normalized in ALLOWED_ORIGINS
+
+
+def _normalize_search_term(value: str) -> str:
+    return re.sub(r"[^a-z0-9]+", "", value.lower()).strip()
+
+
+def _build_product_search_query(search: str) -> List[Dict[str, Any]]:
+    raw_search = search.strip()
+    if not raw_search:
+        return []
+
+    safe_search = re.escape(raw_search)
+    search_conditions: List[Dict[str, Any]] = [
+        {"name": {"$regex": safe_search, "$options": "i"}},
+        {"description": {"$regex": safe_search, "$options": "i"}},
+        {"category": {"$regex": safe_search, "$options": "i"}},
+    ]
+
+    normalized_search = _normalize_search_term(raw_search)
+
+    for _, aliases in PRODUCT_SEARCH_CATEGORY_ALIASES.items():
+        normalized_aliases = {_normalize_search_term(alias) for alias in aliases}
+        if normalized_search in normalized_aliases:
+            search_conditions.append({"category": {"$in": [alias for alias in aliases if "-" in alias or " " not in alias]}})
+            search_conditions.extend(
+                {"name": {"$regex": re.escape(alias), "$options": "i"}}
+                for alias in aliases
+                if len(alias) > 2
+            )
+
+    return search_conditions
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -853,11 +890,9 @@ async def get_products(
     if size:
         query["sizes"] = {"$in": [size]}
     if search:
-        safe_search = re.escape(search.strip())
-        query["$or"] = [
-            {"name": {"$regex": safe_search, "$options": "i"}},
-            {"description": {"$regex": safe_search, "$options": "i"}}
-        ]
+        search_conditions = _build_product_search_query(search)
+        if search_conditions:
+            query["$or"] = search_conditions
     if featured is not None:
         query["featured"] = featured
     

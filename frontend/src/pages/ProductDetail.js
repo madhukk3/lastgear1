@@ -48,6 +48,15 @@ const ProductDetail = () => {
     try {
       const response = await axios.get(`${API}/products/${id}`);
       setProduct(response.data);
+      if (typeof window !== 'undefined') {
+        try {
+          const savedProducts = JSON.parse(localStorage.getItem('lastgear_recently_viewed') || '[]');
+          const nextProducts = [response.data, ...(Array.isArray(savedProducts) ? savedProducts : []).filter((item) => item.id !== response.data.id)].slice(0, 4);
+          localStorage.setItem('lastgear_recently_viewed', JSON.stringify(nextProducts));
+        } catch (storageError) {
+          console.error('Failed to update recently viewed products:', storageError);
+        }
+      }
       setActiveMedia({ type: 'image', url: response.data.images[0] });
       setSelectedSize(response.data.sizes[0]);
       setSelectedColor(response.data.colors[0]);
