@@ -121,19 +121,25 @@ const Products = () => {
       {/* Title Bar */}
       <div className="bg-white border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 py-8">
-          <h1 className="text-4xl font-bold uppercase" data-testid="products-title">
+          <h1
+            className="fade-up text-4xl font-bold uppercase"
+            style={{ '--delay': '0.05s' }}
+            data-testid="products-title"
+          >
             {impactSeriesTitle ? impactSeriesTitle : filters.category ? filters.category : 'ALL PRODUCTS'}
           </h1>
-          <p className="text-gray-600 mt-2">{products.length} PRODUCTS</p>
+          <p className="fade-up text-gray-600 mt-2" style={{ '--delay': '0.12s' }}>
+            {products.length} PRODUCTS
+          </p>
         </div>
       </div>
 
       {/* Filter Bar */}
-      <div className="sticky top-20 bg-white border-b border-gray-200 z-40" data-testid="filter-bar">
+      <div className="sticky top-20 bg-white border-b border-gray-200 z-40 fade-in" style={{ '--delay': '0.08s' }} data-testid="filter-bar">
         <div className="max-w-7xl mx-auto px-4 py-4">
-          <div className="flex flex-wrap gap-4">
+          <div className="reveal-row flex flex-wrap gap-4">
             {/* Category Filter */}
-            <div className="relative">
+            <div className="relative" style={{ '--stagger': 0 }}>
               <select
                 value={filters.category}
                 onChange={(e) => updateFilter('category', e.target.value)}
@@ -151,7 +157,7 @@ const Products = () => {
             </div>
 
             {/* Size Filter */}
-            <div className="relative">
+            <div className="relative" style={{ '--stagger': 1 }}>
               <select
                 value={filters.size}
                 onChange={(e) => updateFilter('size', e.target.value)}
@@ -169,7 +175,7 @@ const Products = () => {
             </div>
 
             {/* Color Filter */}
-            <div className="relative">
+            <div className="relative" style={{ '--stagger': 2 }}>
               <select
                 value={filters.color}
                 onChange={(e) => updateFilter('color', e.target.value)}
@@ -187,7 +193,7 @@ const Products = () => {
             </div>
 
             {/* Price Filter */}
-            <div className="relative">
+            <div className="relative" style={{ '--stagger': 3 }}>
               <select
                 value={`${filters.min_price}-${filters.max_price}`}
                 onChange={(e) => {
@@ -212,6 +218,7 @@ const Products = () => {
               <button
                 onClick={clearFilters}
                 className="border border-black px-4 py-2 font-medium hover:bg-black hover:text-white transition-colors"
+                style={{ '--stagger': 4 }}
                 data-testid="clear-filters"
               >
                 CLEAR FILTERS
@@ -226,7 +233,7 @@ const Products = () => {
         {loading ? (
           <BrandLoader minHeight="48vh" eyebrow="Products" />
         ) : products.length === 0 ? (
-          <div className="text-center py-20">
+          <div className="fade-up text-center py-20" style={{ '--delay': '0.08s' }}>
             <p className="text-xl text-gray-600">No products found</p>
             <button
               onClick={clearFilters}
@@ -236,12 +243,13 @@ const Products = () => {
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-12" data-testid="products-grid">
-            {products.map((product) => (
+          <div className="reveal-row grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-12" data-testid="products-grid">
+            {products.map((product, index) => (
               <Link
                 key={product.id}
                 to={`/products/${product.id}`}
-                className="product-card group"
+                className="product-card group lift-card shimmer-card"
+                style={{ '--stagger': index }}
                 data-testid={`product-card-${product.id}`}
               >
                 <div className="relative aspect-[4/5] bg-gray-100 mb-4 overflow-hidden">
