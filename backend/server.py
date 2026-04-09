@@ -264,6 +264,7 @@ class UserResponse(BaseModel):
 class AuthResponse(BaseModel):
     token: Optional[str] = None
     user: UserResponse
+    is_new_user: bool = False
 
 class SendOTPRequest(BaseModel):
     phone: str
@@ -537,12 +538,17 @@ def _build_user_response(user: Dict) -> UserResponse:
         is_admin=user.get('is_admin', False)
     )
 
-async def issue_auth_session(response: Response, user: Dict, request: Optional[Request] = None) -> AuthResponse:
+async def issue_auth_session(
+    response: Response,
+    user: Dict,
+    request: Optional[Request] = None,
+    is_new_user: bool = False
+) -> AuthResponse:
     access_token = create_access_token(user['id'], user['email'], user.get('is_admin', False))
     refresh_token = create_refresh_token()
     await store_refresh_token(user['id'], refresh_token, request)
     set_auth_cookies(response, access_token, refresh_token)
-    return AuthResponse(token=None, user=_build_user_response(user))
+    return AuthResponse(token=None, user=_build_user_response(user), is_new_user=is_new_user)
 
 async def get_current_user(
     request: Request,
@@ -594,7 +600,7 @@ async def register(request: Request, response: Response, user_data: UserRegister
     
     # Remove from verified_emails collection
     await db.verified_emails.delete_one({"email": user_data.email})
-    return await issue_auth_session(response, user_doc, request)
+    return await issue_auth_session(response, user_doc, request, is_new_user=True)
 
 @api_router.post("/auth/login", response_model=AuthResponse)
 @limiter.limit("5/minute")
@@ -607,7 +613,7 @@ async def login(request: Request, response: Response, credentials: UserLogin):
         await track_login_attempt(credentials.email, False, client_ip)
         raise HTTPException(status_code=401, detail="Invalid email or password")
     await track_login_attempt(credentials.email, True, client_ip)
-    return await issue_auth_session(response, user, request)
+    return await issue_auth_session(response, user, request, is_new_user=False)
 
 @api_router.get("/auth/me", response_model=UserResponse)
 async def get_me(current_user: Dict = Depends(get_current_user)):
@@ -632,7 +638,7 @@ async def refresh_auth_session(request: Request, response: Response):
         raise HTTPException(status_code=401, detail="User not found")
 
     await revoke_refresh_token(refresh_token)
-    return await issue_auth_session(response, user, request)
+    return await issue_auth_session(response, user, request, is_new_user=False)
 
 @api_router.post("/auth/logout")
 async def logout(response: Response, request: Request):
@@ -688,6 +694,7 @@ async def google_auth(request: Request, response: Response, payload: VerifyGoogl
         
         user = await db.users.find_one({"email": email}, {"_id": 0})
         
+        is_new_user = False
         if not user:
             user_id = str(uuid.uuid4())
             user_doc = {
@@ -703,8 +710,9 @@ async def google_auth(request: Request, response: Response, payload: VerifyGoogl
             await db.carts.insert_one({"user_id": user_id, "items": []})
             await db.wishlists.insert_one({"user_id": user_id, "product_ids": []})
             user = user_doc
-            
-        return await issue_auth_session(response, user, request)
+            is_new_user = True
+
+        return await issue_auth_session(response, user, request, is_new_user=is_new_user)
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid Google token")
 
@@ -826,7 +834,7 @@ async def register_otp(request: Request, response: Response, user_data: VerifyOT
     # Delete the used OTP
     await db.otps.delete_one({"phone": user_data.phone})
     
-    return await issue_auth_session(response, user_doc, request)
+    return await issue_auth_session(response, user_doc, request, is_new_user=True)
 
 @api_router.post("/auth/login-otp", response_model=AuthResponse)
 @limiter.limit("5/minute")
@@ -846,7 +854,7 @@ async def login_otp(request: Request, response: Response, payload: VerifyOTPLogi
     # Delete the used OTP
     await db.otps.delete_one({"phone": payload.phone})
     
-    return await issue_auth_session(response, user, request)
+    return await issue_auth_session(response, user, request, is_new_user=False)
 
 # --- PUBLIC ROUTES FOR IMPACT SERIES ---
 

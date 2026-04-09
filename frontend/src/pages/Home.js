@@ -331,15 +331,15 @@ const Home = () => {
                       </div>
                     )}
                     <img src={product.images[0]} alt={product.name} className="h-full w-full object-cover transition duration-700 group-hover:scale-110" />
-                    <div className="absolute inset-x-0 bottom-0 translate-y-full bg-[linear-gradient(to_top,rgba(18,14,11,0.96),rgba(18,14,11,0.78),transparent)] p-4 transition duration-300 group-hover:translate-y-0">
-                      <p className="mb-3 font-nav text-xs text-[#f0d9c0]">Quick Add</p>
-                      <div className="flex flex-wrap gap-2">
+                    <div className="absolute inset-x-0 bottom-0 translate-y-full bg-[linear-gradient(to_top,rgba(18,14,11,0.94)_0%,rgba(18,14,11,0.68)_40%,rgba(18,14,11,0.02)_100%)] px-3 pb-4 pt-12 transition duration-300 group-hover:translate-y-0">
+                      <p className="mb-3 font-nav text-xs tracking-[0.14em] text-[#f0d9c0]">QUICK ADD</p>
+                      <div className="flex flex-nowrap gap-2 overflow-hidden">
                         {product.sizes.map((size) => (
                           <button
                             key={size}
                             onClick={(e) => handleQuickAdd(e, product, size)}
                             title="Add to Cart"
-                            className="rounded-full border border-white/20 px-3 py-2 font-nav text-xs text-white transition hover:bg-white hover:text-[#120e0b]"
+                            className="flex h-9 min-w-[36px] items-center justify-center rounded-full border border-white/26 bg-white/5 px-2.5 font-nav text-xs text-white transition hover:bg-white hover:text-[#120e0b]"
                           >
                             {size}
                           </button>

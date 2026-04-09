@@ -85,9 +85,9 @@ const Register = () => {
       });
 
       // 2. Complete Registration
-      await register(formData.email, formData.password, formData.name, formData.phone);
+      const response = await register(formData.email, formData.password, formData.name, formData.phone);
 
-      toast.success('Registration successful!');
+      toast.success(response?.is_new_user ? 'Welcome to LAST GEAR.' : 'Welcome back to LAST GEAR.');
       navigate('/');
     } catch (error) {
       console.error('Registration failed:', error);
@@ -100,8 +100,8 @@ const Register = () => {
   const handleGoogleSuccess = async (credentialResponse) => {
     try {
       setLoading(true);
-      await loginWithGoogle(credentialResponse.credential);
-      toast.success('Google Login successful!');
+      const response = await loginWithGoogle(credentialResponse.credential);
+      toast.success(response?.is_new_user ? 'Welcome to LAST GEAR.' : 'Welcome back to LAST GEAR.');
       navigate('/');
     } catch (error) {
       console.error('Google login failed:', error);

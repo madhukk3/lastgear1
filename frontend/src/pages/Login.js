@@ -1,12 +1,11 @@
 import React, { useState } from 'react';
-import { useNavigate, Link, useSearchParams } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'sonner';
 import { GoogleLogin } from '@react-oauth/google';
 import { ArrowRight } from 'lucide-react';
 
 const Login = () => {
-  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { login, loginWithGoogle } = useAuth();
 
@@ -20,10 +19,9 @@ const Login = () => {
     e.preventDefault();
     try {
       setLoading(true);
-      await login(formData.email, formData.password);
-      toast.success('Login successful!');
-      const redirect = searchParams.get('redirect') || '/';
-      navigate(redirect);
+      const response = await login(formData.email, formData.password);
+      toast.success(response?.is_new_user ? 'Welcome to LAST GEAR.' : 'Welcome back to LAST GEAR.');
+      navigate('/');
     } catch (error) {
       console.error('Login failed:', error);
       toast.error(error.response?.data?.detail || 'Login failed');
@@ -35,10 +33,9 @@ const Login = () => {
   const handleGoogleSuccess = async (credentialResponse) => {
     try {
       setLoading(true);
-      await loginWithGoogle(credentialResponse.credential);
-      toast.success('Google login successful!');
-      const redirect = searchParams.get('redirect') || '/';
-      navigate(redirect);
+      const response = await loginWithGoogle(credentialResponse.credential);
+      toast.success(response?.is_new_user ? 'Welcome to LAST GEAR.' : 'Welcome back to LAST GEAR.');
+      navigate('/');
     } catch (error) {
       console.error('Google login failed:', error);
       toast.error(error.response?.data?.detail || 'Google login failed');

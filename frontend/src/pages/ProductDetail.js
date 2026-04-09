@@ -396,9 +396,9 @@ const ProductDetail = () => {
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     />
                     {/* Quick Add Overlay */}
-                    <div className="absolute bottom-0 left-0 right-0 bg-white/95 p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-300">
-                      <p className="text-xs font-bold text-center mb-2 uppercase">Quick Add to Cart</p>
-                      <div className="flex justify-center gap-2 flex-wrap">
+                    <div className="absolute inset-x-0 bottom-0 translate-y-full bg-[linear-gradient(to_top,rgba(18,14,11,0.94)_0%,rgba(18,14,11,0.68)_40%,rgba(18,14,11,0.02)_100%)] px-3 pb-4 pt-12 transition duration-300 group-hover:translate-y-0">
+                      <p className="mb-3 font-nav text-xs tracking-[0.14em] text-[#f0d9c0]">QUICK ADD</p>
+                      <div className="flex flex-nowrap gap-2 overflow-hidden">
                         {relatedProd.sizes.map(size => (
                           <button
                             key={size}
@@ -417,7 +417,7 @@ const ProductDetail = () => {
                                 toast.error('Failed to add to cart');
                               }
                             }}
-                            className="border border-black min-w-[32px] h-8 px-1 text-xs font-bold hover:bg-black hover:text-white transition-colors"
+                            className="flex h-9 min-w-[36px] items-center justify-center rounded-full border border-white/26 bg-white/5 px-2.5 font-nav text-xs text-white transition hover:bg-white hover:text-[#120e0b]"
                           >
                             {size}
                           </button>
