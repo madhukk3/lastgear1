@@ -311,7 +311,7 @@ const Home = () => {
         {loading ? (
           <BrandLoader minHeight="40vh" eyebrow="Featured" />
         ) : (
-          <div className="reveal-row grid grid-cols-2 justify-items-stretch gap-4 sm:grid-cols-2 sm:gap-5 md:grid-cols-3 md:justify-items-center md:gap-5 lg:gap-6 xl:grid-cols-4">
+          <div className="reveal-row grid grid-cols-2 justify-items-stretch gap-4 sm:grid-cols-2 sm:gap-5 md:grid-cols-3 md:gap-4 lg:gap-5 xl:grid-cols-4">
             {featuredProducts.slice(0, 8).map((product) => {
               const totalDiscount = (globalDiscount || 0) + (product.discount_percentage || 0);
               const discountedPrice = product.price * (1 - totalDiscount / 100);
@@ -320,11 +320,11 @@ const Home = () => {
                 <Link
                   key={product.id}
                   to={`/products/${product.id}`}
-                  className="group w-full min-w-0 overflow-hidden rounded-[24px] border border-black/10 bg-white/80 shadow-[0_16px_44px_rgba(15,10,6,0.08)] transition duration-300 hover:shadow-[0_24px_64px_rgba(15,10,6,0.14)] md:max-w-[260px] lg:max-w-[300px] lg:rounded-[30px]"
+                  className="group w-full min-w-0 overflow-hidden rounded-[24px] border border-black/10 bg-white/80 shadow-[0_16px_44px_rgba(15,10,6,0.08)] transition duration-300 hover:shadow-[0_24px_64px_rgba(15,10,6,0.14)] lg:rounded-[30px]"
                   data-testid={`product-card-${product.id}`}
                   style={{ '--stagger': featuredProducts.indexOf(product) }}
                 >
-                  <div className="relative aspect-[4/5] max-h-[360px] overflow-hidden bg-[#e7dfd3] sm:max-h-[390px] sm:aspect-[4/4.7] md:max-h-[300px] md:aspect-[4/4.9] lg:max-h-[390px] lg:aspect-[4/4.85] xl:max-h-[380px]">
+                  <div className="relative w-full aspect-[4/5] max-h-[360px] overflow-hidden bg-[#e7dfd3] sm:max-h-[390px] sm:aspect-[4/4.7] md:max-h-[280px] md:aspect-[4/4.95] lg:max-h-[330px] lg:aspect-[4/4.9] xl:max-h-[380px]">
                     {product.badge && (
                       <div className="absolute left-4 top-4 z-10 rounded-full bg-[#120e0b] px-3 py-2 font-nav text-[10px] text-[#f1e6d8]">
                         {product.badge}
