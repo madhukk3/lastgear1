@@ -311,7 +311,7 @@ const Home = () => {
         {loading ? (
           <BrandLoader minHeight="40vh" eyebrow="Featured" />
         ) : (
-          <div className="reveal-row grid grid-cols-2 justify-items-stretch gap-4 sm:grid-cols-2 sm:gap-5 lg:justify-items-center lg:gap-6 lg:grid-cols-3 xl:grid-cols-4">
+          <div className="reveal-row grid grid-cols-2 justify-items-stretch gap-4 sm:grid-cols-2 sm:gap-5 md:grid-cols-3 md:justify-items-center md:gap-5 lg:gap-6 xl:grid-cols-4">
             {featuredProducts.slice(0, 8).map((product) => {
               const totalDiscount = (globalDiscount || 0) + (product.discount_percentage || 0);
               const discountedPrice = product.price * (1 - totalDiscount / 100);
@@ -320,11 +320,11 @@ const Home = () => {
                 <Link
                   key={product.id}
                   to={`/products/${product.id}`}
-                  className="group w-full min-w-0 overflow-hidden rounded-[26px] border border-black/10 bg-white/80 shadow-[0_16px_44px_rgba(15,10,6,0.08)] transition duration-300 hover:shadow-[0_24px_64px_rgba(15,10,6,0.14)] lg:max-w-[320px] lg:rounded-[30px]"
+                  className="group w-full min-w-0 overflow-hidden rounded-[24px] border border-black/10 bg-white/80 shadow-[0_16px_44px_rgba(15,10,6,0.08)] transition duration-300 hover:shadow-[0_24px_64px_rgba(15,10,6,0.14)] md:max-w-[260px] lg:max-w-[300px] lg:rounded-[30px]"
                   data-testid={`product-card-${product.id}`}
                   style={{ '--stagger': featuredProducts.indexOf(product) }}
                 >
-                  <div className="relative aspect-[4/5] max-h-[360px] overflow-hidden bg-[#e7dfd3] sm:max-h-[390px] sm:aspect-[4/4.7] lg:max-h-[420px] lg:aspect-[4/4.85] xl:max-h-[380px]">
+                  <div className="relative aspect-[4/5] max-h-[360px] overflow-hidden bg-[#e7dfd3] sm:max-h-[390px] sm:aspect-[4/4.7] md:max-h-[300px] md:aspect-[4/4.9] lg:max-h-[390px] lg:aspect-[4/4.85] xl:max-h-[380px]">
                     {product.badge && (
                       <div className="absolute left-4 top-4 z-10 rounded-full bg-[#120e0b] px-3 py-2 font-nav text-[10px] text-[#f1e6d8]">
                         {product.badge}
@@ -348,20 +348,20 @@ const Home = () => {
                     </div>
                   </div>
 
-                  <div className="space-y-3 p-5">
+                  <div className="space-y-2.5 p-4 md:p-3.5 lg:p-5">
                     <p className="font-nav text-[11px] text-black/42">
                       {product.colors.length} color{product.colors.length > 1 ? 's' : ''}
                     </p>
-                    <h3 className="font-nav text-2xl leading-none text-[#120e0b]">
+                    <h3 className="font-nav text-[1.85rem] leading-none text-[#120e0b] md:text-[1.55rem] lg:text-2xl">
                       {product.name}
                     </h3>
                     {totalDiscount > 0 ? (
                       <div className="flex items-center gap-3">
-                        <p className="text-sm text-black/35 line-through">₹{product.price.toFixed(0)}</p>
-                        <p className="text-lg font-semibold text-[#8d2d17]">₹{discountedPrice.toFixed(0)}</p>
+                        <p className="text-sm text-black/35 line-through md:text-xs lg:text-sm">₹{product.price.toFixed(0)}</p>
+                        <p className="text-lg font-semibold text-[#8d2d17] md:text-base lg:text-lg">₹{discountedPrice.toFixed(0)}</p>
                       </div>
                     ) : (
-                      <p className="text-lg font-semibold text-[#120e0b]">₹{product.price.toFixed(0)}</p>
+                      <p className="text-lg font-semibold text-[#120e0b] md:text-base lg:text-lg">₹{product.price.toFixed(0)}</p>
                     )}
                   </div>
                 </Link>
