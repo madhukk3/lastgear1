@@ -311,7 +311,7 @@ const Home = () => {
         {loading ? (
           <BrandLoader minHeight="40vh" eyebrow="Featured" />
         ) : (
-          <div className="reveal-row grid grid-cols-2 gap-4 sm:grid-cols-2 sm:gap-6 xl:grid-cols-4">
+          <div className="reveal-row grid grid-cols-2 justify-items-stretch gap-4 sm:grid-cols-2 sm:gap-5 lg:justify-items-center lg:gap-6 lg:grid-cols-3 xl:grid-cols-4">
             {featuredProducts.slice(0, 8).map((product) => {
               const totalDiscount = (globalDiscount || 0) + (product.discount_percentage || 0);
               const discountedPrice = product.price * (1 - totalDiscount / 100);
@@ -320,11 +320,11 @@ const Home = () => {
                 <Link
                   key={product.id}
                   to={`/products/${product.id}`}
-                  className="group overflow-hidden rounded-[30px] border border-black/10 bg-white/80 shadow-[0_16px_44px_rgba(15,10,6,0.08)] transition duration-300 hover:shadow-[0_24px_64px_rgba(15,10,6,0.14)]"
+                  className="group w-full min-w-0 overflow-hidden rounded-[26px] border border-black/10 bg-white/80 shadow-[0_16px_44px_rgba(15,10,6,0.08)] transition duration-300 hover:shadow-[0_24px_64px_rgba(15,10,6,0.14)] lg:max-w-[320px] lg:rounded-[30px]"
                   data-testid={`product-card-${product.id}`}
                   style={{ '--stagger': featuredProducts.indexOf(product) }}
                 >
-                  <div className="relative aspect-[4/5] overflow-hidden bg-[#e7dfd3]">
+                  <div className="relative aspect-[4/5] max-h-[360px] overflow-hidden bg-[#e7dfd3] sm:max-h-[390px] sm:aspect-[4/4.7] lg:max-h-[420px] lg:aspect-[4/4.85] xl:max-h-[380px]">
                     {product.badge && (
                       <div className="absolute left-4 top-4 z-10 rounded-full bg-[#120e0b] px-3 py-2 font-nav text-[10px] text-[#f1e6d8]">
                         {product.badge}
