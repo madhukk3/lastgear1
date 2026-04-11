@@ -28,6 +28,10 @@ const Checkout = () => {
   const [appliedCoupon, setAppliedCoupon] = useState(null);
   const [couponError, setCouponError] = useState('');
   const [paymentMethod, setPaymentMethod] = useState('razorpay');
+  const [savedAddresses, setSavedAddresses] = useState([]);
+  const [addressesLoading, setAddressesLoading] = useState(true);
+  const [selectedAddressId, setSelectedAddressId] = useState(null);
+  const [saveAddressForLater, setSaveAddressForLater] = useState(false);
 
   // Direct buy logic
   const [directItem, setDirectItem] = useState(
@@ -81,6 +85,60 @@ const Checkout = () => {
       navigate('/cart');
     }
   }, [user, cart, isDirectBuy, navigate]);
+
+  useEffect(() => {
+    if (user) {
+      fetchSavedAddresses();
+    }
+  }, [user]);
+
+  const fetchSavedAddresses = async () => {
+    try {
+      const response = await axios.get(`${API}/account/addresses`);
+      const addresses = response.data || [];
+      setSavedAddresses(addresses);
+      const defaultAddress = addresses.find((address) => address.is_default) || addresses[0];
+      if (defaultAddress) {
+        applySavedAddress(defaultAddress);
+      } else {
+        setSaveAddressForLater(true);
+      }
+    } catch (error) {
+      console.error('Failed to fetch saved addresses:', error);
+    } finally {
+      setAddressesLoading(false);
+    }
+  };
+
+  const applySavedAddress = (address) => {
+    setSelectedAddressId(address.id);
+    setSaveAddressForLater(false);
+    setFormData({
+      full_name: address.full_name || user?.name || '',
+      address_line1: address.address_line1 || '',
+      address_line2: address.address_line2 || '',
+      city: address.city || '',
+      state: address.state || '',
+      postal_code: address.postal_code || '',
+      country: address.country || 'India',
+      phone: address.phone || user?.phone || '',
+    });
+  };
+
+  const switchToNewAddress = () => {
+    setSelectedAddressId(null);
+    setSaveAddressForLater(true);
+    setFormData({
+      full_name: user?.name || '',
+      address_line1: '',
+      address_line2: '',
+      city: '',
+      state: '',
+      postal_code: '',
+      country: 'India',
+      phone: user?.phone || '',
+    });
+  };
 
 
   const handleApplyCoupon = async () => {
@@ -222,6 +280,18 @@ const Checkout = () => {
 
       const { discountAmount, totalAmount } = buildCheckoutPricing();
 
+      if (saveAddressForLater && formData.address_line1.trim()) {
+        try {
+          await axios.post(`${API}/account/addresses`, {
+            label: savedAddresses.length === 0 ? 'Primary' : 'Saved Address',
+            ...formData,
+            is_default: savedAddresses.length === 0,
+          });
+        } catch (addressError) {
+          console.error('Failed to save checkout address:', addressError);
+        }
+      }
+
       // Create order
       const orderResponse = await axios.post(`${API}/orders`, {
         discount_applied: discountAmount,
@@ -279,6 +349,44 @@ const Checkout = () => {
               <span className="bg-black text-white w-8 h-8 rounded-full flex items-center justify-center font-bold">1</span>
               <h2 className="text-2xl font-bold uppercase tracking-wide">SHIPPING INFORMATION</h2>
             </div>
+            {!addressesLoading && savedAddresses.length > 0 && (
+              <div className="mb-6 space-y-4">
+                <div className="flex items-center justify-between gap-4">
+                  <p className="text-sm font-medium text-gray-600">Choose a saved delivery address or add a new one below.</p>
+                  <button
+                    type="button"
+                    onClick={switchToNewAddress}
+                    className="border border-black/15 px-4 py-2 font-nav text-xs text-[#16120d] transition-colors hover:border-black"
+                  >
+                    Add New Address
+                  </button>
+                </div>
+                <div className="grid gap-4">
+                  {savedAddresses.map((address) => (
+                    <button
+                      type="button"
+                      key={address.id}
+                      onClick={() => applySavedAddress(address)}
+                      className={`w-full border p-4 text-left transition-colors ${selectedAddressId === address.id ? 'border-black bg-white shadow-sm' : 'border-black/10 bg-[#fbf7f1] hover:border-black/30'}`}
+                    >
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="font-nav text-sm text-[#16120d]">{address.label || 'Saved Address'}</span>
+                        {address.is_default && (
+                          <span className="rounded-full bg-black px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-white">
+                            Default
+                          </span>
+                        )}
+                      </div>
+                      <p className="mt-2 font-nav text-base text-[#16120d]">{address.full_name}</p>
+                      <p className="mt-1 text-sm text-gray-700">{address.address_line1}</p>
+                      {address.address_line2 && <p className="text-sm text-gray-700">{address.address_line2}</p>}
+                      <p className="text-sm text-gray-700">{address.city}, {address.state} {address.postal_code}</p>
+                      <p className="text-xs uppercase tracking-[0.16em] text-gray-500">{address.phone}</p>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
             <div className="space-y-4">
               <div>
                 <label htmlFor="full_name" className="block text-sm font-medium mb-2">
@@ -412,6 +520,15 @@ const Checkout = () => {
                   />
                 </div>
               </div>
+              <label className="flex items-center gap-3 pt-2 text-sm text-gray-700">
+                <input
+                  type="checkbox"
+                  checked={saveAddressForLater}
+                  onChange={(e) => setSaveAddressForLater(e.target.checked)}
+                  className="h-4 w-4"
+                />
+                Save this delivery address for future orders
+              </label>
             </div>
           </div>
 

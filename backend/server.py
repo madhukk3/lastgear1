@@ -367,6 +367,29 @@ class ShippingAddress(BaseModel):
     country: str
     phone: str
 
+class SavedAddress(ShippingAddress):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    label: str = "Home"
+    is_default: bool = False
+    created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    updated_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+
+class SavedAddressCreate(ShippingAddress):
+    label: Optional[str] = "Home"
+    is_default: bool = False
+
+class SavedAddressUpdate(BaseModel):
+    label: Optional[str] = None
+    full_name: Optional[str] = None
+    address_line1: Optional[str] = None
+    address_line2: Optional[str] = None
+    city: Optional[str] = None
+    state: Optional[str] = None
+    postal_code: Optional[str] = None
+    country: Optional[str] = None
+    phone: Optional[str] = None
+    is_default: Optional[bool] = None
+
 class Order(BaseModel):
     id: str = Field(default_factory=lambda: f"LG-{str(uuid.uuid4())[:8].upper()}")
     user_id: str
@@ -538,6 +561,37 @@ def _build_user_response(user: Dict) -> UserResponse:
         is_admin=user.get('is_admin', False)
     )
 
+def _sanitize_saved_address_payload(data: Dict[str, Any]) -> Dict[str, Any]:
+    return {
+        "label": sanitize_input(data.get("label") or "Home"),
+        "full_name": sanitize_input(data.get("full_name") or ""),
+        "address_line1": sanitize_input(data.get("address_line1") or ""),
+        "address_line2": sanitize_input(data.get("address_line2") or "") or None,
+        "city": sanitize_input(data.get("city") or ""),
+        "state": sanitize_input(data.get("state") or ""),
+        "postal_code": re.sub(r"[^0-9]", "", str(data.get("postal_code") or ""))[:6],
+        "country": sanitize_input(data.get("country") or "India"),
+        "phone": sanitize_input(data.get("phone") or ""),
+        "is_default": bool(data.get("is_default", False)),
+    }
+
+def _sort_saved_addresses(addresses: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    return sorted(
+        addresses,
+        key=lambda address: (
+            0 if address.get("is_default") else 1,
+            address.get("updated_at", ""),
+            address.get("created_at", "")
+        )
+    )
+
+async def _persist_saved_addresses(user_id: str, addresses: List[Dict[str, Any]]):
+    if addresses:
+        has_default = any(address.get("is_default") for address in addresses)
+        if not has_default:
+            addresses[0]["is_default"] = True
+    await db.users.update_one({"id": user_id}, {"$set": {"saved_addresses": addresses}})
+
 async def issue_auth_session(
     response: Response,
     user: Dict,
@@ -589,7 +643,8 @@ async def register(request: Request, response: Response, user_data: UserRegister
         "phone": sanitize_input(user_data.phone) if user_data.phone else None,
         "email_verified": True,
         "created_at": datetime.now(timezone.utc).isoformat(),
-        "has_used_first_purchase_discount": False
+        "has_used_first_purchase_discount": False,
+        "saved_addresses": []
     }
     
     await db.users.insert_one(user_doc)
@@ -618,6 +673,93 @@ async def login(request: Request, response: Response, credentials: UserLogin):
 @api_router.get("/auth/me", response_model=UserResponse)
 async def get_me(current_user: Dict = Depends(get_current_user)):
     return UserResponse(**current_user)
+
+@api_router.get("/account/addresses", response_model=List[SavedAddress])
+async def get_saved_addresses(current_user: Dict = Depends(get_current_user)):
+    user = await db.users.find_one({"id": current_user["id"]}, {"_id": 0, "saved_addresses": 1})
+    addresses = _sort_saved_addresses(user.get("saved_addresses", []) if user else [])
+    return addresses
+
+@api_router.post("/account/addresses", response_model=SavedAddress)
+async def create_saved_address(address_data: SavedAddressCreate, current_user: Dict = Depends(get_current_user)):
+    user = await db.users.find_one({"id": current_user["id"]}, {"_id": 0, "saved_addresses": 1})
+    existing_addresses = user.get("saved_addresses", []) if user else []
+    sanitized = _sanitize_saved_address_payload(address_data.model_dump())
+    timestamp = datetime.now(timezone.utc).isoformat()
+
+    should_be_default = sanitized["is_default"] or len(existing_addresses) == 0
+    if should_be_default:
+        for address in existing_addresses:
+            address["is_default"] = False
+
+    address = SavedAddress(
+        **sanitized,
+        is_default=should_be_default,
+        created_at=timestamp,
+        updated_at=timestamp
+    )
+    updated_addresses = [*existing_addresses, address.model_dump()]
+    await _persist_saved_addresses(current_user["id"], updated_addresses)
+    return address
+
+@api_router.put("/account/addresses/{address_id}", response_model=SavedAddress)
+async def update_saved_address(address_id: str, address_data: SavedAddressUpdate, current_user: Dict = Depends(get_current_user)):
+    user = await db.users.find_one({"id": current_user["id"]}, {"_id": 0, "saved_addresses": 1})
+    existing_addresses = user.get("saved_addresses", []) if user else []
+    target_address = next((address for address in existing_addresses if address.get("id") == address_id), None)
+
+    if not target_address:
+        raise HTTPException(status_code=404, detail="Saved address not found")
+
+    update_payload = address_data.model_dump(exclude_unset=True)
+    sanitized = _sanitize_saved_address_payload({**target_address, **update_payload})
+    should_be_default = sanitized["is_default"]
+
+    if should_be_default:
+        for address in existing_addresses:
+            address["is_default"] = False
+
+    target_address.update({
+        **sanitized,
+        "id": target_address["id"],
+        "created_at": target_address.get("created_at", datetime.now(timezone.utc).isoformat()),
+        "updated_at": datetime.now(timezone.utc).isoformat(),
+        "is_default": should_be_default,
+    })
+
+    await _persist_saved_addresses(current_user["id"], existing_addresses)
+    return SavedAddress(**target_address)
+
+@api_router.patch("/account/addresses/{address_id}/default", response_model=List[SavedAddress])
+async def set_default_saved_address(address_id: str, current_user: Dict = Depends(get_current_user)):
+    user = await db.users.find_one({"id": current_user["id"]}, {"_id": 0, "saved_addresses": 1})
+    existing_addresses = user.get("saved_addresses", []) if user else []
+    found = False
+
+    for address in existing_addresses:
+        is_target = address.get("id") == address_id
+        address["is_default"] = is_target
+        if is_target:
+            address["updated_at"] = datetime.now(timezone.utc).isoformat()
+            found = True
+
+    if not found:
+        raise HTTPException(status_code=404, detail="Saved address not found")
+
+    await _persist_saved_addresses(current_user["id"], existing_addresses)
+    return _sort_saved_addresses(existing_addresses)
+
+@api_router.delete("/account/addresses/{address_id}")
+async def delete_saved_address(address_id: str, current_user: Dict = Depends(get_current_user)):
+    user = await db.users.find_one({"id": current_user["id"]}, {"_id": 0, "saved_addresses": 1})
+    existing_addresses = user.get("saved_addresses", []) if user else []
+    filtered_addresses = [address for address in existing_addresses if address.get("id") != address_id]
+
+    if len(filtered_addresses) == len(existing_addresses):
+        raise HTTPException(status_code=404, detail="Saved address not found")
+
+    await _persist_saved_addresses(current_user["id"], filtered_addresses)
+    return {"message": "Address removed successfully"}
 
 @api_router.post("/auth/refresh", response_model=AuthResponse)
 @limiter.limit("10/minute")
@@ -704,7 +846,8 @@ async def google_auth(request: Request, response: Response, payload: VerifyGoogl
                 "name": name,
                 "phone": None,
                 "created_at": datetime.now(timezone.utc).isoformat(),
-                "has_used_first_purchase_discount": False
+                "has_used_first_purchase_discount": False,
+                "saved_addresses": []
             }
             await db.users.insert_one(user_doc)
             await db.carts.insert_one({"user_id": user_id, "items": []})
@@ -822,7 +965,8 @@ async def register_otp(request: Request, response: Response, user_data: VerifyOT
         "name": sanitize_input(user_data.name),
         "phone": sanitize_input(user_data.phone),
         "created_at": datetime.now(timezone.utc).isoformat(),
-        "has_used_first_purchase_discount": False
+        "has_used_first_purchase_discount": False,
+        "saved_addresses": []
     }
     
     await db.users.insert_one(user_doc)
