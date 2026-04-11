@@ -692,9 +692,10 @@ async def create_saved_address(address_data: SavedAddressCreate, current_user: D
         for address in existing_addresses:
             address["is_default"] = False
 
+    sanitized["is_default"] = should_be_default
+
     address = SavedAddress(
         **sanitized,
-        is_default=should_be_default,
         created_at=timestamp,
         updated_at=timestamp
     )
