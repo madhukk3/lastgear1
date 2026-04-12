@@ -344,7 +344,17 @@ const Account = () => {
             <div className="mb-6 flex flex-wrap items-center gap-3 text-sm text-black/45">
               <Link to="/" className="hover:text-black">Home</Link>
               <span>•</span>
-              <span className="font-semibold text-black">My Account</span>
+              {activeTab === 'overview' ? (
+                <span className="font-semibold text-black">My Account</span>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => handleTabChange('overview')}
+                  className="font-semibold text-black transition-colors hover:text-black/70"
+                >
+                  My Account
+                </button>
+              )}
               {activeTab !== 'overview' && (
                 <>
                   <span>•</span>
