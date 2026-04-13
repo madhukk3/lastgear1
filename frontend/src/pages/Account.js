@@ -292,7 +292,29 @@ const Account = () => {
         <div className="grid grid-cols-1 lg:grid-cols-[260px_1fr]">
           <aside className={`${showMobileSectionView ? 'hidden lg:block' : 'block'} bg-[#f5f5f5] px-5 py-8 lg:min-h-[calc(100vh-220px)]`}>
             <div className="space-y-2">
-              {sidebarItems.map((item) => {
+              {sidebarItems.slice(0, 1).map((item) => {
+                const Icon = item.icon;
+                const isActive = activeTab === item.id;
+                return (
+                  <button
+                    key={item.id}
+                    type="button"
+                    onClick={() => handleTabChange(item.id)}
+                    className={`flex w-full items-center gap-4 border-l-2 px-4 py-4 text-left transition-colors ${
+                      isActive
+                        ? 'border-black bg-white font-semibold text-[#16120d]'
+                        : 'border-transparent text-[#16120d] hover:bg-white/70'
+                    }`}
+                  >
+                    <Icon size={20} strokeWidth={1.9} />
+                    <span className="font-nav text-sm">{item.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className="mt-6 space-y-2">
+              {sidebarItems.slice(1).map((item) => {
                 const Icon = item.icon;
                 const isActive = activeTab === item.id;
                 return (
@@ -334,14 +356,14 @@ const Account = () => {
               <button
                 type="button"
                 onClick={() => handleTabChange('overview')}
-                className="mb-5 inline-flex items-center gap-2 text-sm font-semibold text-[#16120d] lg:hidden"
+                className="mb-5 inline-flex items-center gap-2 text-sm text-[#16120d] lg:hidden"
               >
                 <span>&lt;</span>
                 <span>My Account</span>
               </button>
             )}
 
-            <div className="mb-5 flex flex-wrap items-center gap-2.5 text-xs text-black/45 md:text-sm">
+            <div className={`mb-5 flex flex-wrap items-center gap-2.5 text-xs text-black/45 md:text-sm lg:hidden ${activeTab === 'overview' ? 'hidden' : ''}`}>
               <Link to="/" className="hover:text-black">Home</Link>
               <span>•</span>
               {activeTab === 'overview' ? (
@@ -350,7 +372,7 @@ const Account = () => {
                 <button
                   type="button"
                   onClick={() => handleTabChange('overview')}
-                  className="font-semibold text-black transition-colors hover:text-black/70"
+                  className="text-black transition-colors hover:text-black/70"
                 >
                   My Account
                 </button>
@@ -358,16 +380,16 @@ const Account = () => {
               {activeTab !== 'overview' && (
                 <>
                   <span>•</span>
-                  <span className="text-black">{sidebarItems.find((item) => item.id === activeTab)?.label || 'Overview'}</span>
+                  <span className="font-semibold text-black">{sidebarItems.find((item) => item.id === activeTab)?.label || 'Overview'}</span>
                 </>
               )}
             </div>
 
             {activeTab === 'overview' && (
               <section data-testid="account-overview-section">
-                <div className="mb-12">
+                <div className="mb-10">
+                  <p className="mb-3 text-base font-semibold text-[#16120d]">Account Overview</p>
                   <h1 className="text-[2.2rem] font-semibold leading-none text-[#16120d] md:text-[3.6rem]">Hello, {user.name}</h1>
-                  <p className="mt-3 text-lg text-black/58">Account Overview</p>
                 </div>
 
                 {latestOrder && (
@@ -433,7 +455,7 @@ const Account = () => {
               <section data-testid="orders-section">
                 <div className="mb-8">
                   <p className="text-base font-semibold text-[#16120d] md:text-lg">Order history</p>
-                  <h1 className="mt-2 text-[2.2rem] font-semibold leading-none text-[#16120d] md:text-[3rem]">My Account</h1>
+                  <h1 className="mt-2 text-[2.2rem] font-semibold leading-none text-[#16120d] md:text-[3rem]">My Orders</h1>
                 </div>
 
                 <div className="mb-8">
