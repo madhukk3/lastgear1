@@ -348,20 +348,20 @@ const Home = () => {
                     </div>
                   </div>
 
-                  <div className="space-y-2.5 p-4 md:p-3.5 lg:p-5">
-                    <p className="font-nav text-[11px] text-black/42">
+                  <div className="space-y-2 p-3 md:p-3.5 lg:p-5">
+                    <p className="font-nav text-[10px] text-black/42 md:text-[11px]">
                       {product.colors.length} color{product.colors.length > 1 ? 's' : ''}
                     </p>
-                    <h3 className="font-nav text-[1.85rem] leading-none text-[#120e0b] md:text-[1.55rem] lg:text-2xl">
+                    <h3 className="font-nav text-[1rem] leading-[0.92] text-[#120e0b] sm:text-[1.2rem] md:text-[1.55rem] lg:text-2xl">
                       {product.name}
                     </h3>
                     {totalDiscount > 0 ? (
                       <div className="flex items-center gap-3">
-                        <p className="text-sm text-black/35 line-through md:text-xs lg:text-sm">₹{product.price.toFixed(0)}</p>
-                        <p className="text-lg font-semibold text-[#8d2d17] md:text-base lg:text-lg">₹{discountedPrice.toFixed(0)}</p>
+                        <p className="text-xs text-black/35 line-through md:text-xs lg:text-sm">₹{product.price.toFixed(0)}</p>
+                        <p className="text-base font-semibold text-[#8d2d17] md:text-base lg:text-lg">₹{discountedPrice.toFixed(0)}</p>
                       </div>
                     ) : (
-                      <p className="text-lg font-semibold text-[#120e0b] md:text-base lg:text-lg">₹{product.price.toFixed(0)}</p>
+                      <p className="text-base font-semibold text-[#120e0b] md:text-base lg:text-lg">₹{product.price.toFixed(0)}</p>
                     )}
                   </div>
                 </Link>

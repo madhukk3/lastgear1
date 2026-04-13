@@ -341,7 +341,7 @@ const Account = () => {
               </button>
             )}
 
-            <div className="mb-6 flex flex-wrap items-center gap-3 text-sm text-black/45">
+            <div className="mb-5 flex flex-wrap items-center gap-2.5 text-xs text-black/45 md:text-sm">
               <Link to="/" className="hover:text-black">Home</Link>
               <span>•</span>
               {activeTab === 'overview' ? (
@@ -366,15 +366,15 @@ const Account = () => {
             {activeTab === 'overview' && (
               <section data-testid="account-overview-section">
                 <div className="mb-12">
-                  <h1 className="text-4xl font-semibold tracking-tight text-[#16120d] md:text-5xl">Hello, {user.name}</h1>
+                  <h1 className="text-[2.2rem] font-semibold leading-none text-[#16120d] md:text-[3.6rem]">Hello, {user.name}</h1>
                   <p className="mt-3 text-lg text-black/58">Account Overview</p>
                 </div>
 
                 {latestOrder && (
                   <div className="mb-12 grid gap-6 border border-black/10 p-6 md:grid-cols-[1.1fr_auto]">
                     <div>
-                      <p className="font-nav text-xs text-black/45">LATEST ORDER</p>
-                      <h2 className="mt-3 font-puma text-3xl leading-none text-[#16120d]">
+                      <p className="font-nav text-xs text-black/45">Latest order</p>
+                      <h2 className="mt-3 text-[1.65rem] font-semibold leading-tight text-[#16120d] md:text-[2.3rem]">
                         {latestOrder.items?.length === 1 ? latestOrder.items[0].name : latestOrder.id}
                       </h2>
                       <div className="mt-4 flex flex-wrap items-center gap-3 text-sm text-black/58">
@@ -388,17 +388,17 @@ const Account = () => {
                     <div className="flex flex-col gap-3 md:items-end">
                       <Link
                         to={`/account/orders/${latestOrder.id}`}
-                        className="inline-flex items-center gap-2 border border-black px-5 py-3 font-nav text-sm text-[#16120d] transition-colors hover:bg-black hover:text-white"
+                        className="inline-flex items-center gap-2 border border-black px-5 py-3 text-sm font-medium text-[#16120d] transition-colors hover:bg-black hover:text-white"
                       >
-                        Track Latest Order
+                        Track latest order
                         <ArrowRight size={16} />
                       </Link>
                       <button
                         type="button"
                         onClick={() => setActiveTab('addresses')}
-                        className="inline-flex items-center gap-2 border border-black/15 px-5 py-3 font-nav text-sm text-[#16120d] transition-colors hover:border-black"
+                        className="inline-flex items-center gap-2 border border-black/15 px-5 py-3 text-sm font-medium text-[#16120d] transition-colors hover:border-black"
                       >
-                        Manage Addresses
+                        Manage addresses
                         <MapPin size={16} />
                       </button>
                     </div>
@@ -406,7 +406,7 @@ const Account = () => {
                 )}
 
                 <div className="mb-14">
-                  <h2 className="font-nav text-[2rem] leading-none text-[#16120d]">Trending Now</h2>
+                  <h2 className="text-[1.6rem] font-semibold leading-none text-[#16120d]">Trending Now</h2>
                   <div className="mt-8">
                     {recommendations.length > 0 ? (
                       renderProductGrid(recommendations.slice(0, 4), 'recommendation')
@@ -417,7 +417,7 @@ const Account = () => {
                 </div>
 
                 <div>
-                  <h2 className="font-nav text-[2rem] leading-none text-[#16120d]">Recently Viewed By You</h2>
+                  <h2 className="text-[1.6rem] font-semibold leading-none text-[#16120d]">Recently Viewed By You</h2>
                   <div className="mt-8">
                     {recentlyViewed.length > 0 ? (
                       renderProductGrid(recentlyViewed.slice(0, 4), 'recently-viewed')
@@ -431,18 +431,18 @@ const Account = () => {
 
             {activeTab === 'orders' && (
               <section data-testid="orders-section">
-                <div className="mb-10">
-                  <p className="text-lg font-semibold text-[#16120d]">Order history</p>
-                  <h1 className="mt-2 text-5xl font-semibold tracking-tight text-[#16120d]">My Account</h1>
+                <div className="mb-8">
+                  <p className="text-base font-semibold text-[#16120d] md:text-lg">Order history</p>
+                  <h1 className="mt-2 text-[2.2rem] font-semibold leading-none text-[#16120d] md:text-[3rem]">My Account</h1>
                 </div>
 
-                <div className="mb-10">
-                  <label className="mb-3 block font-nav text-sm text-[#16120d]">SELECT DATE</label>
+                <div className="mb-8">
+                  <label className="mb-2 block font-nav text-xs text-[#16120d]">SELECT DATE</label>
                   <div className="relative">
                     <select
                       value={orderRange}
                       onChange={(e) => setOrderRange(e.target.value)}
-                      className="w-full appearance-none border border-black/20 bg-white px-6 py-6 pr-16 text-2xl text-[#16120d] outline-none transition-colors focus:border-black"
+                      className="w-full appearance-none border border-black/20 bg-white px-4 py-4 pr-12 text-lg text-[#16120d] outline-none transition-colors focus:border-black md:px-5 md:py-5 md:text-xl"
                     >
                       {ORDER_RANGE_OPTIONS.map((option) => (
                         <option key={option.value} value={option.value}>
@@ -450,7 +450,7 @@ const Account = () => {
                         </option>
                       ))}
                     </select>
-                    <ChevronDown className="pointer-events-none absolute right-6 top-1/2 -translate-y-1/2 text-black/70" size={28} />
+                    <ChevronDown className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-black/70 md:right-5" size={22} />
                   </div>
                 </div>
 
@@ -473,26 +473,26 @@ const Account = () => {
                       <Link
                         to={`/account/orders/${order.id}`}
                         key={order.id}
-                        className="block border border-black/10 p-6 transition-colors hover:border-black"
+                        className="block border border-black/10 p-5 transition-colors hover:border-black md:p-6"
                         data-testid={`order-${order.id}`}
                       >
-                        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-                          <div>
-                            <div className="flex flex-wrap items-center gap-3">
-                              <p className="font-nav text-2xl leading-none text-[#16120d]">
+                      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                        <div>
+                          <div className="flex flex-wrap items-center gap-3">
+                              <p className="text-xl font-bold leading-none text-[#16120d] md:text-2xl">
                                 {order.items?.length === 1 ? order.items[0].name : `${order.items?.[0]?.name || order.id} + ${Math.max((order.items?.length || 1) - 1, 0)} more`}
                               </p>
                               <span className="rounded-full bg-[#f2f2f2] px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-black/60">
                                 {formatStatus(order.order_status)}
                               </span>
-                            </div>
-                            <p className="mt-3 text-sm text-black/50">
+                          </div>
+                            <p className="mt-2 text-xs text-black/50 md:text-sm">
                               {formatDate(order.created_at)} • {order.items?.length || 0} item{(order.items?.length || 0) !== 1 ? 's' : ''}
                             </p>
                           </div>
-                          <div className="flex items-center gap-6">
-                            <span className="text-2xl font-semibold text-[#16120d]">₹{Number(order.total_amount || 0).toFixed(0)}</span>
-                            <span className="font-nav text-sm text-[#16120d]">View Details &gt;</span>
+                          <div className="flex items-center gap-5">
+                            <span className="text-xl font-semibold text-[#16120d] md:text-2xl">₹{Number(order.total_amount || 0).toFixed(0)}</span>
+                            <span className="font-nav text-xs text-[#16120d] md:text-sm">View Details &gt;</span>
                           </div>
                         </div>
                       </Link>
@@ -505,7 +505,7 @@ const Account = () => {
             {activeTab === 'wishlist' && (
               <section data-testid="wishlist-section">
                 <div className="mb-10">
-                  <h1 className="text-5xl font-semibold tracking-tight text-[#16120d]">Wishlist</h1>
+                  <h1 className="text-[2.2rem] font-semibold leading-none text-[#16120d] md:text-[3rem]">Wishlist</h1>
                   <p className="mt-3 text-lg text-black/58">Saved pieces you may want to pick up later.</p>
                 </div>
 
@@ -538,7 +538,7 @@ const Account = () => {
             {activeTab === 'addresses' && (
               <section data-testid="addresses-section">
                 <div className="mb-10">
-                  <h1 className="text-5xl font-semibold tracking-tight text-[#16120d]">Addresses</h1>
+                  <h1 className="text-[2.2rem] font-semibold leading-none text-[#16120d] md:text-[3rem]">Addresses</h1>
                 </div>
 
                 <div className="grid grid-cols-1 gap-8 xl:grid-cols-[1.05fr_0.95fr]">
@@ -613,7 +613,7 @@ const Account = () => {
 
                   <div className="border border-black/10 p-6">
                     <div className="mb-6">
-                      <h2 className="text-3xl font-semibold tracking-tight text-[#16120d]">
+                      <h2 className="text-[2rem] font-semibold leading-none text-[#16120d]">
                         {editingAddressId ? 'Edit Address' : 'Add New Address'}
                       </h2>
                     </div>
@@ -761,14 +761,14 @@ const Account = () => {
             {activeTab === 'settings' && (
               <section data-testid="settings-section">
                 <div className="mb-10">
-                  <h1 className="text-5xl font-semibold tracking-tight text-[#16120d]">Account Settings</h1>
+                  <h1 className="text-[2.2rem] font-semibold leading-none text-[#16120d] md:text-[3rem]">Account Settings</h1>
                 </div>
 
                 <div className="space-y-6">
                   <div className="border border-black/10 p-6">
                     <div className="mb-6 flex items-start justify-between gap-4">
                       <div>
-                        <h2 className="text-3xl font-semibold tracking-tight text-[#16120d]">Personal Details</h2>
+                        <h2 className="text-[2rem] font-semibold leading-none text-[#16120d]">Personal Details</h2>
                       </div>
                     </div>
                     <div className="space-y-3 text-lg text-black/70">
@@ -780,7 +780,7 @@ const Account = () => {
                   <div className="border border-black/10 p-6">
                     <div className="mb-6 flex items-start justify-between gap-4">
                       <div>
-                        <h2 className="text-3xl font-semibold tracking-tight text-[#16120d]">Email & Password</h2>
+                        <h2 className="text-[2rem] font-semibold leading-none text-[#16120d]">Email & Password</h2>
                       </div>
                     </div>
                     <div className="space-y-3 text-lg text-black/70">
