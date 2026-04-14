@@ -291,7 +291,7 @@ const Account = () => {
       <div className="mx-auto max-w-[1600px]">
         <div className="grid grid-cols-1 lg:grid-cols-[260px_1fr]">
           <aside className={`${showMobileSectionView ? 'hidden lg:block' : 'block'} bg-[#f5f5f5] px-5 py-8 lg:min-h-[calc(100vh-220px)]`}>
-            <div className="space-y-2">
+            <div className="space-y-2 pt-3 lg:pt-0">
               {sidebarItems.slice(0, 1).map((item) => {
                 const Icon = item.icon;
                 const isActive = activeTab === item.id;

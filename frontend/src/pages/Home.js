@@ -13,7 +13,7 @@ const Home = () => {
   const [impactSeriesData, setImpactSeriesData] = useState(null);
   const [newsletterEmail, setNewsletterEmail] = useState('');
   const [newsletterSubmitting, setNewsletterSubmitting] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const [featuredLoading, setFeaturedLoading] = useState(true);
   const [currentSlide, setCurrentSlide] = useState(0);
   const { addToCart } = useCart();
   const { globalDiscount, freeShippingThreshold } = useSettings() || { globalDiscount: 0, freeShippingThreshold: 1500 };
@@ -45,6 +45,8 @@ const Home = () => {
       setFeaturedProducts(response.data);
     } catch (error) {
       console.error('Failed to fetch featured products:', error);
+    } finally {
+      setFeaturedLoading(false);
     }
   };
 
@@ -60,12 +62,30 @@ const Home = () => {
   };
 
   useEffect(() => {
-    const fetchHomeData = async () => {
-      setLoading(true);
-      await Promise.all([fetchHeroBanners(), fetchFeaturedProducts(), fetchActiveImpactSeries()]);
-      setLoading(false);
+    let idleId;
+    let timeoutId;
+
+    fetchHeroBanners();
+
+    const loadSecondarySections = () => {
+      fetchFeaturedProducts();
+      fetchActiveImpactSeries();
     };
-    fetchHomeData();
+
+    if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
+      idleId = window.requestIdleCallback(loadSecondarySections, { timeout: 800 });
+    } else {
+      timeoutId = window.setTimeout(loadSecondarySections, 120);
+    }
+
+    return () => {
+      if (typeof window !== 'undefined' && idleId && 'cancelIdleCallback' in window) {
+        window.cancelIdleCallback(idleId);
+      }
+      if (timeoutId) {
+        window.clearTimeout(timeoutId);
+      }
+    };
   }, []);
 
   const handleQuickAdd = async (e, product, size) => {
@@ -134,7 +154,14 @@ const Home = () => {
                 key={slide.id}
                 className={`absolute inset-0 transition-opacity duration-1000 ${index === currentSlide ? 'opacity-100' : 'opacity-0'}`}
               >
-                <img src={slide.image} alt={slide.title} className="hero-pan h-full w-full object-cover scale-[1.04]" />
+                <img
+                  src={slide.image}
+                  alt={slide.title}
+                  className="hero-pan h-full w-full object-cover scale-[1.04]"
+                  loading={index === currentSlide ? 'eager' : 'lazy'}
+                  fetchPriority={index === currentSlide ? 'high' : 'auto'}
+                  decoding="async"
+                />
               </div>
             ))
           ) : (
@@ -223,7 +250,13 @@ const Home = () => {
 
         <div className="reveal-row grid grid-cols-1 gap-6 lg:grid-cols-[1.15fr_0.85fr]">
           <Link to="/products?category=t-shirts" className="group relative min-h-[540px] overflow-hidden rounded-[36px] bg-[#140f0b] text-white" data-testid="category-tshirts" style={{ '--stagger': 0 }}>
-            <img src="https://images.unsplash.com/photo-1581655353564-df123a1eb820?w=1200" alt="T-Shirts Collection" className="absolute inset-0 h-full w-full object-cover transition duration-700 group-hover:scale-105" />
+            <img
+              src="https://images.unsplash.com/photo-1581655353564-df123a1eb820?w=1200"
+              alt="T-Shirts Collection"
+              className="absolute inset-0 h-full w-full object-cover transition duration-700 group-hover:scale-105"
+              loading="lazy"
+              decoding="async"
+            />
             <div className="absolute inset-0 bg-[linear-gradient(140deg,rgba(0,0,0,0.18),rgba(0,0,0,0.74))]" />
             <div className="relative flex h-full flex-col justify-between p-8 md:p-10">
               <span className="w-fit rounded-full border border-white/20 bg-white/10 px-4 py-2 font-nav text-xs text-white/75">T-Shirts</span>
@@ -242,7 +275,13 @@ const Home = () => {
           </Link>
 
           <Link to="/products?category=hoodies" className="group relative min-h-[540px] overflow-hidden rounded-[36px] bg-[#d6cdc0] text-[#120e0b]" data-testid="category-hoodies" style={{ '--stagger': 1 }}>
-            <img src="https://images.unsplash.com/photo-1590759483822-b2fee5aa6bd3?w=1200" alt="Hoodies Collection" className="absolute inset-0 h-full w-full object-cover transition duration-700 group-hover:scale-105" />
+            <img
+              src="https://images.unsplash.com/photo-1590759483822-b2fee5aa6bd3?w=1200"
+              alt="Hoodies Collection"
+              className="absolute inset-0 h-full w-full object-cover transition duration-700 group-hover:scale-105"
+              loading="lazy"
+              decoding="async"
+            />
             <div className="absolute inset-0 bg-[linear-gradient(140deg,rgba(240,232,223,0.22),rgba(18,14,11,0.56))]" />
             <div className="relative flex h-full flex-col justify-between p-8 md:p-10 text-white">
               <span className="w-fit rounded-full border border-white/25 bg-black/20 px-4 py-2 font-nav text-xs text-white/80">Hoodies</span>
@@ -264,7 +303,13 @@ const Home = () => {
 
       {impactSeriesData && (
         <section className="relative overflow-hidden border-y border-black/10 bg-[#120e0b] py-24 text-white" data-testid="impact-series-section">
-          <img src={impactSeriesData.image} alt={impactSeriesData.title || 'Impact Series'} className="absolute inset-0 h-full w-full object-cover opacity-30" />
+          <img
+            src={impactSeriesData.image}
+            alt={impactSeriesData.title || 'Impact Series'}
+            className="absolute inset-0 h-full w-full object-cover opacity-30"
+            loading="lazy"
+            decoding="async"
+          />
           <div className="absolute inset-0 bg-[linear-gradient(120deg,rgba(18,14,11,0.92),rgba(18,14,11,0.56),rgba(18,14,11,0.92))]" />
 
           <div className="relative mx-auto grid max-w-7xl gap-10 px-4 md:px-6 lg:grid-cols-[0.85fr_1.15fr] lg:items-center">
@@ -308,7 +353,7 @@ const Home = () => {
           </Link>
         </div>
 
-        {loading ? (
+        {featuredLoading ? (
           <BrandLoader minHeight="40vh" eyebrow="Featured" />
         ) : (
           <div className="reveal-row grid grid-cols-2 justify-items-stretch gap-4 sm:grid-cols-2 sm:gap-5 md:grid-cols-3 md:gap-4 lg:gap-5 xl:grid-cols-4">
@@ -330,7 +375,13 @@ const Home = () => {
                         {product.badge}
                       </div>
                     )}
-                    <img src={product.images[0]} alt={product.name} className="h-full w-full object-cover transition duration-700 group-hover:scale-110" />
+                    <img
+                      src={product.images[0]}
+                      alt={product.name}
+                      className="h-full w-full object-cover transition duration-700 group-hover:scale-110"
+                      loading="lazy"
+                      decoding="async"
+                    />
                     <div className="absolute inset-x-0 bottom-0 translate-y-full bg-[linear-gradient(to_top,rgba(18,14,11,0.94)_0%,rgba(18,14,11,0.68)_40%,rgba(18,14,11,0.02)_100%)] px-3 pb-4 pt-12 transition duration-300 group-hover:translate-y-0">
                       <p className="mb-3 font-nav text-xs tracking-[0.14em] text-[#f0d9c0]">QUICK ADD</p>
                       <div className="flex flex-nowrap gap-2 overflow-hidden">
