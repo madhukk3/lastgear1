@@ -363,32 +363,9 @@ const Account = () => {
               </button>
             )}
 
-            <div className={`mb-5 flex flex-wrap items-center gap-2.5 text-xs text-black/45 md:text-sm lg:hidden ${activeTab === 'overview' ? 'hidden' : ''}`}>
-              <Link to="/" className="hover:text-black">Home</Link>
-              <span>•</span>
-              {activeTab === 'overview' ? (
-                <span className="font-semibold text-black">My Account</span>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => handleTabChange('overview')}
-                  className="text-black transition-colors hover:text-black/70"
-                >
-                  My Account
-                </button>
-              )}
-              {activeTab !== 'overview' && (
-                <>
-                  <span>•</span>
-                  <span className="font-semibold text-black">{sidebarItems.find((item) => item.id === activeTab)?.label || 'Overview'}</span>
-                </>
-              )}
-            </div>
-
             {activeTab === 'overview' && (
               <section data-testid="account-overview-section">
                 <div className="mb-10">
-                  <p className="mb-3 text-base font-semibold text-[#16120d]">Account Overview</p>
                   <h1 className="text-[2.2rem] font-semibold leading-none text-[#16120d] md:text-[3.6rem]">Hello, {user.name}</h1>
                 </div>
 
