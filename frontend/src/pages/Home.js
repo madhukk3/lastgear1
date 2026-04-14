@@ -172,7 +172,7 @@ const Home = () => {
           <div className="lastgear-grid absolute inset-0 opacity-20" />
         </div>
 
-        <div className="relative mx-auto flex min-h-[calc(100vh-4rem)] max-w-7xl items-center justify-center px-4 py-14 md:px-6 lg:items-end lg:justify-start lg:py-24">
+        <div className="relative mx-auto flex min-h-[calc(100vh-4rem)] w-full max-w-[1700px] items-center justify-center px-4 py-14 md:px-6 lg:items-end lg:justify-start lg:px-8 lg:py-24 xl:px-10 2xl:px-12">
           <div className="max-w-3xl text-center text-white lg:text-left">
             <div className="fade-up mb-5 inline-flex items-center gap-3 rounded-full border border-white/20 bg-white/10 px-4 py-2 font-nav text-[11px] text-white/80 backdrop-blur" style={{ '--delay': '0.1s' }}>
               <span>LAST GEAR</span>
@@ -214,14 +214,14 @@ const Home = () => {
           <>
             <button
               onClick={prevSlide}
-              className="absolute left-4 top-1/2 z-20 hidden -translate-y-1/2 rounded-full border border-white/20 bg-black/25 p-3 text-white backdrop-blur transition hover:bg-white/15 lg:flex"
+              className="absolute left-6 top-1/2 z-20 hidden -translate-y-1/2 rounded-full border border-white/20 bg-black/25 p-3 text-white backdrop-blur transition hover:bg-white/15 xl:left-8 2xl:left-10 lg:flex"
               aria-label="Previous Slide"
             >
               <ChevronLeft size={24} />
             </button>
             <button
               onClick={nextSlide}
-              className="absolute right-4 top-1/2 z-20 hidden -translate-y-1/2 rounded-full border border-white/20 bg-black/25 p-3 text-white backdrop-blur transition hover:bg-white/15 lg:flex"
+              className="absolute right-6 top-1/2 z-20 hidden -translate-y-1/2 rounded-full border border-white/20 bg-black/25 p-3 text-white backdrop-blur transition hover:bg-white/15 xl:right-8 2xl:right-10 lg:flex"
               aria-label="Next Slide"
             >
               <ChevronRight size={24} />
@@ -241,7 +241,7 @@ const Home = () => {
         )}
       </section>
 
-      <section className="mx-auto max-w-7xl px-4 py-20 md:px-6" data-testid="categories-section">
+      <section className="mx-auto max-w-[1700px] px-6 py-20 md:px-8 xl:px-10 2xl:px-12" data-testid="categories-section">
         <div className="mb-10 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
           <div>
             <p className="font-nav text-sm text-[#8d5f32]">Shop By Drop</p>
@@ -312,7 +312,7 @@ const Home = () => {
           />
           <div className="absolute inset-0 bg-[linear-gradient(120deg,rgba(18,14,11,0.92),rgba(18,14,11,0.56),rgba(18,14,11,0.92))]" />
 
-          <div className="relative mx-auto grid max-w-7xl gap-10 px-4 md:px-6 lg:grid-cols-[0.85fr_1.15fr] lg:items-center">
+          <div className="relative mx-auto grid max-w-[1700px] gap-10 px-6 md:px-8 xl:px-10 2xl:px-12 lg:grid-cols-[0.85fr_1.15fr] lg:items-center">
             <div className="rounded-[34px] border border-white/12 bg-white/8 p-8 backdrop-blur-md">
               <p className="font-nav text-sm text-[#d99146]">Impact Series</p>
               <h2 className="mt-4 font-nav text-4xl leading-[0.96] text-[#f8f2ea] md:text-5xl">
@@ -341,7 +341,7 @@ const Home = () => {
         </section>
       )}
 
-      <section className="mx-auto max-w-7xl px-4 py-20 md:px-6" data-testid="featured-products-section">
+      <section className="mx-auto max-w-[1700px] px-6 py-20 md:px-8 xl:px-10 2xl:px-12" data-testid="featured-products-section">
         <div className="mb-10 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
           <div>
             <p className="font-nav text-sm text-[#8d5f32]">Featured Drop</p>
@@ -423,7 +423,7 @@ const Home = () => {
       </section>
 
       <section className="border-y border-black/10 bg-[#e6ddcf] py-10">
-        <div className="reveal-row mx-auto grid max-w-7xl gap-6 px-4 md:px-6 md:grid-cols-3">
+        <div className="reveal-row mx-auto grid max-w-[1700px] gap-6 px-6 md:px-8 xl:px-10 2xl:px-12 md:grid-cols-3">
           <div className="rounded-[26px] border border-black/10 bg-white/75 p-6" style={{ '--stagger': 0 }}>
             <div className="inline-flex rounded-full bg-[#120e0b] p-3 text-[#f1e6d8]">
               <TrendingUp size={24} strokeWidth={1.7} />

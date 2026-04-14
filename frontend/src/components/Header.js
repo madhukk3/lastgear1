@@ -281,7 +281,7 @@ const Header = () => {
                 transitionTimingFunction: 'cubic-bezier(0.22, 1, 0.36, 1)',
               }}
             >
-              <div className="hidden lg:flex max-w-7xl mx-auto h-full px-4 items-center justify-between gap-6">
+              <div className="hidden lg:flex max-w-[1700px] mx-auto h-full px-6 xl:px-8 2xl:px-10 items-center justify-between gap-6">
                 <div className={`min-w-0 flex-1 text-[10px] font-bold tracking-[0.32em] uppercase transition-opacity duration-500 ease-in-out ${fadeStatus}`} key={currentAnnouncementIndex}>
                   <div className="truncate">
                     {renderAnnouncement(announcements[currentAnnouncementIndex])}
@@ -318,7 +318,7 @@ const Header = () => {
               transitionTimingFunction: 'cubic-bezier(0.22, 1, 0.36, 1)',
             }}
           >
-            <div className="max-w-7xl mx-auto px-4">
+            <div className="max-w-[1700px] mx-auto px-6 xl:px-8 2xl:px-10">
           <div className="relative flex items-center justify-between h-14 md:h-[60px]">
             {/* Logo with Image */}
             <Link to="/" className="hidden lg:flex items-center gap-3" data-testid="logo-link">

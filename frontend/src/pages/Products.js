@@ -120,7 +120,7 @@ const Products = () => {
     <div data-testid="products-page">
       {/* Title Bar */}
       <div className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 py-8">
+        <div className="max-w-[1700px] mx-auto px-6 py-8 md:px-8 xl:px-10 2xl:px-12">
           <h1
             className="fade-up text-4xl font-bold uppercase"
             style={{ '--delay': '0.05s' }}
@@ -136,7 +136,7 @@ const Products = () => {
 
       {/* Filter Bar */}
       <div className="sticky top-20 bg-white border-b border-gray-200 z-40 fade-in" style={{ '--delay': '0.08s' }} data-testid="filter-bar">
-        <div className="max-w-7xl mx-auto px-4 py-4">
+        <div className="max-w-[1700px] mx-auto px-6 py-4 md:px-8 xl:px-10 2xl:px-12">
           <div className="reveal-row flex flex-wrap gap-4">
             {/* Category Filter */}
             <div className="relative" style={{ '--stagger': 0 }}>
@@ -229,7 +229,7 @@ const Products = () => {
       </div>
 
       {/* Products Grid */}
-      <div className="max-w-7xl mx-auto px-4 py-12">
+      <div className="max-w-[1700px] mx-auto px-6 py-12 md:px-8 xl:px-10 2xl:px-12">
         {loading ? (
           <BrandLoader minHeight="48vh" eyebrow="Products" />
         ) : products.length === 0 ? (
