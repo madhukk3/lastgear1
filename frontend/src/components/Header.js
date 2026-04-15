@@ -281,14 +281,16 @@ const Header = () => {
                 transitionTimingFunction: 'cubic-bezier(0.22, 1, 0.36, 1)',
               }}
             >
-              <div className="hidden lg:flex max-w-[1700px] mx-auto h-full px-6 xl:px-8 2xl:px-10 items-center justify-between gap-6">
-                <div className={`min-w-0 flex-1 text-[10px] font-bold tracking-[0.32em] uppercase transition-opacity duration-500 ease-in-out ${fadeStatus}`} key={currentAnnouncementIndex}>
+              <div className="hidden lg:grid max-w-[1700px] mx-auto h-full grid-cols-[1fr_auto_1fr] px-6 xl:px-8 2xl:px-10 items-center gap-6">
+                <div aria-hidden="true" />
+
+                <div className={`min-w-0 text-center text-[10px] font-bold tracking-[0.32em] uppercase transition-opacity duration-500 ease-in-out ${fadeStatus}`} key={currentAnnouncementIndex}>
                   <div className="truncate">
                     {renderAnnouncement(announcements[currentAnnouncementIndex])}
                   </div>
                 </div>
 
-                <div className="font-nav flex items-center space-x-3 whitespace-nowrap text-[11px] tracking-normal normal-case text-black">
+                <div className="font-nav flex items-center justify-end space-x-3 whitespace-nowrap text-[11px] tracking-normal normal-case text-black">
                   <Link to="/help" className="hover:text-gray-600 transition-colors">Help</Link>
                   <span className="text-gray-400 font-normal">|</span>
                   {user ? (
@@ -304,7 +306,7 @@ const Header = () => {
               </div>
 
               <div className="lg:hidden h-full px-4 flex items-center justify-center">
-                <div className={`w-full text-center text-[10px] font-bold uppercase tracking-wider truncate transition-opacity duration-500 ease-in-out ${fadeStatus}`} key={`mobile-${currentAnnouncementIndex}`}>
+                <div className={`w-full text-center text-[10px] font-bold uppercase tracking-[0.18em] transition-opacity duration-500 ease-in-out ${fadeStatus}`} key={`mobile-${currentAnnouncementIndex}`}>
                   {renderAnnouncement(announcements[currentAnnouncementIndex])}
                 </div>
               </div>

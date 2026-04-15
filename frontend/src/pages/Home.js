@@ -173,7 +173,7 @@ const Home = () => {
         </div>
 
         <div className="relative mx-auto flex min-h-[calc(100vh-4rem)] w-full max-w-[1700px] items-center justify-center px-4 py-14 md:px-6 lg:items-end lg:justify-start lg:px-8 lg:py-24 xl:px-10 2xl:px-12">
-          <div className="max-w-3xl text-center text-white lg:text-left">
+          <div className="max-w-3xl text-center text-white lg:pl-10 lg:text-left xl:pl-14 2xl:pl-16">
             <div className="fade-up mb-5 inline-flex items-center gap-3 rounded-full border border-white/20 bg-white/10 px-4 py-2 font-nav text-[11px] text-white/80 backdrop-blur" style={{ '--delay': '0.1s' }}>
               <span>LAST GEAR</span>
               {heroBanners.length > 1 && (
