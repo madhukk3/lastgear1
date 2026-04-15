@@ -27,6 +27,7 @@ import hmac
 import hashlib
 from urllib.parse import urlparse
 from notifications import send_order_email, send_exchange_request_email, send_subscriber_welcome_email
+from delhivery import fetch_delhivery_tracking, delhivery_tracking_enabled, DelhiveryTrackingError
 # from emergentintegrations.llm.chat import LlmChat, UserMessage
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
@@ -408,6 +409,9 @@ class Order(BaseModel):
     session_id: Optional[str] = None
     discount_applied: int = 0
     coupon_code: Optional[str] = None
+    tracking_number: Optional[str] = None
+    tracking_url: Optional[str] = None
+    courier_partner: Optional[str] = None
     created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
 
 class OrderCreate(BaseModel):
@@ -1316,6 +1320,59 @@ async def get_order(order_id: str, current_user: Dict = Depends(get_current_user
     if not order:
         raise HTTPException(status_code=404, detail="Order not found")
     return order
+
+
+@api_router.get("/orders/{order_id}/tracking")
+async def get_order_tracking(order_id: str, current_user: Dict = Depends(get_current_user)):
+    order = await db.orders.find_one({"id": order_id, "user_id": current_user['id']}, {"_id": 0})
+    if not order:
+        raise HTTPException(status_code=404, detail="Order not found")
+
+    tracking_number = (order.get("tracking_number") or "").strip()
+    if not tracking_number:
+        return {
+            "enabled": False,
+            "configured": delhivery_tracking_enabled(),
+            "tracking_number": None,
+            "message": "Tracking number not available for this order yet."
+        }
+
+    if not delhivery_tracking_enabled():
+        return {
+            "enabled": False,
+            "configured": False,
+            "tracking_number": tracking_number,
+            "tracking_url": order.get("tracking_url"),
+            "message": "Live courier tracking is not configured yet."
+        }
+
+    try:
+        tracking_data = await fetch_delhivery_tracking(tracking_number)
+        await db.orders.update_one(
+            {"id": order_id},
+            {"$set": {
+                "courier_partner": "delhivery",
+                "tracking_url": tracking_data.get("tracking_url"),
+                "courier_status": tracking_data.get("status"),
+                "courier_status_code": tracking_data.get("status_code"),
+                "courier_last_scan": tracking_data.get("last_scan"),
+                "courier_last_synced_at": datetime.now(timezone.utc).isoformat()
+            }}
+        )
+        return {
+            "enabled": True,
+            "configured": True,
+            "courier_partner": "delhivery",
+            **tracking_data
+        }
+    except DelhiveryTrackingError as exc:
+        return {
+            "enabled": False,
+            "configured": True,
+            "tracking_number": tracking_number,
+            "tracking_url": order.get("tracking_url"),
+            "message": str(exc)
+        }
 
 @api_router.post("/orders/{order_id}/request-cancel")
 async def request_order_cancellation(order_id: str, payload: CancelRequest, current_user: Dict = Depends(get_current_user)):

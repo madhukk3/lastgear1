@@ -14,6 +14,8 @@ const OrderStatusPage = () => {
     const [showCancelModal, setShowCancelModal] = useState(false);
     const [cancelLoading, setCancelLoading] = useState(false);
     const [cancelReason, setCancelReason] = useState('');
+    const [trackingData, setTrackingData] = useState(null);
+    const [trackingLoading, setTrackingLoading] = useState(false);
 
     const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
     const API = `${BACKEND_URL}/api`;
@@ -27,11 +29,30 @@ const OrderStatusPage = () => {
         try {
             const response = await axios.get(`${API}/orders/${order_id}`);
             setOrder(response.data);
+            const trackingNumber = response.data?.tracking_number;
+            if (trackingNumber) {
+                fetchTrackingDetails();
+            } else {
+                setTrackingData(null);
+            }
             setLoading(false);
         } catch (err) {
             console.error('Error fetching order details:', err);
             setError('Could not establish connection to the order database.');
             setLoading(false);
+        }
+    };
+
+    const fetchTrackingDetails = async () => {
+        try {
+            setTrackingLoading(true);
+            const response = await axios.get(`${API}/orders/${order_id}/tracking`);
+            setTrackingData(response.data);
+        } catch (err) {
+            console.error('Failed to fetch tracking details:', err);
+            setTrackingData(null);
+        } finally {
+            setTrackingLoading(false);
         }
     };
 
@@ -248,11 +269,58 @@ const OrderStatusPage = () => {
                                     <div className="w-2 h-2 bg-[#ff003c] rounded-full animate-ping"></div> Live Telemetry
                                 </h3>
                                 {order.tracking_number && (
-                                    <div className="bg-white/10 px-3 py-1 rounded text-white text-xs font-mono border border-white/20">
-                                        TRK PIND: {order.tracking_number}
+                                    <div className="flex flex-wrap items-center justify-end gap-2">
+                                        <div className="bg-white/10 px-3 py-1 rounded text-white text-xs font-mono border border-white/20">
+                                            AWB: {order.tracking_number}
+                                        </div>
+                                        {trackingLoading ? (
+                                            <div className="bg-blue-500/10 px-3 py-1 rounded text-blue-300 text-xs font-mono border border-blue-500/20">
+                                                SYNCING TRACKING...
+                                            </div>
+                                        ) : trackingData?.enabled && trackingData?.status ? (
+                                            <div className="bg-green-500/10 px-3 py-1 rounded text-green-300 text-xs font-mono border border-green-500/20">
+                                                DELHIVERY: {trackingData.status}
+                                            </div>
+                                        ) : null}
                                     </div>
                                 )}
                             </div>
+
+                            {order.tracking_number && (
+                                <div className="mb-8 rounded-sm border border-gray-800 bg-[#0c0c0c] p-4 sm:p-5">
+                                    <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                                        <div>
+                                            <p className="mb-1 text-[10px] font-mono uppercase tracking-widest text-gray-500">
+                                                Courier tracking
+                                            </p>
+                                            <p className="text-sm font-bold uppercase tracking-wide text-white">
+                                                {trackingData?.enabled ? 'Delhivery Live Tracking' : 'Tracking Pending'}
+                                            </p>
+                                            <p className="mt-1 text-sm text-gray-400">
+                                                {trackingData?.enabled
+                                                    ? trackingData?.last_scan?.location || trackingData?.destination || 'Live courier updates connected'
+                                                    : trackingData?.message || 'Tracking details will show once the shipment is synced.'}
+                                            </p>
+                                            {trackingData?.enabled && trackingData?.last_scan?.time && (
+                                                <p className="mt-2 text-xs font-mono uppercase tracking-widest text-[#00f3ff]">
+                                                    LAST SCAN: {trackingData.last_scan.time}
+                                                </p>
+                                            )}
+                                        </div>
+
+                                        {(trackingData?.tracking_url || order.tracking_url) && (
+                                            <a
+                                                href={trackingData?.tracking_url || order.tracking_url}
+                                                target="_blank"
+                                                rel="noreferrer"
+                                                className="inline-flex items-center justify-center border border-white/20 px-4 py-3 text-xs font-mono uppercase tracking-widest text-white transition-colors hover:border-white hover:bg-white hover:text-[#0a0a0a]"
+                                            >
+                                                Track with Delhivery
+                                            </a>
+                                        )}
+                                    </div>
+                                </div>
+                            )}
 
                             <div className="relative">
                                 <div className="absolute left-[15px] top-6 bottom-6 w-[2px] bg-gray-800 md:left-0 md:right-0 md:top-[15px] md:bottom-auto md:h-[2px] md:w-full"></div>

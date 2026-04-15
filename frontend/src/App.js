@@ -1,5 +1,5 @@
-import React from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import { Toaster } from 'sonner';
 import { AuthProvider } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
@@ -41,6 +41,16 @@ import { useSettings } from './context/SettingsContext';
 import './App.css';
 import './index.css';
 
+function ScrollToTop() {
+  const location = useLocation();
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+  }, [location.pathname, location.search]);
+
+  return null;
+}
+
 function AppShell() {
   const { loading: authLoading } = useAuth();
   const { loading: settingsLoading } = useSettings();
@@ -51,6 +61,7 @@ function AppShell() {
 
   return (
     <BrowserRouter>
+      <ScrollToTop />
       <AddedToCartPopup />
       <Toaster position="bottom-center" richColors closeButton />
       <Routes>

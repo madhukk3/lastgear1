@@ -408,6 +408,8 @@ async def admin_update_order_status(
     
     if status_update.tracking_number:
         update_data["tracking_number"] = status_update.tracking_number
+        update_data["courier_partner"] = "delhivery"
+        update_data["tracking_url"] = f"https://www.delhivery.com/track/package/{status_update.tracking_number}"
         
     update_query = {"$set": update_data}
     if current_status != new_status:
