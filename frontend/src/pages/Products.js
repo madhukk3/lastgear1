@@ -135,7 +135,7 @@ const Products = () => {
       </div>
 
       {/* Filter Bar */}
-      <div className="sticky top-20 bg-white border-b border-gray-200 z-40 fade-in" style={{ '--delay': '0.08s' }} data-testid="filter-bar">
+      <div className="sticky top-[56px] lg:top-0 bg-white border-b border-gray-200 z-40 fade-in" style={{ '--delay': '0.08s' }} data-testid="filter-bar">
         <div className="max-w-[1700px] mx-auto px-6 py-4 md:px-8 xl:px-10 2xl:px-12">
           <div className="reveal-row flex flex-wrap gap-4">
             {/* Category Filter */}
