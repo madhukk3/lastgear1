@@ -180,7 +180,13 @@ const ProductDetail = () => {
     return null;
   }
 
-  const currentStock = product?.size_stock?.[selectedSize] ?? product?.stock ?? 0;
+  const hasSelectedSizeStock =
+    selectedSize &&
+    product?.size_stock &&
+    Object.prototype.hasOwnProperty.call(product.size_stock, selectedSize);
+  const currentStock = hasSelectedSizeStock
+    ? product.size_stock[selectedSize]
+    : (product?.stock ?? 0);
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-12" data-testid="product-detail-page">
@@ -288,19 +294,32 @@ const ProductDetail = () => {
           <div className="mb-8">
             <h3 className="font-bold mb-3">SIZE: {selectedSize}</h3>
             <div className="flex gap-3">
-              {product.sizes.map((size) => (
-                <button
-                  key={size}
-                  onClick={() => setSelectedSize(size)}
-                  className={`w-16 h-12 border-2 font-medium transition-colors ${selectedSize === size
-                    ? 'border-black bg-black text-white'
-                    : 'border-gray-300 hover:border-black'
+              {product.sizes.map((size) => {
+                const hasSizeSpecificStock =
+                  product?.size_stock &&
+                  Object.prototype.hasOwnProperty.call(product.size_stock, size);
+                const sizeStock = hasSizeSpecificStock ? product.size_stock[size] : (product?.stock ?? 0);
+                const isSoldOut = sizeStock <= 0;
+
+                return (
+                  <button
+                    key={size}
+                    onClick={() => setSelectedSize(size)}
+                    disabled={isSoldOut}
+                    className={`w-16 h-12 border-2 font-medium transition-colors ${
+                      isSoldOut
+                        ? 'cursor-not-allowed border-gray-200 bg-gray-100 text-gray-400'
+                        : selectedSize === size
+                          ? 'border-black bg-black text-white'
+                          : 'border-gray-300 hover:border-black'
                     }`}
-                  data-testid={`size-${size}`}
-                >
-                  {size}
-                </button>
-              ))}
+                    data-testid={`size-${size}`}
+                    title={isSoldOut ? `${size} is out of stock` : size}
+                  >
+                    {size}
+                  </button>
+                );
+              })}
             </div>
           </div>
 
