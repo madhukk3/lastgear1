@@ -812,13 +812,75 @@ def send_otp_email(to_email: str, otp: str):
         print(f"\n{'='*40}\nEMAIL OTP FOR {to_email}: {otp}\n{'='*40}\n")
         return
         
-    msg = MIMEMultipart()
+    msg = MIMEMultipart("alternative")
     msg['From'] = email_user
     msg['To'] = to_email
-    msg['Subject'] = "Verify your LAST GEAR account"
-    
-    body = f"Your verification code is: {otp}\n\nThis code expires in 5 minutes."
-    msg.attach(MIMEText(body, 'plain'))
+    msg['Subject'] = "Welcome to LAST GEAR - Verify your account"
+
+    html_body = f"""
+    <html>
+      <body style="margin:0;padding:0;background:#f4efe7;font-family:Arial,sans-serif;color:#16120d;">
+        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#f4efe7;padding:32px 16px;">
+          <tr>
+            <td align="center">
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:620px;background:#ffffff;border:1px solid #e7decf;">
+                <tr>
+                  <td style="background:#120e0b;padding:26px 28px;">
+                    <div style="font-size:28px;line-height:1;font-weight:700;letter-spacing:0.18em;color:#f8f2ea;text-transform:uppercase;">
+                      LAST GEAR
+                    </div>
+                    <div style="margin-top:8px;font-size:11px;letter-spacing:0.38em;text-transform:uppercase;color:rgba(248,242,234,0.58);">
+                      Fashion Division
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding:36px 28px 18px;">
+                    <div style="font-size:12px;font-weight:700;letter-spacing:0.26em;text-transform:uppercase;color:#8d5f32;">
+                      Welcome to LAST GEAR
+                    </div>
+                    <h1 style="margin:14px 0 12px;font-size:34px;line-height:1.05;font-weight:700;color:#16120d;">
+                      Verify your account
+                    </h1>
+                    <p style="margin:0;font-size:16px;line-height:1.7;color:#4d463f;">
+                      Your account is almost ready. Use the verification code below to complete your sign up and step into LAST GEAR.
+                    </p>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding:10px 28px 8px;">
+                    <div style="border:1px solid #e7decf;background:#faf6ef;padding:20px 22px;text-align:center;">
+                      <div style="font-size:11px;font-weight:700;letter-spacing:0.22em;text-transform:uppercase;color:#8d5f32;">
+                        Verification code
+                      </div>
+                      <div style="margin-top:12px;font-size:34px;font-weight:700;letter-spacing:0.22em;color:#16120d;">
+                        {otp}
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding:8px 28px 34px;">
+                    <p style="margin:0;font-size:14px;line-height:1.7;color:#5e564f;">
+                      This code expires in 5 minutes. If you did not request this, you can safely ignore this email.
+                    </p>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="border-top:1px solid #ece3d7;padding:18px 28px 24px;">
+                    <div style="font-size:13px;line-height:1.7;color:#5e564f;">
+                      LAST GEAR Team
+                    </div>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+      </body>
+    </html>
+    """
+    msg.attach(MIMEText(html_body, 'html'))
     
     try:
         server = smtplib.SMTP(smtp_server, smtp_port)

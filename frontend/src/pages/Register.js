@@ -1,9 +1,33 @@
-import React, { useState, useRef } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'sonner';
 import { GoogleLogin } from '@react-oauth/google';
 import axios from 'axios';
+
+const getPasswordChecks = (password = '') => {
+  const checks = {
+    length: password.length >= 8,
+    uppercase: /[A-Z]/.test(password),
+    lowercase: /[a-z]/.test(password),
+    number: /\d/.test(password),
+    special: /[^A-Za-z0-9]/.test(password),
+  };
+
+  const score = Object.values(checks).filter(Boolean).length;
+  let label = 'Weak';
+  let meterClass = 'bg-red-500';
+
+  if (score >= 5) {
+    label = 'Strong';
+    meterClass = 'bg-green-600';
+  } else if (score >= 3) {
+    label = 'Medium';
+    meterClass = 'bg-amber-500';
+  }
+
+  return { checks, score, label, meterClass };
+};
 
 const Register = () => {
   const navigate = useNavigate();
@@ -19,9 +43,18 @@ const Register = () => {
   const [loading, setLoading] = useState(false);
   const [showOtp, setShowOtp] = useState(false);
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
+  const [resendCooldown, setResendCooldown] = useState(0);
   const otpRefs = useRef([]);
 
   const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+
+  useEffect(() => {
+    if (!resendCooldown) return undefined;
+    const timer = setTimeout(() => setResendCooldown((prev) => Math.max(prev - 1, 0)), 1000);
+    return () => clearTimeout(timer);
+  }, [resendCooldown]);
+
+  const passwordMeta = getPasswordChecks(formData.password);
 
   const handleSendOtp = async (e) => {
     e.preventDefault();
@@ -31,11 +64,17 @@ const Register = () => {
       return;
     }
 
+    if (passwordMeta.score < 5) {
+      toast.error('Password should contain uppercase, lowercase, numbers, and special characters');
+      return;
+    }
+
     try {
       setLoading(true);
       await axios.post(`${BACKEND_URL}/api/auth/send-email-otp`, { email: formData.email });
       toast.success('OTP sent to your email!');
       setShowOtp(true);
+      setResendCooldown(30);
     } catch (error) {
       console.error('Failed to send OTP:', error);
       const errorMessage = error.response?.data?.detail || error.message || 'Failed to send OTP';
@@ -92,6 +131,24 @@ const Register = () => {
     } catch (error) {
       console.error('Registration failed:', error);
       toast.error(error.response?.data?.detail || 'Registration failed');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleResendOtp = async () => {
+    if (resendCooldown > 0) return;
+
+    try {
+      setLoading(true);
+      await axios.post(`${BACKEND_URL}/api/auth/send-email-otp`, { email: formData.email });
+      setOtp(['', '', '', '', '', '']);
+      toast.success('A new code has been sent to your email');
+      setResendCooldown(30);
+      otpRefs.current[0]?.focus();
+    } catch (error) {
+      console.error('Failed to resend OTP:', error);
+      toast.error(error.response?.data?.detail || 'Failed to resend code');
     } finally {
       setLoading(false);
     }
@@ -191,6 +248,33 @@ const Register = () => {
               className="w-full px-4 py-3 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-black"
               data-testid="password-input"
             />
+            <div className="mt-3">
+              <div className="mb-2 flex items-center justify-between text-xs">
+                <span className="text-gray-600">Password strength</span>
+                <span className={`font-semibold ${
+                  passwordMeta.label === 'Strong'
+                    ? 'text-green-700'
+                    : passwordMeta.label === 'Medium'
+                      ? 'text-amber-600'
+                      : 'text-red-600'
+                }`}>
+                  {passwordMeta.label}
+                </span>
+              </div>
+              <div className="h-2 w-full overflow-hidden rounded-full bg-gray-200">
+                <div
+                  className={`h-full transition-all duration-300 ${passwordMeta.meterClass}`}
+                  style={{ width: `${(passwordMeta.score / 5) * 100}%` }}
+                />
+              </div>
+              <div className="mt-3 grid grid-cols-1 gap-1 text-xs text-gray-600">
+                <p className={passwordMeta.checks.length ? 'text-green-700' : ''}>At least 8 characters</p>
+                <p className={passwordMeta.checks.uppercase ? 'text-green-700' : ''}>One uppercase letter</p>
+                <p className={passwordMeta.checks.lowercase ? 'text-green-700' : ''}>One lowercase letter</p>
+                <p className={passwordMeta.checks.number ? 'text-green-700' : ''}>One number</p>
+                <p className={passwordMeta.checks.special ? 'text-green-700' : ''}>One special character</p>
+              </div>
+            </div>
           </div>
 
           <div>
@@ -249,6 +333,15 @@ const Register = () => {
                   className="w-full bg-black text-white py-3 font-bold uppercase tracking-wider hover:bg-gray-800 transition-colors rounded disabled:bg-gray-400"
                 >
                   {loading ? 'VERIFYING...' : 'VERIFY & REGISTER'}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleResendOtp}
+                  disabled={loading || resendCooldown > 0}
+                  className="w-full text-sm font-medium text-black underline underline-offset-4 disabled:text-gray-400 disabled:no-underline"
+                >
+                  {resendCooldown > 0 ? `Didn’t receive code? Resend in ${resendCooldown}s` : 'Didn’t receive code? Resend'}
                 </button>
 
                 <button
