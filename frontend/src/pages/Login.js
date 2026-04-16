@@ -243,7 +243,7 @@ const Login = () => {
                   className="w-full rounded-[18px] border border-black/10 bg-white/80 px-4 py-3.5 text-[15px] text-[#120e0b] outline-none transition duration-300 placeholder:text-black/28 focus:border-[#d99146]/55 focus:bg-white focus:shadow-[0_0_0_4px_rgba(217,145,70,0.08)]"
                   data-testid="password-input"
                 />
-                <div className="mt-3 text-right">
+                <div className="mt-3 text-center">
                   <button
                     type="button"
                     onClick={handleOpenForgotPassword}
