@@ -798,24 +798,24 @@ async def logout(response: Response, request: Request):
 # --- OTP ENDPOINTS ---
 import random
 import smtplib
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
+from email.message import EmailMessage
 
 def send_otp_email(to_email: str, otp: str):
-    email_user = os.environ.get("OTP_EMAIL_USERNAME")
-    email_pass = os.environ.get("OTP_EMAIL_PASSWORD")
+    email_user = os.environ.get("OTP_EMAIL_USERNAME") or os.environ.get("EMAIL_USERNAME")
+    email_pass = os.environ.get("OTP_EMAIL_PASSWORD") or os.environ.get("EMAIL_PASSWORD")
     smtp_server = os.environ.get("SMTP_SERVER", "smtp.gmail.com")
-    smtp_port = int(os.environ.get("SMTP_PORT", 587))
+    smtp_port = int(os.environ.get("SMTP_PORT", 465))
     
     if not email_user or not email_pass:
         logging.warning("OTP_EMAIL_USERNAME or OTP_EMAIL_PASSWORD not set. Logging OTP instead.")
         print(f"\n{'='*40}\nEMAIL OTP FOR {to_email}: {otp}\n{'='*40}\n")
         return
-        
-    msg = MIMEMultipart("alternative")
-    msg['From'] = email_user
-    msg['To'] = to_email
+
+    msg = EmailMessage()
     msg['Subject'] = "Welcome to LAST GEAR - Verify your account"
+    msg['From'] = f"LAST GEAR <{email_user}>"
+    msg['To'] = to_email
+    msg['Reply-To'] = email_user
 
     html_body = f"""
     <html>
@@ -880,15 +880,26 @@ def send_otp_email(to_email: str, otp: str):
       </body>
     </html>
     """
-    msg.attach(MIMEText(html_body, 'html'))
+    msg.set_content(
+        f"Welcome to LAST GEAR.\n\n"
+        f"Your verification code is: {otp}\n\n"
+        f"This code expires in 5 minutes."
+    )
+    msg.add_alternative(html_body, subtype="html")
     
     try:
-        server = smtplib.SMTP(smtp_server, smtp_port)
-        server.starttls()
-        server.login(email_user, email_pass)
-        text = msg.as_string()
-        server.sendmail(email_user, to_email, text)
-        server.quit()
+        if smtp_port == 465:
+            with smtplib.SMTP_SSL(smtp_server, smtp_port) as server:
+                server.login(email_user, email_pass)
+                server.send_message(msg)
+        else:
+            with smtplib.SMTP(smtp_server, smtp_port) as server:
+                server.ehlo()
+                server.starttls()
+                server.ehlo()
+                server.login(email_user, email_pass)
+                server.send_message(msg)
+        logger.info("OTP email handed off successfully to %s", to_email)
     except Exception as e:
         logging.error(f"Failed to send email OTP to {to_email}: {e}")
         raise HTTPException(status_code=500, detail="Failed to send OTP email")
