@@ -48,6 +48,10 @@ ALLOWED_TRANSITIONS = {
 class ProductAdmin(BaseModel):
     name: str
     description: str
+    detail_points: List[str] = []
+    material_details: Optional[str] = None
+    fit_details: Optional[str] = None
+    care_instructions: Optional[str] = None
     price: float
     category: str
     sizes: List[str]
@@ -65,6 +69,10 @@ class ProductAdmin(BaseModel):
 class ProductUpdate(BaseModel):
     name: Optional[str] = None
     description: Optional[str] = None
+    detail_points: Optional[List[str]] = None
+    material_details: Optional[str] = None
+    fit_details: Optional[str] = None
+    care_instructions: Optional[str] = None
     price: Optional[float] = None
     category: Optional[str] = None
     sizes: Optional[List[str]] = None
@@ -266,6 +274,13 @@ async def admin_create_product(product_data: ProductAdmin, admin_user: Dict = De
     # Sanitize inputs
     product_data.name = sanitize_input(product_data.name)
     product_data.description = sanitize_input(product_data.description)
+    product_data.detail_points = [sanitize_input(point) for point in (product_data.detail_points or []) if point.strip()]
+    if product_data.material_details:
+        product_data.material_details = sanitize_input(product_data.material_details)
+    if product_data.fit_details:
+        product_data.fit_details = sanitize_input(product_data.fit_details)
+    if product_data.care_instructions:
+        product_data.care_instructions = sanitize_input(product_data.care_instructions)
     
     product_id = str(uuid.uuid4())
     
@@ -314,6 +329,14 @@ async def admin_update_product(
         update_data['name'] = sanitize_input(update_data['name'])
     if 'description' in update_data:
         update_data['description'] = sanitize_input(update_data['description'])
+    if 'detail_points' in update_data:
+        update_data['detail_points'] = [sanitize_input(point) for point in (update_data['detail_points'] or []) if point.strip()]
+    if 'material_details' in update_data and update_data['material_details'] is not None:
+        update_data['material_details'] = sanitize_input(update_data['material_details'])
+    if 'fit_details' in update_data and update_data['fit_details'] is not None:
+        update_data['fit_details'] = sanitize_input(update_data['fit_details'])
+    if 'care_instructions' in update_data and update_data['care_instructions'] is not None:
+        update_data['care_instructions'] = sanitize_input(update_data['care_instructions'])
     
     if update_data:
         update_data['updated_at'] = datetime.now(timezone.utc).isoformat()

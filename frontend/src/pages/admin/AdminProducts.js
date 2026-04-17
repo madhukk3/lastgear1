@@ -14,10 +14,13 @@ const AdminProducts = () => {
   const [formData, setFormData] = useState({
     name: '',
     description: '',
+    detail_points: [],
+    material_details: '',
+    fit_details: '',
+    care_instructions: '',
     price: '',
     category: 't-shirts',
     sizes: ['S', 'M', 'L', 'XL', 'XXL'],
-    colors: ['Black', 'White'],
     colors: ['Black', 'White'],
     images: [''],
     size_stock: { 'S': 20, 'M': 20, 'L': 20, 'XL': 20, 'XXL': 20 },
@@ -113,10 +116,13 @@ const AdminProducts = () => {
     setFormData({
       name: product.name,
       description: product.description,
+      detail_points: product.detail_points || [],
+      material_details: product.material_details || '',
+      fit_details: product.fit_details || '',
+      care_instructions: product.care_instructions || '',
       price: product.price,
       category: product.category,
       sizes: product.sizes || [],
-      colors: product.colors || [],
       colors: product.colors || [],
       images: product.images,
       size_stock: product.size_stock || {},
@@ -136,10 +142,13 @@ const AdminProducts = () => {
     setFormData({
       name: '',
       description: '',
+      detail_points: [],
+      material_details: '',
+      fit_details: '',
+      care_instructions: '',
       price: '',
       category: 't-shirts',
       sizes: ['S', 'M', 'L', 'XL', 'XXL'],
-      colors: ['Black', 'White'],
       colors: ['Black', 'White'],
       images: [''],
       size_stock: { 'S': 20, 'M': 20, 'L': 20, 'XL': 20, 'XXL': 20 },
@@ -328,6 +337,50 @@ const AdminProducts = () => {
                   className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
                   data-testid="product-description-input"
                 />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-2">Product Detail Points</label>
+                <TagInput
+                  tags={formData.detail_points}
+                  setTags={(t) => setFormData({ ...formData, detail_points: t })}
+                  placeholder="Add detail point..."
+                  suggestions={['Premium cotton fabric', 'Breathable everyday wear', 'Soft-touch finish', 'Street-ready silhouette', 'Easy layering piece']}
+                />
+                <p className="mt-1 text-xs text-gray-500">These will show as quick product highlights on the product page.</p>
+              </div>
+
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+                <div>
+                  <label className="block text-sm font-medium mb-2">Material Details</label>
+                  <textarea
+                    value={formData.material_details}
+                    onChange={(e) => setFormData({ ...formData, material_details: e.target.value })}
+                    rows={3}
+                    className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+                    placeholder="e.g. 240 GSM premium cotton with a smooth everyday finish."
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">Fit Details</label>
+                  <textarea
+                    value={formData.fit_details}
+                    onChange={(e) => setFormData({ ...formData, fit_details: e.target.value })}
+                    rows={3}
+                    className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+                    placeholder="e.g. Relaxed regular fit with room through the body."
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">Care Instructions</label>
+                  <textarea
+                    value={formData.care_instructions}
+                    onChange={(e) => setFormData({ ...formData, care_instructions: e.target.value })}
+                    rows={3}
+                    className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+                    placeholder="e.g. Machine wash cold. Wash inside out. Do not bleach."
+                  />
+                </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4">

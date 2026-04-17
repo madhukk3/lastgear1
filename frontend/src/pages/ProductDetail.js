@@ -270,6 +270,49 @@ const ProductDetail = () => {
 
           <p className="text-gray-600 mb-8" data-testid="product-description">{product.description}</p>
 
+          {((product.detail_points && product.detail_points.length > 0) || product.material_details || product.fit_details || product.care_instructions) && (
+            <div className="mb-10 rounded-[24px] border border-black/8 bg-white/65 p-5 md:p-6">
+              <div className="mb-5">
+                <h2 className="text-xl font-bold text-[#120e0b]">Product details</h2>
+                <p className="mt-1 text-sm text-gray-500">Everything to know before you pick your size and place the order.</p>
+              </div>
+
+              {product.detail_points && product.detail_points.length > 0 && (
+                <div className="mb-6 flex flex-wrap gap-2.5">
+                  {product.detail_points.map((point, index) => (
+                    <span
+                      key={`${point}-${index}`}
+                      className="rounded-full border border-black/10 bg-[#f8f1e9] px-4 py-2 text-sm font-medium text-[#120e0b]"
+                    >
+                      {point}
+                    </span>
+                  ))}
+                </div>
+              )}
+
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+                {product.material_details && (
+                  <div className="rounded-[18px] border border-black/8 bg-white/70 p-4">
+                    <p className="mb-2 text-xs font-semibold uppercase tracking-[0.18em] text-[#8d5f32]">Material</p>
+                    <p className="text-sm leading-6 text-[#120e0b]">{product.material_details}</p>
+                  </div>
+                )}
+                {product.fit_details && (
+                  <div className="rounded-[18px] border border-black/8 bg-white/70 p-4">
+                    <p className="mb-2 text-xs font-semibold uppercase tracking-[0.18em] text-[#8d5f32]">Fit</p>
+                    <p className="text-sm leading-6 text-[#120e0b]">{product.fit_details}</p>
+                  </div>
+                )}
+                {product.care_instructions && (
+                  <div className="rounded-[18px] border border-black/8 bg-white/70 p-4">
+                    <p className="mb-2 text-xs font-semibold uppercase tracking-[0.18em] text-[#8d5f32]">Care</p>
+                    <p className="text-sm leading-6 text-[#120e0b]">{product.care_instructions}</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
           {/* Color Selection */}
           <div className="mb-6">
             <h3 className="font-bold mb-3">COLOR: {selectedColor}</h3>

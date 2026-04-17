@@ -296,6 +296,10 @@ class Product(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     name: str
     description: str
+    detail_points: List[str] = []
+    material_details: Optional[str] = None
+    fit_details: Optional[str] = None
+    care_instructions: Optional[str] = None
     price: float
     category: str  # "t-shirts" or "hoodies"
     sizes: List[str] = ["S", "M", "L", "XL", "XXL"]
@@ -315,6 +319,10 @@ class Product(BaseModel):
 class ProductCreate(BaseModel):
     name: str
     description: str
+    detail_points: List[str] = []
+    material_details: Optional[str] = None
+    fit_details: Optional[str] = None
+    care_instructions: Optional[str] = None
     price: float
     category: str
     sizes: List[str] = ["S", "M", "L", "XL", "XXL"]
