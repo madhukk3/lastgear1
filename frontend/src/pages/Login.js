@@ -33,7 +33,7 @@ const getPasswordChecks = (password = '') => {
 const Login = () => {
   const navigate = useNavigate();
   const { login, loginWithGoogle } = useAuth();
-  const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+  const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000';
 
   const [formData, setFormData] = useState({
     email: '',

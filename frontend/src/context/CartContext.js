@@ -18,7 +18,7 @@ export function CartProvider({ children }) {
   const [addedItem, setAddedItem] = useState(null);
   const { token } = useAuth();
 
-  const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+  const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000';
   const API = `${BACKEND_URL}/api`;
 
   const fetchCart = useCallback(async () => {

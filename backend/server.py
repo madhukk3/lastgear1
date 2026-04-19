@@ -13,6 +13,7 @@ import os
 import shutil
 import logging
 import re
+import io
 from pathlib import Path
 from pydantic import BaseModel, Field, ConfigDict, EmailStr
 from typing import List, Optional, Dict, Any
@@ -26,6 +27,9 @@ import razorpay
 import hmac
 import hashlib
 from urllib.parse import urlparse
+from PIL import Image, UnidentifiedImageError
+import sentry_sdk
+from sentry_sdk.integrations.fastapi import FastApiIntegration
 from notifications import send_order_email, send_exchange_request_email, send_subscriber_welcome_email
 from delhivery import fetch_delhivery_tracking, delhivery_tracking_enabled, DelhiveryTrackingError
 # from emergentintegrations.llm.chat import LlmChat, UserMessage
@@ -36,7 +40,10 @@ from security import (
     verify_admin, validate_password_strength,
     track_login_attempt, check_account_locked, log_security_event,
     sanitize_input, limiter, create_access_token, create_refresh_token,
-    hash_refresh_token, store_refresh_token, revoke_refresh_token, verify_refresh_token
+    hash_refresh_token, store_refresh_token, revoke_refresh_token, verify_refresh_token,
+    get_required_env, get_client_ip, is_trusted_proxy_request, enforce_otp_rate_limit,
+    create_newsletter_unsubscribe_token, verify_newsletter_unsubscribe_token,
+    NewsletterTokenError, emit_monitoring_event
 )
 from admin_routes import admin_router
 
@@ -49,7 +56,7 @@ client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ['DB_NAME']]
 
 # JWT Configuration
-JWT_SECRET = os.environ.get('JWT_SECRET', 'lastgear_jwt_secret_key_2026_production')
+JWT_SECRET = get_required_env('JWT_SECRET')
 JWT_ALGORITHM = 'HS256'
 ACCESS_TOKEN_EXPIRE_MINUTES = int(os.environ.get('ACCESS_TOKEN_EXPIRE_MINUTES', '15'))
 REFRESH_TOKEN_EXPIRE_DAYS = int(os.environ.get('REFRESH_TOKEN_EXPIRE_DAYS', '14'))
@@ -57,19 +64,67 @@ ACCESS_COOKIE_NAME = os.environ.get('ACCESS_COOKIE_NAME', 'lastgear_access_token
 REFRESH_COOKIE_NAME = os.environ.get('REFRESH_COOKIE_NAME', 'lastgear_refresh_token')
 COOKIE_DOMAIN = os.environ.get('COOKIE_DOMAIN') or None
 APP_ENV = os.environ.get('ENVIRONMENT', os.environ.get('ENV', 'development')).lower()
+SENTRY_DSN = os.environ.get("SENTRY_DSN", "").strip()
 COOKIE_SECURE = os.environ.get('COOKIE_SECURE', 'true' if APP_ENV == 'production' else 'false').lower() == 'true'
 COOKIE_SAMESITE = os.environ.get('COOKIE_SAMESITE', 'none' if COOKIE_SECURE else 'lax')
 TRUSTED_HOSTS = [host.strip() for host in os.environ.get('TRUSTED_HOSTS', '').split(',') if host.strip()]
 FORCE_HTTPS = os.environ.get('FORCE_HTTPS', 'true' if APP_ENV == 'production' else 'false').lower() == 'true'
-TRUST_PROXY_HEADERS = os.environ.get('TRUST_PROXY_HEADERS', 'true').lower() == 'true'
+TRUST_PROXY_HEADERS = os.environ.get('TRUST_PROXY_HEADERS', 'false').lower() == 'true'
 MAX_REQUEST_SIZE_MB = int(os.environ.get('MAX_REQUEST_SIZE_MB', '5'))
 MAX_REQUEST_SIZE_BYTES = MAX_REQUEST_SIZE_MB * 1024 * 1024
+MAX_IMAGE_UPLOAD_SIZE_BYTES = min(MAX_REQUEST_SIZE_BYTES, 5 * 1024 * 1024)
+MAX_IMAGE_PIXELS = int(os.environ.get('MAX_IMAGE_PIXELS', '20000000'))
+ALLOWED_IMAGE_MIME_TYPES = {"image/jpeg", "image/png", "image/webp"}
+ALLOWED_IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png", ".webp"}
+MAX_SINGLE_ITEM_QUANTITY = int(os.environ.get('MAX_SINGLE_ITEM_QUANTITY', '1000'))
+
+if SENTRY_DSN:
+    sentry_sdk.init(
+        dsn=SENTRY_DSN,
+        environment=APP_ENV,
+        integrations=[FastApiIntegration()],
+        traces_sample_rate=float(os.environ.get("SENTRY_TRACES_SAMPLE_RATE", "0.05")),
+        send_default_pii=False,
+    )
+
+IMAGE_FORMAT_DETAILS = {
+    "jpeg": {
+        "extensions": {".jpg", ".jpeg"},
+        "content_type": "image/jpeg",
+        "pil_format": "JPEG",
+        "magic_prefixes": (b"\xff\xd8\xff",),
+    },
+    "png": {
+        "extensions": {".png"},
+        "content_type": "image/png",
+        "pil_format": "PNG",
+        "magic_prefixes": (b"\x89PNG\r\n\x1a\n",),
+    },
+    "webp": {
+        "extensions": {".webp"},
+        "content_type": "image/webp",
+        "pil_format": "WEBP",
+        "magic_prefixes": (b"RIFF",),
+    },
+}
+
+SENSITIVE_RATE_LIMIT_RULES = (
+    {"scope": "auth", "path_prefixes": ("/api/auth/",), "methods": {"POST"}, "limit": 20, "window_seconds": 60},
+    {"scope": "checkout", "path_prefixes": ("/api/orders", "/api/razorpay/"), "methods": {"POST"}, "limit": 12, "window_seconds": 60},
+    {"scope": "exchange", "path_prefixes": ("/api/help/request-exchange",), "methods": {"POST"}, "limit": 6, "window_seconds": 3600},
+    {"scope": "admin", "path_prefixes": ("/api/admin/",), "methods": {"POST", "PUT", "PATCH", "DELETE"}, "limit": 120, "window_seconds": 60},
+)
 
 DEFAULT_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
     "http://localhost:3001",
-    "http://127.0.0.1:3001"
+    "http://127.0.0.1:3001",
+    # Vite dev + preview defaults for local verification and production-like testing.
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "http://localhost:4173",
+    "http://127.0.0.1:4173",
 ]
 
 DISPOSABLE_EMAIL_DOMAINS = {
@@ -99,7 +154,7 @@ security = HTTPBearer(auto_error=False)
 
 
 def _get_effective_scheme(request: Request) -> str:
-    if TRUST_PROXY_HEADERS:
+    if TRUST_PROXY_HEADERS and is_trusted_proxy_request(request):
         forwarded_proto = request.headers.get("x-forwarded-proto", "").split(",")[0].strip()
         if forwarded_proto:
             return forwarded_proto
@@ -151,6 +206,311 @@ def _build_product_search_query(search: str) -> List[Dict[str, Any]]:
             )
 
     return search_conditions
+
+
+def _sanitize_shipping_address_payload(data: Dict[str, Any]) -> Dict[str, str]:
+    return {
+        "full_name": sanitize_input(data.get("full_name") or ""),
+        "address_line1": sanitize_input(data.get("address_line1") or ""),
+        "address_line2": sanitize_input(data.get("address_line2") or "") or None,
+        "city": sanitize_input(data.get("city") or ""),
+        "state": sanitize_input(data.get("state") or ""),
+        "postal_code": re.sub(r"[^0-9]", "", str(data.get("postal_code") or ""))[:6],
+        "country": sanitize_input(data.get("country") or "India"),
+        "phone": sanitize_input(data.get("phone") or ""),
+    }
+
+
+def _extract_image_extension(filename: Optional[str]) -> str:
+    return Path(filename or "").suffix.lower()
+
+
+def _parse_iso_datetime(value: Optional[str]) -> Optional[datetime]:
+    if not value:
+        return None
+    try:
+        clean_value = value.replace("Z", "+00:00")
+        parsed = datetime.fromisoformat(clean_value)
+        if parsed.tzinfo is None:
+            parsed = parsed.replace(tzinfo=timezone.utc)
+        return parsed
+    except ValueError:
+        return None
+
+
+def _matches_magic_bytes(file_bytes: bytes, detected_format: str) -> bool:
+    if detected_format == "webp":
+        return len(file_bytes) > 12 and file_bytes.startswith(b"RIFF") and file_bytes[8:12] == b"WEBP"
+
+    format_details = IMAGE_FORMAT_DETAILS.get(detected_format) or {}
+    return any(file_bytes.startswith(prefix) for prefix in format_details.get("magic_prefixes", ()))
+
+
+def _canonicalize_image_bytes(file_bytes: bytes, extension: str, content_type: str) -> tuple[bytes, str, str]:
+    if extension not in ALLOWED_IMAGE_EXTENSIONS or content_type not in ALLOWED_IMAGE_MIME_TYPES:
+        raise HTTPException(status_code=400, detail="Invalid file type. Only JPG, PNG, and WEBP are allowed.")
+
+    if not file_bytes:
+        raise HTTPException(status_code=400, detail="Uploaded file is empty.")
+
+    if len(file_bytes) > MAX_IMAGE_UPLOAD_SIZE_BYTES:
+        raise HTTPException(status_code=400, detail="File size must be 5MB or less.")
+
+    try:
+        with Image.open(io.BytesIO(file_bytes)) as image_probe:
+            image_probe.verify()
+        with Image.open(io.BytesIO(file_bytes)) as image:
+            image.load()
+            detected_format = (image.format or "").lower()
+            format_details = IMAGE_FORMAT_DETAILS.get(detected_format)
+            if not format_details:
+                raise HTTPException(status_code=400, detail="Unsupported image format.")
+            if extension not in format_details["extensions"] or content_type != format_details["content_type"]:
+                raise HTTPException(status_code=400, detail="Image content does not match the declared file type.")
+            if not _matches_magic_bytes(file_bytes, detected_format):
+                raise HTTPException(status_code=400, detail="Image signature validation failed.")
+
+            width, height = image.size
+            if width <= 0 or height <= 0 or width * height > MAX_IMAGE_PIXELS:
+                raise HTTPException(status_code=400, detail="Image dimensions are not allowed.")
+
+            has_alpha = "A" in image.getbands()
+            normalized_image = image.convert("RGBA" if has_alpha else "RGB")
+            output = io.BytesIO()
+            save_kwargs: Dict[str, Any] = {"format": format_details["pil_format"]}
+            if detected_format == "jpeg":
+                normalized_image = image.convert("RGB")
+                save_kwargs.update({"quality": 90, "optimize": True})
+            elif detected_format == "png":
+                save_kwargs.update({"optimize": True})
+            elif detected_format == "webp":
+                save_kwargs.update({"quality": 90, "method": 6})
+
+            # Re-encoding strips appended payloads, reducing polyglot/script risks.
+            normalized_image.save(output, **save_kwargs)
+    except (UnidentifiedImageError, OSError) as exc:
+        raise HTTPException(status_code=400, detail="Uploaded file is not a valid image.") from exc
+
+    canonical_bytes = output.getvalue()
+    if len(canonical_bytes) > MAX_IMAGE_UPLOAD_SIZE_BYTES:
+        raise HTTPException(status_code=400, detail="File size must be 5MB or less.")
+
+    return canonical_bytes, extension, format_details["content_type"]
+
+
+async def _store_validated_image(upload: UploadFile, prefix: str = "") -> str:
+    extension = _extract_image_extension(upload.filename)
+    content_type = (upload.content_type or "").lower()
+    file_bytes = await upload.read()
+    canonical_bytes, canonical_extension, _ = _canonicalize_image_bytes(file_bytes, extension, content_type)
+
+    uploads_dir = Path(__file__).parent / "uploads"
+    uploads_dir.mkdir(exist_ok=True)
+    filename_prefix = f"{prefix}_" if prefix else ""
+    unique_filename = f"{filename_prefix}{uuid.uuid4().hex}{canonical_extension}"
+    file_path = uploads_dir / unique_filename
+    with open(file_path, "wb") as buffer:
+        buffer.write(canonical_bytes)
+
+    return f"/uploads/{unique_filename}"
+
+
+async def _build_authoritative_order(
+    order_data: "OrderCreate",
+    current_user: Dict
+) -> Dict[str, Any]:
+    if not order_data.items:
+        raise HTTPException(status_code=400, detail="Order must contain at least one item.")
+
+    settings = await db.settings.find_one({"id": "global"}, {"_id": 0}) or {}
+    global_discount_percentage = max(0, int(settings.get("global_discount_percentage", 0) or 0))
+    shipping_charge = max(0, int(settings.get("shipping_charge", 99) or 0))
+    free_shipping_threshold = max(0, int(settings.get("free_shipping_threshold", 1500) or 0))
+    cod_charge = max(0, int(settings.get("cod_charge", 50) or 0))
+
+    requested_items: Dict[tuple[str, str, str], Dict[str, Any]] = {}
+    for client_item in order_data.items:
+        if client_item.quantity <= 0:
+            raise HTTPException(status_code=400, detail="Item quantity must be greater than zero.")
+        if int(client_item.quantity) > MAX_SINGLE_ITEM_QUANTITY:
+            raise HTTPException(status_code=400, detail="Requested quantity exceeds the allowed per-item limit.")
+
+        item_key = (client_item.product_id, client_item.size, client_item.color)
+        if item_key in requested_items:
+            requested_items[item_key]["quantity"] += client_item.quantity
+        else:
+            requested_items[item_key] = {
+                "product_id": client_item.product_id,
+                "size": client_item.size,
+                "color": client_item.color,
+                "quantity": client_item.quantity,
+            }
+
+    coupon_code = (order_data.coupon_code or "").strip().upper()
+    coupon_discount_percentage = 0
+    if coupon_code:
+        coupon = await db.coupons.find_one({"code": coupon_code, "is_active": True}, {"_id": 0})
+        if not coupon:
+            raise HTTPException(status_code=400, detail="Invalid or expired coupon code")
+
+        starts_at = _parse_iso_datetime(coupon.get("starts_at"))
+        expires_at = _parse_iso_datetime(coupon.get("expires_at"))
+        now = datetime.now(timezone.utc)
+        if starts_at and starts_at > now:
+            raise HTTPException(status_code=400, detail="This coupon is not active yet")
+        if expires_at and expires_at < now:
+            raise HTTPException(status_code=400, detail="Invalid or expired coupon code")
+
+        eligible_user_ids = [
+            str(user_id).strip()
+            for user_id in (coupon.get("eligible_user_ids") or coupon.get("allowed_user_ids") or [])
+            if str(user_id).strip()
+        ]
+        if eligible_user_ids and current_user.get("id") not in eligible_user_ids:
+            raise HTTPException(status_code=403, detail="This coupon is not available for this account")
+
+        usage_limit = coupon.get("usage_limit")
+        if usage_limit is not None:
+            normalized_usage_limit = max(0, int(usage_limit or 0))
+            usage_count = max(
+                int(coupon.get("usage_count", 0) or 0),
+                await db.orders.count_documents({
+                    "coupon_code": coupon_code,
+                    "order_status": {"$ne": "cancelled"}
+                })
+            )
+            if usage_count >= normalized_usage_limit:
+                raise HTTPException(status_code=400, detail="This coupon has reached its usage limit")
+
+        max_uses_per_user = int(coupon.get("max_uses_per_user", 0) or 0)
+        if max_uses_per_user > 0:
+            existing_user_uses = await db.orders.count_documents({
+                "user_id": current_user["id"],
+                "coupon_code": coupon_code,
+                "order_status": {"$ne": "cancelled"}
+            })
+            if existing_user_uses >= max_uses_per_user:
+                raise HTTPException(status_code=400, detail="This coupon has already been used for this account")
+
+        coupon_discount_percentage = max(0, int(coupon.get("discount_percentage", 0) or 0))
+
+    first_purchase_discount = 5 if current_user.get("has_used_first_purchase_discount", False) is False else 0
+
+    order_items: List[OrderItem] = []
+    subtotal = 0.0
+    raw_discount_amount = 0.0
+    has_free_shipping_item = False
+
+    for requested in requested_items.values():
+        product = await db.products.find_one({"id": requested["product_id"]}, {"_id": 0})
+        if not product:
+            raise HTTPException(status_code=404, detail=f"Product '{requested['product_id']}' not found")
+
+        if requested["size"] not in product.get("sizes", []):
+            raise HTTPException(status_code=400, detail=f"Invalid size selected for '{product.get('name')}'")
+        if requested["color"] not in product.get("colors", []):
+            raise HTTPException(status_code=400, detail=f"Invalid color selected for '{product.get('name')}'")
+
+        current_stock = int(product.get("stock", 0) or 0)
+        current_size_stock = int((product.get("size_stock") or {}).get(requested["size"], 0) or 0)
+        available_quantity = current_size_stock if current_size_stock > 0 else current_stock
+        if available_quantity < requested["quantity"]:
+            raise HTTPException(
+                status_code=400,
+                detail=f"'{product.get('name')}' (Size: {requested['size']}) is out of stock. Available: {available_quantity}, Requested: {requested['quantity']}"
+            )
+
+        server_price = float(product.get("price", 0) or 0)
+        item_subtotal = server_price * requested["quantity"]
+        subtotal += item_subtotal
+
+        combined_discount_percentage = (
+            global_discount_percentage
+            + coupon_discount_percentage
+            + first_purchase_discount
+            + max(0, int(product.get("discount_percentage", 0) or 0))
+        )
+        combined_discount_percentage = min(combined_discount_percentage, 100)
+        raw_discount_amount += item_subtotal * (combined_discount_percentage / 100)
+        has_free_shipping_item = has_free_shipping_item or bool(product.get("is_free_shipping"))
+
+        product_images = product.get("images") or []
+        order_items.append(
+            OrderItem(
+                product_id=product["id"],
+                name=product.get("name") or requested["product_id"],
+                price=server_price,
+                quantity=requested["quantity"],
+                size=requested["size"],
+                color=requested["color"],
+                image=product_images[0] if product_images else product.get("image")
+            )
+        )
+
+    discount_applied = int(round(raw_discount_amount))
+    subtotal_after_discount = max(subtotal - discount_applied, 0)
+    shipping_fee = 0 if has_free_shipping_item or subtotal_after_discount >= free_shipping_threshold else shipping_charge
+    cod_fee = cod_charge if order_data.payment_method == "cod" else 0
+    total_amount = float(round(subtotal_after_discount + shipping_fee + cod_fee, 2))
+
+    return {
+        "items": order_items,
+        "discount_applied": discount_applied,
+        "coupon_code": coupon_code or None,
+        "shipping_fee": shipping_fee,
+        "cod_fee": cod_fee,
+        "total_amount": total_amount,
+        "shipping_address": ShippingAddress(**_sanitize_shipping_address_payload(order_data.shipping_address.model_dump()))
+    }
+
+
+async def _reserve_coupon_usage(coupon_code: Optional[str]) -> bool:
+    if not coupon_code:
+        return False
+
+    coupon = await db.coupons.find_one({"code": coupon_code}, {"_id": 0})
+    if not coupon or coupon.get("usage_limit") is None:
+        return False
+
+    # Conditional increment keeps usage-limit enforcement race-safe without
+    # changing the checkout payload or admin coupon API shape.
+    result = await db.coupons.update_one(
+        {
+            "code": coupon_code,
+            "is_active": True,
+            "$expr": {
+                "$lt": [
+                    {"$ifNull": ["$usage_count", 0]},
+                    int(coupon.get("usage_limit", 0) or 0)
+                ]
+            }
+        },
+        {"$inc": {"usage_count": 1}}
+    )
+    if result.modified_count == 0:
+        raise HTTPException(status_code=400, detail="This coupon has reached its usage limit")
+    return True
+
+
+async def _release_coupon_usage(coupon_code: Optional[str], reserved: bool):
+    if not coupon_code or not reserved:
+        return
+
+    await db.coupons.update_one(
+        {"code": coupon_code, "usage_count": {"$gt": 0}},
+        {"$inc": {"usage_count": -1}}
+    )
+
+
+def _match_sensitive_rate_limit_rule(request: Request) -> Optional[Dict[str, Any]]:
+    request_path = request.url.path
+    request_method = request.method.upper()
+    for rule in SENSITIVE_RATE_LIMIT_RULES:
+        if request_method not in rule["methods"]:
+            continue
+        if any(request_path.startswith(prefix) for prefix in rule["path_prefixes"]):
+            return rule
+    return None
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -224,6 +584,64 @@ async def enforce_browser_origin(request: Request, call_next):
 
     return await call_next(request)
 
+
+@app.middleware("http")
+async def harden_upload_responses(request: Request, call_next):
+    # Static file range parsing has had prior CPU-amplification issues. Rejecting
+    # multi-range requests keeps the public /uploads path on a safer subset.
+    if request.url.path.startswith("/uploads"):
+        range_header = request.headers.get("range", "")
+        if "," in range_header:
+            return JSONResponse(status_code=416, content={"detail": "Multiple ranges are not supported"})
+        if _extract_image_extension(request.url.path) not in ALLOWED_IMAGE_EXTENSIONS:
+            return JSONResponse(status_code=404, content={"detail": "File not found"})
+
+    response = await call_next(request)
+    if request.url.path.startswith("/uploads"):
+        safe_name = re.sub(r"[^A-Za-z0-9._-]", "_", Path(request.url.path).name)
+        # Uploads remain public for existing UI flows, so tighten browser
+        # behavior instead of forcing download-only semantics that would break images.
+        response.headers["Content-Disposition"] = f'inline; filename="{safe_name}"'
+        response.headers["Content-Security-Policy"] = "default-src 'none'; img-src 'self' data: blob:; sandbox"
+        response.headers["Cross-Origin-Resource-Policy"] = "same-origin"
+        response.headers["Cache-Control"] = "no-transform"
+    return response
+
+
+@app.middleware("http")
+async def enforce_sensitive_api_rate_limits(request: Request, call_next):
+    rule = _match_sensitive_rate_limit_rule(request)
+    if not rule:
+        return await call_next(request)
+
+    client_ip = get_client_ip(request) or (request.client.host if request.client else "unknown")
+    window_start = datetime.now(timezone.utc) - timedelta(seconds=rule["window_seconds"])
+    recent_hits = await db.request_rate_limits.count_documents({
+        "scope": rule["scope"],
+        "ip_address": client_ip,
+        "created_at": {"$gte": window_start}
+    })
+    if recent_hits >= rule["limit"]:
+        await log_security_event(
+            event_type="request_rate_limited",
+            details={
+                "scope": rule["scope"],
+                "ip_address": client_ip,
+                "path": request.url.path,
+                "method": request.method
+            }
+        )
+        return JSONResponse(status_code=429, content={"detail": "Too many requests. Please try again later."})
+
+    await db.request_rate_limits.insert_one({
+        "scope": rule["scope"],
+        "ip_address": client_ip,
+        "path": request.url.path,
+        "method": request.method,
+        "created_at": datetime.now(timezone.utc)
+    })
+    return await call_next(request)
+
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
     logger.warning("Validation error on %s: %s", request.url.path, exc.errors())
@@ -235,6 +653,8 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
 
 @app.exception_handler(Exception)
 async def generic_exception_handler(request: Request, exc: Exception):
+    if SENTRY_DSN:
+        sentry_sdk.capture_exception(exc)
     logger.exception("Unhandled error on %s", request.url.path)
     return Response(
         content='{"detail":"Something went wrong"}',
@@ -486,12 +906,23 @@ class Coupon(BaseModel):
     code: str
     discount_percentage: int
     is_active: bool = True
+    usage_limit: Optional[int] = None
+    usage_count: int = 0
+    max_uses_per_user: Optional[int] = None
+    starts_at: Optional[str] = None
+    expires_at: Optional[str] = None
+    eligible_user_ids: Optional[List[str]] = None
     created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
 
 class CouponCreate(BaseModel):
     code: str
     discount_percentage: int
     is_active: bool = True
+    usage_limit: Optional[int] = None
+    max_uses_per_user: Optional[int] = None
+    starts_at: Optional[str] = None
+    expires_at: Optional[str] = None
+    eligible_user_ids: Optional[List[str]] = None
 
 # --- IMPACT SERIES MODELS ---
 from admin_routes import ImpactSeries, ImpactSeriesCreate
@@ -674,12 +1105,14 @@ async def register(request: Request, response: Response, user_data: UserRegister
 async def login(request: Request, response: Response, credentials: UserLogin):
     await check_account_locked(credentials.email)
     user = await db.users.find_one({"email": credentials.email}, {"_id": 0})
-    client_ip = request.client.host if request.client else None
+    client_ip = get_client_ip(request)
 
     if not user or not verify_password(credentials.password, user['password']):
         await track_login_attempt(credentials.email, False, client_ip)
+        emit_monitoring_event("login_failed", ip_address=client_ip, auth_method="password")
         raise HTTPException(status_code=401, detail="Invalid email or password")
     await track_login_attempt(credentials.email, True, client_ip)
+    emit_monitoring_event("login_success", user_id=user["id"], ip_address=client_ip, auth_method="password")
     return await issue_auth_session(response, user, request, is_new_user=False)
 
 @api_router.get("/auth/me", response_model=UserResponse)
@@ -815,9 +1248,8 @@ def send_otp_email(to_email: str, otp: str):
     smtp_port = int(os.environ.get("SMTP_PORT", 465))
     
     if not email_user or not email_pass:
-        logging.warning("OTP_EMAIL_USERNAME or OTP_EMAIL_PASSWORD not set. Logging OTP instead.")
-        print(f"\n{'='*40}\nEMAIL OTP FOR {to_email}: {otp}\n{'='*40}\n")
-        return
+        logging.warning("OTP email delivery is not configured.")
+        raise HTTPException(status_code=503, detail="OTP delivery is not configured")
 
     msg = EmailMessage()
     msg['Subject'] = "Welcome to LAST GEAR - Verify your account"
@@ -946,8 +1378,18 @@ async def google_auth(request: Request, response: Response, payload: VerifyGoogl
         raise HTTPException(status_code=400, detail="Invalid Google token")
 
 @api_router.post("/auth/send-otp")
-async def send_otp(request: SendOTPRequest):
-    phone = request.phone
+@limiter.limit("5/minute")
+async def send_otp(request: Request, body: SendOTPRequest):
+    phone = sanitize_input(body.phone)
+    client_ip = get_client_ip(request)
+    await enforce_otp_rate_limit(
+        "send_phone_otp",
+        phone,
+        client_ip,
+        max_subject_attempts=3,
+        max_ip_attempts=10,
+        cooldown_base_seconds=30
+    )
     
     # Generate a random 6-digit OTP
     otp = str(random.randint(100000, 999999))
@@ -960,17 +1402,25 @@ async def send_otp(request: SendOTPRequest):
         {"$set": {"otp": otp, "expires_at": expires_at.isoformat()}},
         upsert=True
     )
+    emit_monitoring_event("otp_sent", ip_address=client_ip, channel="phone")
     
-    # In a real application, you would send this OTP via SMS here.
-    # For now, we print it to the console for testing.
-    print(f"\n{'='*40}\nOTP FOR PHONE {phone}: {otp}\n{'='*40}\n")
-    
+    # OTP delivery must happen out-of-band (e.g. SMS provider). The API stores
+    # the one-time code but never logs it, which avoids credential leakage.
     return {"message": "OTP sent successfully"}
 
 @api_router.post("/auth/send-email-otp")
 @limiter.limit("3/minute")
 async def send_email_otp(request: Request, body: SendEmailOTPRequest):
     email = body.email
+    client_ip = get_client_ip(request)
+    await enforce_otp_rate_limit(
+        "send_email_otp",
+        email,
+        client_ip,
+        max_subject_attempts=3,
+        max_ip_attempts=10,
+        cooldown_base_seconds=30
+    )
     
     # Check if email is already registered
     existing_user = await db.users.find_one({"email": email})
@@ -988,6 +1438,7 @@ async def send_email_otp(request: Request, body: SendEmailOTPRequest):
         {"$set": {"otp": otp, "expires_at": expires_at.isoformat()}},
         upsert=True
     )
+    emit_monitoring_event("otp_sent", ip_address=client_ip, channel="email")
     
     # Send email
     send_otp_email(email, otp)
@@ -995,15 +1446,34 @@ async def send_email_otp(request: Request, body: SendEmailOTPRequest):
     return {"message": "OTP sent successfully"}
 
 @api_router.post("/auth/verify-email-otp")
-async def verify_email_otp(body: VerifyEmailOTPRequest):
+@limiter.limit("10/minute")
+async def verify_email_otp(request: Request, body: VerifyEmailOTPRequest):
     email = body.email
     otp = body.otp
+    client_ip = get_client_ip(request)
+    await enforce_otp_rate_limit(
+        "verify_email_otp",
+        email,
+        client_ip,
+        max_subject_attempts=10,
+        max_ip_attempts=25,
+        cooldown_base_seconds=5
+    )
     
     otp_record = await db.email_otps.find_one({"email": email, "otp": otp})
     if not otp_record:
+        await log_security_event(
+            event_type="otp_verification_failed",
+            details={"scope": "email", "subject": email.lower(), "ip_address": client_ip, "reason": "invalid"}
+        )
         raise HTTPException(status_code=400, detail="Invalid OTP")
         
     if datetime.fromisoformat(otp_record['expires_at']) < datetime.now(timezone.utc):
+        await db.email_otps.delete_one({"email": email})
+        await log_security_event(
+            event_type="otp_verification_failed",
+            details={"scope": "email", "subject": email.lower(), "ip_address": client_ip, "reason": "expired"}
+        )
         raise HTTPException(status_code=400, detail="OTP has expired")
         
     # Valid OTP. Delete the OTP record.
@@ -1021,12 +1491,32 @@ async def verify_email_otp(body: VerifyEmailOTPRequest):
 @api_router.post("/auth/register-otp", response_model=AuthResponse)
 @limiter.limit("5/minute")
 async def register_otp(request: Request, response: Response, user_data: VerifyOTPRegisterRequest):
+    client_ip = get_client_ip(request)
+    await enforce_otp_rate_limit(
+        "register_phone_otp",
+        user_data.phone,
+        client_ip,
+        max_subject_attempts=5,
+        max_ip_attempts=15,
+        cooldown_base_seconds=5
+    )
     # Verify OTP
     otp_record = await db.otps.find_one({"phone": user_data.phone, "otp": user_data.otp})
     if not otp_record:
+        emit_monitoring_event("login_failed", ip_address=client_ip, auth_method="otp_register", reason="invalid_otp")
+        await log_security_event(
+            event_type="otp_verification_failed",
+            details={"scope": "phone_register", "subject": user_data.phone, "ip_address": client_ip, "reason": "invalid"}
+        )
         raise HTTPException(status_code=400, detail="Invalid OTP")
     
     if datetime.fromisoformat(otp_record['expires_at']) < datetime.now(timezone.utc):
+        await db.otps.delete_one({"phone": user_data.phone})
+        emit_monitoring_event("login_failed", ip_address=client_ip, auth_method="otp_register", reason="expired_otp")
+        await log_security_event(
+            event_type="otp_verification_failed",
+            details={"scope": "phone_register", "subject": user_data.phone, "ip_address": client_ip, "reason": "expired"}
+        )
         raise HTTPException(status_code=400, detail="OTP has expired")
 
     # Check for existing email
@@ -1069,12 +1559,32 @@ async def register_otp(request: Request, response: Response, user_data: VerifyOT
 @api_router.post("/auth/login-otp", response_model=AuthResponse)
 @limiter.limit("5/minute")
 async def login_otp(request: Request, response: Response, payload: VerifyOTPLoginRequest):
+    client_ip = get_client_ip(request)
+    await enforce_otp_rate_limit(
+        "login_phone_otp",
+        payload.phone,
+        client_ip,
+        max_subject_attempts=5,
+        max_ip_attempts=15,
+        cooldown_base_seconds=5
+    )
     # Verify OTP
     otp_record = await db.otps.find_one({"phone": payload.phone, "otp": payload.otp})
     if not otp_record:
+        emit_monitoring_event("login_failed", ip_address=client_ip, auth_method="otp", reason="invalid_otp")
+        await log_security_event(
+            event_type="otp_verification_failed",
+            details={"scope": "phone_login", "subject": payload.phone, "ip_address": client_ip, "reason": "invalid"}
+        )
         raise HTTPException(status_code=400, detail="Invalid OTP")
     
     if datetime.fromisoformat(otp_record['expires_at']) < datetime.now(timezone.utc):
+        await db.otps.delete_one({"phone": payload.phone})
+        emit_monitoring_event("login_failed", ip_address=client_ip, auth_method="otp", reason="expired_otp")
+        await log_security_event(
+            event_type="otp_verification_failed",
+            details={"scope": "phone_login", "subject": payload.phone, "ip_address": client_ip, "reason": "expired"}
+        )
         raise HTTPException(status_code=400, detail="OTP has expired")
         
     user = await db.users.find_one({"phone": payload.phone}, {"_id": 0})
@@ -1083,6 +1593,7 @@ async def login_otp(request: Request, response: Response, payload: VerifyOTPLogi
     
     # Delete the used OTP
     await db.otps.delete_one({"phone": payload.phone})
+    emit_monitoring_event("login_success", user_id=user["id"], ip_address=client_ip, auth_method="otp")
     
     return await issue_auth_session(response, user, request, is_new_user=False)
 
@@ -1137,6 +1648,17 @@ async def get_products(
     products = await db.products.find(query, {"_id": 0}).to_list(100)
     return products
 
+@api_router.get("/health")
+async def health_check():
+    try:
+        await db.command("ping")
+    except Exception as exc:
+        logger.exception("Health check failed")
+        if SENTRY_DSN:
+            sentry_sdk.capture_exception(exc)
+        return JSONResponse(status_code=503, content={"status": "error"})
+    return {"status": "ok"}
+
 @api_router.get("/products/{product_id}")
 async def get_product(product_id: str):
     product = await db.products.find_one({"id": product_id}, {"_id": 0})
@@ -1145,7 +1667,7 @@ async def get_product(product_id: str):
     return product
 
 @api_router.post("/products", response_model=Product)
-async def create_product(product_data: ProductCreate):
+async def create_product(product_data: ProductCreate, admin_user: Dict = Depends(verify_admin)):
     product = Product(**product_data.model_dump())
     await db.products.insert_one(product.model_dump())
     return product
@@ -1280,6 +1802,14 @@ async def validate_coupon(code: str):
     coupon = await db.coupons.find_one({"code": code.upper(), "is_active": True}, {"_id": 0})
     if not coupon:
         raise HTTPException(status_code=404, detail="Invalid or expired coupon code")
+
+    starts_at = _parse_iso_datetime(coupon.get("starts_at"))
+    expires_at = _parse_iso_datetime(coupon.get("expires_at"))
+    now = datetime.now(timezone.utc)
+    if starts_at and starts_at > now:
+        raise HTTPException(status_code=404, detail="Invalid or expired coupon code")
+    if expires_at and expires_at < now:
+        raise HTTPException(status_code=404, detail="Invalid or expired coupon code")
     
     return {"discount_percentage": coupon["discount_percentage"]}
 
@@ -1293,6 +1823,8 @@ async def update_product_stock(items: List[Any]):
         item_name = item.name if hasattr(item, 'name') else item.get('name')
         item_size = item.size if hasattr(item, 'size') else item.get('size')
         item_qty = item.quantity if hasattr(item, 'quantity') else item.get('quantity')
+        if item_qty is None or int(item_qty) <= 0:
+            raise HTTPException(status_code=400, detail=f"'{item_name}' must have a quantity greater than zero")
 
         product = await db.products.find_one({"id": product_id})
         if not product:
@@ -1308,60 +1840,124 @@ async def update_product_stock(items: List[Any]):
         if available_qty < item_qty:
             raise HTTPException(status_code=400, detail=f"'{item_name}' (Size: {item_size}) is out of stock. Available: {available_qty}, Requested: {item_qty}")
 
-    # 2. Deduction pass (perform atomic $inc decrement)
+    # 2. Deduction pass (perform conditional atomic decrements)
+    applied_updates: List[Dict[str, Any]] = []
     for item in items:
         product_id = item.product_id if hasattr(item, 'product_id') else item.get('product_id')
+        item_name = item.name if hasattr(item, 'name') else item.get('name')
         item_size = item.size if hasattr(item, 'size') else item.get('size')
         item_qty = item.quantity if hasattr(item, 'quantity') else item.get('quantity')
+        item_qty = int(item_qty)
 
         update_query = {"$inc": {"stock": -item_qty}}
         # If the specific size exists in size_stock dict, decrement it too
         product = await db.products.find_one({"id": product_id})
+        filter_query: Dict[str, Any] = {"id": product_id, "stock": {"$gte": item_qty}}
         if item_size in product.get("size_stock", {}):
             update_query["$inc"][f"size_stock.{item_size}"] = -item_qty
+            filter_query[f"size_stock.{item_size}"] = {"$gte": item_qty}
 
-        await db.products.update_one(
-            {"id": product_id},
-            update_query
-        )
+        update_result = await db.products.update_one(filter_query, update_query)
+        if update_result.modified_count == 0:
+            for applied in reversed(applied_updates):
+                await db.products.update_one({"id": applied["product_id"]}, {"$inc": applied["rollback"]})
+            raise HTTPException(
+                status_code=400,
+                detail=f"'{item_name}' (Size: {item_size}) is no longer available in the requested quantity"
+            )
+        applied_updates.append({"product_id": product_id, "rollback": {field: -delta for field, delta in update_query["$inc"].items()}})
 
 @api_router.post("/orders", response_model=Order)
-async def create_order(order_data: OrderCreate, background_tasks: BackgroundTasks, current_user: Dict = Depends(get_current_user)):
+async def create_order(request: Request, order_data: OrderCreate, background_tasks: BackgroundTasks, current_user: Dict = Depends(get_current_user)):
+    client_ip = get_client_ip(request)
+    try:
+        authoritative_order = await _build_authoritative_order(order_data, current_user)
+    except HTTPException as exc:
+        emit_monitoring_event(
+            "checkout_blocked",
+            user_id=current_user["id"],
+            ip_address=client_ip,
+            reason=exc.detail,
+            item_count=len(order_data.items or [])
+        )
+        await log_security_event(
+            event_type="blocked_checkout_attempt",
+            user_id=current_user["id"],
+            details={
+                "ip_address": client_ip,
+                "reason": exc.detail,
+                "item_count": len(order_data.items or [])
+            }
+        )
+        raise
+
+    coupon_reserved = False
     # 1. Fetch site settings to validate COD if selected
     settings = await db.settings.find_one({"id": "global"}) or {}
     cod_enabled = settings.get("cod_enabled", True)
     cod_max_amount = settings.get("cod_max_amount", 3000)
-    cod_charge = settings.get("cod_charge", 50)
 
     # 2. Check COD conditions if payment method is "cod"
     if order_data.payment_method == "cod":
         logging.info("--> COD CHECKOUT TRIGGERED")
         if not cod_enabled:
             logging.error("--> COD IS DISABLED GLOBALLY")
+            emit_monitoring_event(
+                "checkout_blocked",
+                user_id=current_user["id"],
+                ip_address=client_ip,
+                reason="cod_disabled"
+            )
             raise HTTPException(status_code=400, detail="Cash on Delivery is currently disabled globally")
         
         # Verify order total limit for COD
-        if order_data.total_amount > cod_max_amount:
-            logging.error(f"--> COD MAX AMOUNT EXCEEDED: {order_data.total_amount}")
+        if authoritative_order["total_amount"] > cod_max_amount:
+            logging.error(f"--> COD MAX AMOUNT EXCEEDED: {authoritative_order['total_amount']}")
+            emit_monitoring_event(
+                "checkout_blocked",
+                user_id=current_user["id"],
+                ip_address=client_ip,
+                reason="cod_amount_limit",
+                amount=authoritative_order["total_amount"]
+            )
             raise HTTPException(status_code=400, detail=f"Cash on Delivery limit is ₹{cod_max_amount}. Please use online payment.")
 
         # Check per-product availability for COD
-        for item in order_data.items:
+        for item in authoritative_order["items"]:
             product = await db.products.find_one({"id": item.product_id})
             if product and not product.get("cod_available", True):
                 logging.error(f"--> COD UNAVAILABLE FOR PRODUCT: {item.product_id}")
+                emit_monitoring_event(
+                    "checkout_blocked",
+                    user_id=current_user["id"],
+                    ip_address=client_ip,
+                    reason="cod_unavailable_item",
+                    product_id=item.product_id
+                )
                 raise HTTPException(status_code=400, detail=f"Cash on Delivery is not available for '{product.get('name')}'")
         
         # Deduct stock immediately since COD order goes straight to processing
         logging.info("--> ATTEMPTING COD STOCK DEDUCTION")
         try:
-            await update_product_stock(order_data.items)
+            await update_product_stock(authoritative_order["items"])
             logging.info("--> COD STOCK DEDUCTION SUCCESS")
         except Exception as e:
             logging.error(f"--> COD STOCK DEDUCTION FAILED: {str(e)}")
+            emit_monitoring_event(
+                "checkout_blocked",
+                user_id=current_user["id"],
+                ip_address=client_ip,
+                reason="stock_deduction_failed"
+            )
+            await log_security_event(
+                event_type="blocked_checkout_attempt",
+                user_id=current_user["id"],
+                details={"ip_address": client_ip, "reason": "stock_deduction_failed"}
+            )
             raise e
         
-        # If valid COD, the frontend already added the cod_charge to the total. Set payment status.
+        # The backend is authoritative for COD totals and fees, so the stored
+        # order amount already includes the validated COD charge.
         payment_status = "pending_cod"
     else:
         # Standard Razorpay configuration
@@ -1371,8 +1967,13 @@ async def create_order(order_data: OrderCreate, background_tasks: BackgroundTask
     # 3. Create Order
     order = Order(
         user_id=current_user['id'],
+        items=authoritative_order["items"],
+        total_amount=authoritative_order["total_amount"],
+        shipping_address=authoritative_order["shipping_address"],
         payment_status=payment_status,
-        **order_data.model_dump()
+        payment_method=order_data.payment_method,
+        discount_applied=authoritative_order["discount_applied"],
+        coupon_code=authoritative_order["coupon_code"]
     )
     order_dict = order.model_dump()
     
@@ -1382,7 +1983,22 @@ async def create_order(order_data: OrderCreate, background_tasks: BackgroundTask
         "time": datetime.now(timezone.utc).isoformat()
     }]
     
-    await db.orders.insert_one(order_dict)
+    try:
+        coupon_reserved = await _reserve_coupon_usage(authoritative_order["coupon_code"])
+        await db.orders.insert_one(order_dict)
+    except Exception:
+        await _release_coupon_usage(authoritative_order["coupon_code"], coupon_reserved)
+        raise
+
+    emit_monitoring_event(
+        "order_created",
+        user_id=current_user["id"],
+        ip_address=client_ip,
+        order_id=order.id,
+        amount=order.total_amount,
+        payment_method=order.payment_method,
+        item_count=len(order.items)
+    )
     
     # 4. Trigger Email Notification if COD
     if order_data.payment_method == "cod":
@@ -1485,6 +2101,7 @@ async def request_order_cancellation(order_id: str, payload: CancelRequest, curr
 # --- HELP / EXCHANGE ENDPOINTS ---
 @api_router.post("/help/request-exchange")
 async def request_exchange(
+    request: Request,
     order_id: str = Form(...),
     customer_name: str = Form(...),
     customer_email: str = Form(...),
@@ -1534,17 +2151,29 @@ async def request_exchange(
     image_url = None
     if image and image.filename:
         try:
-            uploads_dir = Path(__file__).parent / "uploads"
-            uploads_dir.mkdir(exist_ok=True)
-            extension = image.filename.split('.')[-1] if '.' in image.filename else ''
-            unique_filename = f"defect_ex_{uuid.uuid4().hex[:8]}.{extension}"
-            file_path = uploads_dir / unique_filename
-            with open(file_path, "wb") as buffer:
-                shutil.copyfileobj(image.file, buffer)
-            # Use absolute or complete domain url if possible, but standard is /uploads/filename
-            # We will use the full backend URL in notifications, but store relative in DB
-            image_url = f"/uploads/{unique_filename}"
-        except Exception as e:
+            # User uploads remain publicly accessible via /uploads for the
+            # existing admin workflow, so we strictly constrain them to images.
+            image_url = await _store_validated_image(image, prefix="defect_ex")
+        except HTTPException as exc:
+            emit_monitoring_event(
+                "upload_blocked",
+                ip_address=get_client_ip(request),
+                surface="exchange",
+                order_id=order_id,
+                filename=Path(image.filename or "").name,
+                reason=exc.detail
+            )
+            await log_security_event(
+                event_type="blocked_exchange_upload",
+                details={
+                    "ip_address": get_client_ip(request),
+                    "order_id": order_id,
+                    "filename": Path(image.filename or "").name,
+                    "reason": exc.detail
+                }
+            )
+            raise
+        except Exception:
             raise HTTPException(status_code=500, detail="Failed to upload image")
 
     exchange_req = ExchangeRequest(
@@ -1578,7 +2207,8 @@ async def request_exchange(
 
 # --- PAYMENT ENDPOINTS ---
 @api_router.post("/razorpay/create-order")
-async def create_razorpay_order(order_req: RazorpayOrderRequest, current_user: Dict = Depends(get_current_user)):
+async def create_razorpay_order(request: Request, order_req: RazorpayOrderRequest, current_user: Dict = Depends(get_current_user)):
+    client_ip = get_client_ip(request)
     # Get order details
     order = await db.orders.find_one({"id": order_req.order_id, "user_id": current_user['id']}, {"_id": 0})
     if not order:
@@ -1586,6 +2216,8 @@ async def create_razorpay_order(order_req: RazorpayOrderRequest, current_user: D
     
     if order['payment_status'] == 'paid':
         raise HTTPException(status_code=400, detail="Order already paid")
+    if order.get('payment_method') == 'cod':
+        raise HTTPException(status_code=400, detail="Cash on Delivery orders do not require online payment")
     
     # Convert to paise (Razorpay uses smallest currency unit)
     amount_in_paise = int(order['total_amount'] * 100)
@@ -1619,6 +2251,15 @@ async def create_razorpay_order(order_req: RazorpayOrderRequest, current_user: D
             {"id": order['id']},
             {"$set": {"razorpay_order_id": razorpay_order['id']}}
         )
+
+        emit_monitoring_event(
+            "payment_order_created",
+            user_id=current_user["id"],
+            ip_address=client_ip,
+            order_id=order["id"],
+            razorpay_order_id=razorpay_order["id"],
+            amount=order["total_amount"]
+        )
         
         return {
             "razorpay_order_id": razorpay_order['id'],
@@ -1628,10 +2269,18 @@ async def create_razorpay_order(order_req: RazorpayOrderRequest, current_user: D
         }
     except Exception as e:
         logging.error(f"Razorpay order creation failed: {e}")
+        emit_monitoring_event(
+            "payment_failed",
+            user_id=current_user["id"],
+            ip_address=client_ip,
+            order_id=order_req.order_id,
+            reason="order_creation_failed"
+        )
         raise HTTPException(status_code=500, detail="Failed to create payment order")
 
 @api_router.post("/razorpay/verify-payment")
-async def verify_razorpay_payment(verification: RazorpayPaymentVerification, background_tasks: BackgroundTasks, current_user: Dict = Depends(get_current_user)):
+async def verify_razorpay_payment(request: Request, verification: RazorpayPaymentVerification, background_tasks: BackgroundTasks, current_user: Dict = Depends(get_current_user)):
+    client_ip = get_client_ip(request)
     try:
         # Verify signature
         generated_signature = hmac.new(
@@ -1640,7 +2289,14 @@ async def verify_razorpay_payment(verification: RazorpayPaymentVerification, bac
             hashlib.sha256
         ).hexdigest()
         
-        if generated_signature != verification.razorpay_signature:
+        if not hmac.compare_digest(generated_signature, verification.razorpay_signature):
+            emit_monitoring_event(
+                "payment_failed",
+                user_id=current_user["id"],
+                ip_address=client_ip,
+                razorpay_order_id=verification.razorpay_order_id,
+                reason="invalid_signature"
+            )
             raise HTTPException(status_code=400, detail="Invalid payment signature")
         
         # Update transaction
@@ -1651,6 +2307,8 @@ async def verify_razorpay_payment(verification: RazorpayPaymentVerification, bac
         
         if not transaction:
             raise HTTPException(status_code=404, detail="Transaction not found")
+        if transaction.get("user_id") != current_user["id"]:
+            raise HTTPException(status_code=403, detail="Payment verification is not allowed for this order")
         
         # Check if already processed
         if transaction['payment_status'] == 'paid':
@@ -1678,7 +2336,7 @@ async def verify_razorpay_payment(verification: RazorpayPaymentVerification, bac
         )
 
         # Trigger Notifications and Deduct Stock
-        order = await db.orders.find_one({"id": transaction['order_id']}, {"_id": 0})
+        order = await db.orders.find_one({"id": transaction['order_id'], "user_id": current_user["id"]}, {"_id": 0})
         if order:
             await update_product_stock(order.get('items', []))
             background_tasks.add_task(send_order_email, order)
@@ -1694,16 +2352,40 @@ async def verify_razorpay_payment(verification: RazorpayPaymentVerification, bac
             {"id": current_user['id']},
             {"$set": {"has_used_first_purchase_discount": True}}
         )
+
+        emit_monitoring_event(
+            "payment_success",
+            user_id=current_user["id"],
+            ip_address=client_ip,
+            order_id=transaction["order_id"],
+            razorpay_order_id=verification.razorpay_order_id,
+            amount=transaction.get("amount")
+        )
         
         return {
             "status": "success",
             "message": "Payment verified successfully",
             "order_id": transaction['order_id']
         }
-    except HTTPException:
+    except HTTPException as exc:
+        if exc.status_code >= 400:
+            emit_monitoring_event(
+                "payment_failed",
+                user_id=current_user.get("id"),
+                ip_address=client_ip,
+                razorpay_order_id=verification.razorpay_order_id,
+                reason=exc.detail
+            )
         raise
     except Exception as e:
         logging.error(f"Payment verification failed: {e}")
+        emit_monitoring_event(
+            "payment_failed",
+            user_id=current_user["id"],
+            ip_address=client_ip,
+            razorpay_order_id=verification.razorpay_order_id,
+            reason="verification_failed"
+        )
         raise HTTPException(status_code=500, detail="Payment verification failed")
 
 @api_router.post("/razorpay/webhook")
@@ -1720,7 +2402,7 @@ async def razorpay_webhook(request: Request):
             hashlib.sha256
         ).hexdigest()
         
-        if signature != expected_signature:
+        if not hmac.compare_digest(signature, expected_signature):
             raise HTTPException(status_code=400, detail="Invalid webhook signature")
         
         import json
@@ -1818,10 +2500,29 @@ async def subscribe_to_newsletter(subscriber: SubscriberCreate):
     return {"message": "You are in. Stay ready for the next drop.", "verified": True}
 
 @api_router.get("/newsletter/unsubscribe", response_class=HTMLResponse)
-async def unsubscribe_from_newsletter(email: str = Query(...)):
-    normalized_email = email.strip().lower()
-    subscriber = await db.subscribers.find_one({"email": normalized_email}, {"_id": 0})
+async def unsubscribe_from_newsletter(token: str = Query(...)):
+    try:
+        normalized_email = verify_newsletter_unsubscribe_token(token)
+    except NewsletterTokenError as exc:
+        return HTMLResponse(
+            status_code=400,
+            content=f"""
+            <html>
+                <body style="margin:0;padding:24px;background:#f5efe6;font-family:'Helvetica Neue',Arial,sans-serif;color:#18120d;">
+                    <div style="max-width:640px;margin:0 auto;background:#fffaf3;border:1px solid #eadbc9;border-radius:22px;overflow:hidden;box-shadow:0 14px 36px rgba(18,14,11,0.08);">
+                        <div style="height:4px;background:linear-gradient(90deg,#b7814d 0%,#efc28c 50%,#b7814d 100%);"></div>
+                        <div style="padding:22px 22px 24px;">
+                            <p style="margin:0 0 10px;color:#9c6a3b;letter-spacing:0.2em;text-transform:uppercase;font-size:10px;font-weight:700;">LAST GEAR</p>
+                            <h1 style="margin:0 0 12px;font-size:28px;line-height:1;text-transform:uppercase;color:#18120d;">Link Invalid</h1>
+                            <p style="margin:0;font-size:15px;line-height:1.7;color:#18120d;">{sanitize_input(str(exc))}</p>
+                        </div>
+                    </div>
+                </body>
+            </html>
+            """
+        )
 
+    subscriber = await db.subscribers.find_one({"email": normalized_email}, {"_id": 0})
     if subscriber:
         await db.subscribers.update_one(
             {"email": normalized_email},

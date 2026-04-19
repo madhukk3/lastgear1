@@ -1,12 +1,18 @@
 import subprocess
 import requests
+import os
 
 BACKEND_URL = "http://localhost:8000/api"
+ADMIN_EMAIL = os.environ.get("ADMIN_EMAIL")
+ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD")
+
+if not ADMIN_EMAIL or not ADMIN_PASSWORD:
+    raise SystemExit("ADMIN_EMAIL and ADMIN_PASSWORD must be set for this test")
 
 # 1. Login to get Admin Token
 login_res = requests.post(
     f"{BACKEND_URL}/auth/login",
-    json={"email": "admin@lastgear.com", "password": "admin123", "role": "admin"}
+    json={"email": ADMIN_EMAIL, "password": ADMIN_PASSWORD, "role": "admin"}
 )
 
 if login_res.status_code == 200:
@@ -37,4 +43,3 @@ if login_res.status_code == 200:
     
 else:
     print("Failed to login", login_res.text)
-

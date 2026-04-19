@@ -34,7 +34,7 @@ const Header = () => {
   );
   const [fadeStatus, setFadeStatus] = useState('opacity-100');
 
-  const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+  const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000';
   const API = `${BACKEND_URL}/api`;
   const announcementBarHeight = announcementActive && announcements.length > 0 ? 30 : 0;
 

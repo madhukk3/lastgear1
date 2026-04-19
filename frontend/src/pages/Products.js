@@ -25,7 +25,7 @@ const Products = () => {
   });
   const impactSeriesTitle = searchParams.get('impact_series_title') || '';
 
-  const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+  const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000';
   const API = `${BACKEND_URL}/api`;
 
   const categories = ['All', 'T-Shirts', 'Hoodies'];

@@ -29,7 +29,11 @@ async def test_full_checkout():
         'email': user['email'],
         'exp': datetime.now(timezone.utc) + timedelta(days=1)
     }
-    token = jwt.encode(payload, os.environ.get('JWT_SECRET', 'lastgear_jwt_secret_key_2026_production'), algorithm='HS256')
+    jwt_secret = os.environ.get('JWT_SECRET')
+    if not jwt_secret:
+        print("JWT_SECRET is required for this test")
+        return
+    token = jwt.encode(payload, jwt_secret, algorithm='HS256')
     
     headers = {"Authorization": f"Bearer {token}"}
     

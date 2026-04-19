@@ -18,7 +18,7 @@ export const SettingsProvider = ({ children }) => {
     useEffect(() => {
         const fetchSettings = async () => {
             try {
-                const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+                const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000';
                 const response = await axios.get(`${BACKEND_URL}/api/settings/announcement`);
                 if (response.data) {
                     setGlobalDiscount(response.data.global_discount_percentage || 0);

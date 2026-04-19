@@ -1,15 +1,17 @@
-from fastapi import APIRouter, HTTPException, Depends, Query, UploadFile, File, BackgroundTasks
+from fastapi import APIRouter, HTTPException, Depends, Query, UploadFile, File, BackgroundTasks, Request
 from pydantic import BaseModel, Field
 from typing import List, Optional, Dict
 from datetime import datetime, timezone, timedelta
 import uuid
 import mimetypes
-from security import verify_admin, log_admin_action, sanitize_input
+import io
+from security import verify_admin, log_admin_action, sanitize_input, log_security_event, get_client_ip, emit_monitoring_event
 from notifications import send_order_status_email, send_order_cancellation_email, send_exchange_approved_email, send_subscriber_broadcast_email
 from motor.motor_asyncio import AsyncIOMotorClient
 import os
 from dotenv import load_dotenv
 from pathlib import Path
+from PIL import Image, UnidentifiedImageError
 
 # Load environment variables
 ROOT_DIR = Path(__file__).parent
@@ -22,6 +24,23 @@ UPLOADS_DIR.mkdir(exist_ok=True)
 ALLOWED_UPLOAD_MIME_TYPES = {"image/jpeg", "image/png", "image/webp"}
 ALLOWED_UPLOAD_EXTENSIONS = {".jpg", ".jpeg", ".png", ".webp"}
 MAX_UPLOAD_SIZE_BYTES = 5 * 1024 * 1024
+MAX_UPLOAD_PIXELS = int(os.environ.get("MAX_IMAGE_PIXELS", "20000000"))
+
+IMAGE_FORMAT_DETAILS = {
+    "jpeg": {"extensions": {".jpg", ".jpeg"}, "content_type": "image/jpeg", "pil_format": "JPEG"},
+    "png": {"extensions": {".png"}, "content_type": "image/png", "pil_format": "PNG"},
+    "webp": {"extensions": {".webp"}, "content_type": "image/webp", "pil_format": "WEBP"},
+}
+
+
+def _matches_magic_bytes(file_bytes: bytes, detected_format: str) -> bool:
+    if detected_format == "jpeg":
+        return file_bytes.startswith(b"\xff\xd8\xff")
+    if detected_format == "png":
+        return file_bytes.startswith(b"\x89PNG\r\n\x1a\n")
+    if detected_format == "webp":
+        return len(file_bytes) > 12 and file_bytes.startswith(b"RIFF") and file_bytes[8:12] == b"WEBP"
+    return False
 
 # MongoDB connection
 mongo_url = os.environ['MONGO_URL']
@@ -112,6 +131,67 @@ class SubscriberBroadcastRequest(BaseModel):
     recipient_emails: Optional[List[str]] = None
 
 
+async def _store_validated_admin_image(upload: UploadFile) -> str:
+    extension = Path(upload.filename or "").suffix.lower()
+    detected_type = (upload.content_type or mimetypes.guess_type(upload.filename or "")[0] or "").lower()
+    file_bytes = await upload.read()
+
+    if extension not in ALLOWED_UPLOAD_EXTENSIONS or detected_type not in ALLOWED_UPLOAD_MIME_TYPES:
+        raise HTTPException(status_code=400, detail="Invalid file type. Only JPG, PNG, and WEBP are allowed.")
+
+    if not file_bytes:
+        raise HTTPException(status_code=400, detail="Uploaded file is empty.")
+
+    if len(file_bytes) > MAX_UPLOAD_SIZE_BYTES:
+        raise HTTPException(status_code=400, detail="File size must be 5MB or less.")
+
+    try:
+        with Image.open(io.BytesIO(file_bytes)) as image_probe:
+            image_probe.verify()
+        with Image.open(io.BytesIO(file_bytes)) as image:
+            image.load()
+            detected_format = (image.format or "").lower()
+            format_details = IMAGE_FORMAT_DETAILS.get(detected_format)
+            if not format_details:
+                raise HTTPException(status_code=400, detail="Unsupported image format.")
+            if extension not in format_details["extensions"] or detected_type != format_details["content_type"]:
+                raise HTTPException(status_code=400, detail="Image content does not match the declared file type.")
+            if not _matches_magic_bytes(file_bytes, detected_format):
+                raise HTTPException(status_code=400, detail="Image signature validation failed.")
+
+            width, height = image.size
+            if width <= 0 or height <= 0 or width * height > MAX_UPLOAD_PIXELS:
+                raise HTTPException(status_code=400, detail="Image dimensions are not allowed.")
+
+            has_alpha = "A" in image.getbands()
+            normalized_image = image.convert("RGBA" if has_alpha else "RGB")
+            output = io.BytesIO()
+            save_kwargs = {"format": format_details["pil_format"]}
+            if detected_format == "jpeg":
+                normalized_image = image.convert("RGB")
+                save_kwargs.update({"quality": 90, "optimize": True})
+            elif detected_format == "png":
+                save_kwargs.update({"optimize": True})
+            elif detected_format == "webp":
+                save_kwargs.update({"quality": 90, "method": 6})
+
+            # Re-encoding strips appended payloads instead of storing raw bytes.
+            normalized_image.save(output, **save_kwargs)
+    except (UnidentifiedImageError, OSError) as exc:
+        raise HTTPException(status_code=400, detail="Uploaded file is not a valid image.") from exc
+
+    canonical_bytes = output.getvalue()
+    if len(canonical_bytes) > MAX_UPLOAD_SIZE_BYTES:
+        raise HTTPException(status_code=400, detail="File size must be 5MB or less.")
+
+    unique_filename = f"{uuid.uuid4().hex}{extension}"
+    file_path = UPLOADS_DIR / unique_filename
+    with open(file_path, "wb") as buffer:
+        buffer.write(canonical_bytes)
+
+    return f"/uploads/{unique_filename}"
+
+
 @admin_router.get("/session")
 async def admin_session(admin_user: Dict = Depends(verify_admin)):
     return {
@@ -148,33 +228,34 @@ class ImpactSeriesCreate(BaseModel):
 # --- IMAGE UPLOAD ROUTE ---
 @admin_router.post("/upload")
 async def upload_image(
+    request: Request,
     file: UploadFile = File(...),
     admin_user: Dict = Depends(verify_admin)
 ):
     """Upload an image file and return its public URL."""
     try:
-        extension = Path(file.filename).suffix.lower()
-        detected_type = (file.content_type or mimetypes.guess_type(file.filename or "")[0] or "").lower()
-
-        if extension not in ALLOWED_UPLOAD_EXTENSIONS or detected_type not in ALLOWED_UPLOAD_MIME_TYPES:
-            raise HTTPException(status_code=400, detail="Invalid file type. Only JPG, PNG, and WEBP are allowed.")
-
-        file.file.seek(0, 2)
-        file_size = file.file.tell()
-        file.file.seek(0)
-        if file_size > MAX_UPLOAD_SIZE_BYTES:
-            raise HTTPException(status_code=400, detail="File size must be 5MB or less.")
-
-        # Generate a unique filename using UUID
-        unique_filename = f"{uuid.uuid4()}{extension}"
-        file_path = UPLOADS_DIR / unique_filename
-
-        # Save the file
-        with open(file_path, "wb") as buffer:
-            shutil.copyfileobj(file.file, buffer)
-
-        # Return the public URL path
-        return {"url": f"/uploads/{unique_filename}"}
+        # Admin uploads are still served from /uploads for the existing UI, so
+        # we validate both declared metadata and the actual image bytes.
+        return {"url": await _store_validated_admin_image(file)}
+    except HTTPException as exc:
+        emit_monitoring_event(
+            "upload_blocked",
+            user_id=admin_user.get("id"),
+            ip_address=get_client_ip(request),
+            surface="admin",
+            filename=Path(file.filename or "").name,
+            reason=exc.detail
+        )
+        await log_security_event(
+            event_type="blocked_admin_upload",
+            user_id=admin_user.get("id"),
+            details={
+                "ip_address": get_client_ip(request),
+                "filename": Path(file.filename or "").name,
+                "reason": exc.detail
+            }
+        )
+        raise
     except Exception as e:
         print(f"Upload error: {e}")
         raise HTTPException(status_code=500, detail="Failed to upload image")
@@ -946,7 +1027,12 @@ async def admin_create_coupon(coupon_data: dict, admin_user: Dict = Depends(veri
         id=coupon_id,
         code=coupon_data['code'].upper(),
         discount_percentage=coupon_data['discount_percentage'],
-        is_active=coupon_data.get('is_active', True)
+        is_active=coupon_data.get('is_active', True),
+        usage_limit=coupon_data.get('usage_limit'),
+        max_uses_per_user=coupon_data.get('max_uses_per_user'),
+        starts_at=coupon_data.get('starts_at'),
+        expires_at=coupon_data.get('expires_at'),
+        eligible_user_ids=coupon_data.get('eligible_user_ids')
     )
     
     await db.coupons.insert_one(coupon.model_dump())
@@ -972,6 +1058,16 @@ async def admin_update_coupon(coupon_id: str, coupon_data: dict, admin_user: Dic
         update_data['discount_percentage'] = coupon_data['discount_percentage']
     if 'is_active' in coupon_data:
         update_data['is_active'] = coupon_data['is_active']
+    if 'usage_limit' in coupon_data:
+        update_data['usage_limit'] = coupon_data['usage_limit']
+    if 'max_uses_per_user' in coupon_data:
+        update_data['max_uses_per_user'] = coupon_data['max_uses_per_user']
+    if 'starts_at' in coupon_data:
+        update_data['starts_at'] = coupon_data['starts_at']
+    if 'expires_at' in coupon_data:
+        update_data['expires_at'] = coupon_data['expires_at']
+    if 'eligible_user_ids' in coupon_data:
+        update_data['eligible_user_ids'] = coupon_data['eligible_user_ids']
         
     if update_data:
         await db.coupons.update_one({"id": coupon_id}, {"$set": update_data})

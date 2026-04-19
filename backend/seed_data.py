@@ -119,11 +119,11 @@ async def seed_database():
     await db.products.insert_many(products)
     
     # Create admin user
-    admin_email = os.environ.get('ADMIN_EMAIL', 'admin@lastgear.in')
-    admin_password = os.environ.get('ADMIN_PASSWORD', 'Admin@123')
+    admin_email = (os.environ.get('ADMIN_EMAIL') or '').strip()
+    admin_password = (os.environ.get('ADMIN_PASSWORD') or '').strip()
     
-    existing_admin = await db.users.find_one({"email": admin_email})
-    if not existing_admin:
+    existing_admin = await db.users.find_one({"email": admin_email}) if admin_email else None
+    if admin_email and admin_password and not existing_admin:
         hashed_pw = bcrypt.hashpw(admin_password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
         from datetime import datetime, timezone
         import uuid
@@ -138,6 +138,8 @@ async def seed_database():
         }
         await db.users.insert_one(admin_doc)
         print(f"Admin user created: {admin_email}")
+    elif not admin_email or not admin_password:
+        print("Admin user not created: ADMIN_EMAIL and ADMIN_PASSWORD must be set explicitly.")
     
     print(f"Successfully seeded {len(products)} products with INR prices")
     client.close()

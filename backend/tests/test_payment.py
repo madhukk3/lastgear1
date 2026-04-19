@@ -8,10 +8,7 @@ async def test_razorpay():
     load_dotenv()
     razorpay_key_id = os.environ.get("RAZORPAY_KEY_ID")
     razorpay_key_secret = os.environ.get("RAZORPAY_KEY_SECRET")
-    
-    print(f"Key ID: {razorpay_key_id}")
-    print(f"Key Secret: {'Set' if razorpay_key_secret else 'Missing'}")
-    
+
     if not razorpay_key_id or not razorpay_key_secret:
         print("Missing keys!")
         return

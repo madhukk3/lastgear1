@@ -5,6 +5,7 @@ import logging
 import asyncio
 from motor.motor_asyncio import AsyncIOMotorClient
 from datetime import datetime, timezone
+from security import create_newsletter_unsubscribe_token
 
 logger = logging.getLogger(__name__)
 
@@ -15,6 +16,18 @@ def get_public_site_url() -> str:
         or os.environ.get('WEBSITE_URL')
         or 'https://lastgear.in'
     ).rstrip('/')
+
+
+def get_notification_email() -> str:
+    return (
+        os.environ.get('NOTIFICATION_EMAIL')
+        or os.environ.get('EMAIL_USERNAME')
+        or ''
+    ).strip()
+
+
+def get_reserved_admin_email() -> str:
+    return (os.environ.get('ADMIN_EMAIL') or "").strip().lower()
 
 def build_lastgear_email_shell(eyebrow: str, title: str, intro_html: str, body_html: str, footer_note: str = "Support: support@lastgear.in") -> str:
     return f"""
@@ -55,6 +68,11 @@ def build_status_panel(label: str, value: str, accent: str = "#d8b48a", extra_ht
     </div>
     """
 
+
+def build_newsletter_unsubscribe_link(email: str) -> str:
+    token = create_newsletter_unsubscribe_token(email)
+    return f"{get_public_site_url()}/api/newsletter/unsubscribe?token={token}"
+
 async def send_subscriber_welcome_email(email: str):
     """
     Send a welcome email to a new or returning subscriber.
@@ -70,7 +88,7 @@ async def send_subscriber_welcome_email(email: str):
     msg['Subject'] = "Welcome to LAST GEAR"
     msg['From'] = email_username
     msg['To'] = email
-    unsubscribe_link = f"{get_public_site_url()}/api/newsletter/unsubscribe?email={email}"
+    unsubscribe_link = build_newsletter_unsubscribe_link(email)
     msg.set_content("You are now subscribed to LAST GEAR updates. New drops. First access.")
     msg.add_alternative(
         build_lastgear_email_shell(
@@ -335,7 +353,7 @@ async def send_order_status_email(order: dict):
             return  # Cannot send if no customer email
             
         customer_email = user.get('email')
-        if customer_email == "admin@lastgear.in":
+        if customer_email and customer_email.lower() == get_reserved_admin_email():
             return  # Block dummy domain to prevent bounces
         customer_name = order.get('shipping_address', {}).get('full_name', 'Customer')
         
@@ -378,9 +396,9 @@ async def send_order_cancellation_email(order: dict):
     """
     email_username = os.environ.get('EMAIL_USERNAME')
     email_password = os.environ.get('EMAIL_PASSWORD')
-    to_email = "lastgearorders@gmail.com"
+    to_email = get_notification_email()
     
-    if not email_username or not email_password:
+    if not email_username or not email_password or not to_email:
         return
 
     try:
@@ -394,7 +412,7 @@ async def send_order_cancellation_email(order: dict):
         customer_email = user.get('email') if user else ''
         
         # Block dummy admin email from receiving customer-side notifications to prevent SMTP bounces
-        if customer_email == "admin@lastgear.in":
+        if customer_email and customer_email.lower() == get_reserved_admin_email():
             customer_email = ""
         
         # Extract variables
@@ -482,11 +500,9 @@ async def send_order_cancellation_email(order: dict):
 
         await asyncio.to_thread(send_email_sync)
         logger.info(f"Cancellation email sent successfully for Order ID: {order_id}")
-        print("Cancellation email sent successfully")
         
     except Exception as e:
         logger.error(f"Failed to send order cancellation email: {str(e)}")
-        print("Email failed:", str(e))
 
 async def send_exchange_request_email(exchange: dict):
     """
@@ -494,9 +510,9 @@ async def send_exchange_request_email(exchange: dict):
     """
     email_username = os.environ.get('EMAIL_USERNAME')
     email_password = os.environ.get('EMAIL_PASSWORD')
-    admin_email = "lastgearorders@gmail.com"
+    admin_email = get_notification_email()
     
-    if not email_username or not email_password:
+    if not email_username or not email_password or not admin_email:
         return
 
     try:
@@ -655,7 +671,7 @@ async def send_subscriber_broadcast_email(
             smtp.login(email_username, email_password)
             for recipient in recipients:
                 try:
-                    unsubscribe_link = f"{get_public_site_url()}/api/newsletter/unsubscribe?email={recipient}"
+                    unsubscribe_link = build_newsletter_unsubscribe_link(recipient)
                     html_content = build_lastgear_email_shell(
                         "Stay In The Shift",
                         safe_subject,

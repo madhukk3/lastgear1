@@ -18,7 +18,7 @@ const Home = () => {
   const { addToCart } = useCart();
   const { globalDiscount, freeShippingThreshold } = useSettings() || { globalDiscount: 0, freeShippingThreshold: 1500 };
 
-  const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+  const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000';
   const API = `${BACKEND_URL}/api`;
   const activeHero = heroBanners[currentSlide] || null;
 

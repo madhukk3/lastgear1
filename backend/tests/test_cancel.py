@@ -17,7 +17,10 @@ async def main():
         print("No admin found")
         return
     
-    secret = os.environ.get('JWT_SECRET', 'lastgear_jwt_secret_key_2026_production')
+    secret = os.environ.get('JWT_SECRET')
+    if not secret:
+        print("JWT_SECRET is required for this test")
+        return
     payload = {
         'user_id': admin['id'],
         'email': admin['email'],
